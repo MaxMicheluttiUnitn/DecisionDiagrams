@@ -3,7 +3,7 @@ import time
 from pysmt.fnode import FNode
 from pysdd.sdd import SddManager, Vtree
 from dd.autoref import BDD,Function
-from string_generator import sequential_string_generate
+from string_generator import SequentailStringGenerator
 from formula import get_atoms, get_phi
 
 
@@ -79,8 +79,9 @@ def compute_bdd(phi:FNode, output_file = None) -> None:
     bdd = BDD()
     atoms = get_atoms(phi)
     mapping = {}
+    string_generator = SequentailStringGenerator()
     for atom in atoms:
-        mapping[atom]=sequential_string_generate()
+        mapping[atom]=string_generator.next_string()
     all_values = []
     for value in mapping.values():
         all_values.append(value)
