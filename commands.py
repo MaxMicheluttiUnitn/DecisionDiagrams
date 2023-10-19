@@ -1,55 +1,22 @@
 from typing import List
+import argparse
 
 VALID_VTREE = ["left","right","balanced","vertical","random"]
 
-def parse_args(args:List[str]) -> dict:
-    options = {
-        "sdd": False,
-        "bdd": False,
-        "vtree": None,
-        "input": None,
-        "sdd-out": None,
-        "bdd-out": None,
-        "print-models": False,
-        "print-lemmas": False
-    }
-    for arg in args:
-        if arg == "--sdd":
-            options["sdd"] = True
-            continue
-        if arg == "--bdd":
-            options["bdd"] = True
-            continue
-        if arg == "--print-models":
-            options["print-models"] = True
-            continue
-        if arg == "--print-lemmas":
-            options["print-lemmas"] = True
-            continue
-        if arg.startswith("--vtree="):
-            split_arg = arg.split("=")
-            if len(split_arg) == 2 and split_arg[1] in VALID_VTREE:
-                options["vtree"] = split_arg[1]
-            continue
-        if arg.startswith("--input="):
-            split_arg = arg.split("=")
-            if len(split_arg) == 2:
-                options["input"] = split_arg[1]
-            continue
-        if arg.startswith("--sdd-output="):
-            split_arg = arg.split("=")
-            if len(split_arg) == 2:
-                options["sdd-out"] = split_arg[1]
-            continue
-        if arg.startswith("--bdd-output="):
-            split_arg = arg.split("=")
-            if len(split_arg) == 2:
-                options["bdd-out"] = split_arg[1]
-            continue
-        if arg == "--help" or arg == "-h":
-            help()
-            continue
-    return options
+def get_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--sdd", help="Generate the SDD of the formula",action="store_true")
+    parser.add_argument("--bdd", help="Generate the BDD of the formula",action="store_true")
+    parser.add_argument("--print_models", help="Print the models obtained from All-SAT computation",action="store_true")
+    parser.add_argument("--print_lemmas", help="Print the lemmas generated during the All-SAT compiutation",action="store_true")
+    parser.add_argument("--vtree", help="Specify V-Tree kind for SDD generation (default is right). Available values: "+str(VALID_VTREE),type=str)
+    parser.add_argument("-i","--input", help="Specify a file from witch to read the formula",type=str)
+    parser.add_argument("--sdd_output", help="Specify a .dot file to output the SDD (default is sdd.dot)",type=str)
+    parser.add_argument("--bdd_output", help="Specify a .svg file to output the BDD (default is bdd.svg)",type=str)
+    args = parser.parse_args()
+    if not (args.vtree is None) and not (args.vtree in VALID_VTREE):
+        args.vtree = None
+    return args
 
 def help():
     print("Usage: python3 main.py [options]")

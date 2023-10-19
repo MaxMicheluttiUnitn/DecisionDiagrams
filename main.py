@@ -6,15 +6,13 @@ import commands
 import formula
 
 def main():
-    args = sys.argv
-    args.pop(0) #pop main.py
-    options=commands.parse_args(args)
+    args = commands.get_args()
     start_time = time.time()
-    print("Building formula")
-    if options["input"] is None:
+    print("Building Phi...")
+    if args.input is None:
         phi = formula.get_phi()
     else:
-        phi = formula.read_phi(options["input"])
+        phi = formula.read_phi(args.input)
     print("Formula built in ",time.time()-start_time," seconds")
     start_time = time.time()
     print("Starting All Sat computation")
@@ -24,21 +22,21 @@ def main():
         return
     print("Computed All Sat in ",time.time()-start_time," seconds")
     print("Phi is SAT")
-    if options["print-models"]:
+    if args.print_models:
         print("Models:")
         print("\n".join(map(str, get_models())))
-    if options["print-lemmas"]:
+    if args.print_lemmas:
         print("T-lemmas:")
         print("\n".join(map(lambda x: x.serialize(), get_theory_lemmas())))
-    if options["sdd"]:
+    if args.sdd:
         start_time = time.time()
         print("Starting SDD Procesing...")
-        decision_diagrams.compute_sdd(phi,output_file=options["sdd-out"],vtree_type=options["vtree"])
+        decision_diagrams.compute_sdd(phi,output_file=args.sdd_output,vtree_type=args.vtree)
         print("SDD processed in ",time.time()-start_time," seconds")
-    if options["bdd"]:
+    if args.bdd:
         start_time = time.time()
         print("Starting BDD Procesing...")
-        decision_diagrams.compute_bdd(phi,output_file=options["bdd-out"])
+        decision_diagrams.compute_bdd(phi,output_file=args.bdd_output)
         print("BDD processed in ",time.time()-start_time," seconds")
 
 
