@@ -1,25 +1,26 @@
+import time
+
 from pysmt.fnode import FNode
 from pysdd.sdd import SddManager, Vtree
-import time
-from dd.autoref import BDD
+from dd.autoref import BDD,Function
 from string_generator import sequential_string_generate
-import formula
+from formula import get_atoms, get_phi
 
 
-def compute_sdd(phi:FNode, vtree_type=None, output_file = None):
+def compute_sdd(phi:FNode, vtree_type=None, output_file = None) -> None:
+    ' ' 'Computes the SDD for the boolean formula phi and saves it on a file' ' '
     if vtree_type is None:
         vtree_type = "right"
     if output_file is None:
         output_file = "sdd.dot"
     start_time = time.time()
     print("Building V-Tree...")
-    atoms = formula.get_atoms(phi)
+    atoms = get_atoms(phi)
     var_count = len(atoms)
     # for now just use appearance order in phi
     var_order =  list(range(1, var_count + 1))
     vtree = Vtree(var_count, var_order, vtree_type)
-    print("V-Tree built in ",time.time()-start_time," seconds")
-    
+    print("V-Tree built in ",time.time()-start_time," seconds")   
 
     start_time = time.time()
     print("Building SDD...")
@@ -27,7 +28,6 @@ def compute_sdd(phi:FNode, vtree_type=None, output_file = None):
     sdd_literals = [manager.literal(i) for i in range(1, var_count + 1)]
 
     atom_literal_map = dict(zip(atoms, sdd_literals))
-    
     sdd_formula = compute_sdd_formula(phi,atom_literal_map)
     print("SDD build in ",time.time()-start_time," seconds")
 
@@ -38,10 +38,12 @@ def compute_sdd(phi:FNode, vtree_type=None, output_file = None):
         print("SDD saved as sdd.dot in ",time.time()-start_time," seconds")
 
 
-def compute_sdd_formula(phi:FNode,mapping:dict[FNode,int]):
+def compute_sdd_formula(phi:FNode,mapping:dict[FNode,int]) -> int:
+    '''computes the SDD formula from phi'''
     return compute_sdd_formula_recursive(phi,mapping)
 
-def compute_sdd_formula_recursive(source:FNode,mapping:dict[FNode,int]):
+def compute_sdd_formula_recursive(source:FNode,mapping:dict[FNode,int]) -> int:
+    '''computes the SDD formula from phi recursively'''
     if source.is_not():
         result = ~ compute_sdd_formula_recursive(source.args()[0],mapping)
         return result
@@ -68,14 +70,14 @@ def compute_sdd_formula_recursive(source:FNode,mapping:dict[FNode,int]):
     if source.is_iff():
         if len(translated_subformulae) == 1:
             return translated_subformulae[0]
-        result = (translated_subformulae[0] & translated_subformulae[1]) | ((~ translated_subformulae[0]) & (~ translated_subformulae[1]))
-        return result
+        return (translated_subformulae[0] & translated_subformulae[1]) | ((~ translated_subformulae[0]) & (~ translated_subformulae[1]))
 
-def compute_bdd(phi:FNode, output_file = None):
+def compute_bdd(phi:FNode, output_file = None) -> None:
+    '''Computes the BDD for the boolean formula phi and saves it on a file'''
     if output_file is None:
         output_file = "bdd.svg"
     bdd = BDD()
-    atoms = formula.get_atoms(phi)
+    atoms = get_atoms(phi)
     mapping = {}
     for atom in atoms:
         mapping[atom]=sequential_string_generate()
@@ -89,9 +91,11 @@ def compute_bdd(phi:FNode, output_file = None):
     bdd.dump(output_file,filetype='svg')
 
 def compute_bdd_formula(phi:FNode,mapping:dict[FNode,str],handler:BDD):
+    '''Computes the BDD formula'''
     return compute_bdd_formula_recursive(phi,mapping,handler)
 
-def compute_bdd_formula_recursive(source:FNode,mapping:dict[FNode,str],handler:BDD):
+def compute_bdd_formula_recursive(source:FNode,mapping:dict[FNode,str],handler:BDD) -> Function:
+    '''Computes the BDD formula recursively'''
     if source.is_not():
         result = ~ compute_bdd_formula_recursive(source.args()[0],mapping,handler)
         return result
@@ -123,5 +127,5 @@ def compute_bdd_formula_recursive(source:FNode,mapping:dict[FNode,str],handler:B
 
 
 if __name__ == "__main__":
-    phi = formula.get_phi()
-    compute_bdd(phi)
+    test_phi = get_phi()
+    compute_bdd(test_phi)

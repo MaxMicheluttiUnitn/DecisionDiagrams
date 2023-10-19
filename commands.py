@@ -1,9 +1,9 @@
-from typing import List
 import argparse
 
 VALID_VTREE = ["left","right","balanced","vertical","random"]
 
 def get_args() -> argparse.Namespace:
+    ' ' 'Reads the args from the command line' ' '
     parser = argparse.ArgumentParser()
     parser.add_argument("--sdd", help="Generate the SDD of the formula",action="store_true")
     parser.add_argument("--bdd", help="Generate the BDD of the formula",action="store_true")
@@ -18,15 +18,17 @@ def get_args() -> argparse.Namespace:
         args.vtree = None
     return args
 
-def help():
-    print("Usage: python3 main.py [options]")
-    print("Available options:")
-    print("--help:              Print this list")
-    print("--sdd:               Generate the SDD of the formula")
-    print("--bdd:               Generate the BDD of the formula")
-    print("--vtree=[value]:     Specify V-Tree kind for SDD generation (default is right). Available values: ",VALID_VTREE)
-    print("--input=[file]:      Specify a file from witch to read the formula")
-    print("--sdd-output=[file]: Specify a .dot file to output the SDD (default is sdd.dot)")
-    print("--bdd-output=[file]: Specify a .svg file to output the BDD (default is bdd.svg)")
-    print("--print-models:      Print the models obtained from All-SAT computation")
-    print("--print-lemmas:      Print the lemmas generated during the All-SAT compiutation")
+
+# def help() -> None:
+#    ' ' 'Prints the help screen' ' '
+#    print("Usage: python3 main.py [options]")
+#    print("Available options:")
+#    print("--help:              Print this list")
+#    print("--sdd:               Generate the SDD of the formula")
+#    print("--bdd:               Generate the BDD of the formula")
+#    print("--vtree=[value]:     Specify V-Tree kind for SDD generation (default is right). Available values: ",VALID_VTREE)
+#    print("--input=[file]:      Specify a file from witch to read the formula")
+#    print("--sdd-output=[file]: Specify a .dot file to output the SDD (default is sdd.dot)")
+#    print("--bdd-output=[file]: Specify a .svg file to output the BDD (default is bdd.svg)")
+#    print("--print-models:      Print the models obtained from All-SAT computation")
+#    print("--print-lemmas:      Print the lemmas generated during the All-SAT compiutation")
