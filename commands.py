@@ -9,13 +9,11 @@ def get_args() -> argparse.Namespace:
     parser.add_argument("--bdd", help="Generate the BDD of the formula",action="store_true")
     parser.add_argument("--print_models", help="Print the models obtained from All-SAT computation",action="store_true")
     parser.add_argument("--print_lemmas", help="Print the lemmas generated during the All-SAT compiutation",action="store_true")
-    parser.add_argument("--vtree", help="Specify V-Tree kind for SDD generation (default is right). Available values: "+str(VALID_VTREE),type=str)
+    parser.add_argument("--vtree", help="Specify V-Tree kind for SDD generation (default is right). Available values: "+str(VALID_VTREE),type=str,choices=VALID_VTREE)
     parser.add_argument("-i","--input", help="Specify a file from witch to read the formula",type=str)
     parser.add_argument("--sdd_output", help="Specify a .dot file to output the SDD (default is sdd.dot)",type=str)
     parser.add_argument("--bdd_output", help="Specify a .svg file to output the BDD (default is bdd.svg)",type=str)
     args = parser.parse_args()
-    if not (args.vtree is None) and not (args.vtree in VALID_VTREE):
-        args.vtree = None
     return args
 
 

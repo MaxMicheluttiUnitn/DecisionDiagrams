@@ -9,37 +9,37 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 626.85)">
 <title>sdd</title>
 <polygon fill="white" stroke="transparent" points="-4,4 -4,-626.85 156,-626.85 156,4 -4,4"/>
-<!-- n20 -->
+<!-- n18 -->
 <g id="node1" class="node">
-<title>n20</title>
+<title>n18</title>
 <ellipse fill="#f2f2f2" stroke="black" cx="88.5" cy="-77.38" rx="18.27" ry="18.27"/>
 <text text-anchor="middle" x="88.5" y="-73.68" font-family="Times,serif" font-size="14.00">9</text>
 </g>
-<!-- n20e0 -->
+<!-- n18e0 -->
 <g id="node6" class="node">
-<title>n20e0</title>
+<title>n18e0</title>
 <polygon fill="white" stroke="black" points="33,-0.5 33,-22.5 80,-22.5 80,-0.5 33,-0.5"/>
 <text text-anchor="middle" x="41" y="-6.5" font-family="Times,serif" font-style="italic" font-size="20.00">E</text>
 <polyline fill="none" stroke="black" points="49,-0.5 49,-22.5 "/>
 <text text-anchor="middle" x="64.5" y="-6.5" font-family="Times,serif" font-style="italic" font-size="20.00">¬F</text>
 </g>
-<!-- n20&#45;&gt;n20e0 -->
+<!-- n18&#45;&gt;n18e0 -->
 <g id="edge1" class="edge">
-<title>n20&#45;&gt;n20e0</title>
+<title>n18&#45;&gt;n18e0</title>
 <path fill="none" stroke="black" d="M80.59,-60.59C75.5,-50.43 68.93,-37.31 63.93,-27.34"/>
 <polygon fill="black" stroke="black" points="65.43,-26.42 61.62,-22.73 62.3,-27.98 65.43,-26.42"/>
 </g>
-<!-- n20e1 -->
+<!-- n18e1 -->
 <g id="node7" class="node">
-<title>n20e1</title>
+<title>n18e1</title>
 <polygon fill="white" stroke="black" points="98,-0.5 98,-22.5 145,-22.5 145,-0.5 98,-0.5"/>
 <text text-anchor="middle" x="114" y="-6.5" font-family="Times,serif" font-style="italic" font-size="20.00">¬E</text>
 <polyline fill="none" stroke="black" points="130,-0.5 130,-22.5 "/>
 <text text-anchor="middle" x="137.5" y="-6.5" font-family="Times,serif" font-style="italic" font-size="20.00">F</text>
 </g>
-<!-- n20&#45;&gt;n20e1 -->
+<!-- n18&#45;&gt;n18e1 -->
 <g id="edge2" class="edge">
-<title>n20&#45;&gt;n20e1</title>
+<title>n18&#45;&gt;n18e1</title>
 <path fill="none" stroke="black" d="M96.66,-60.59C101.91,-50.43 108.68,-37.31 113.83,-27.34"/>
 <polygon fill="black" stroke="black" points="115.48,-27.97 116.22,-22.73 112.37,-26.37 115.48,-27.97"/>
 </g>
@@ -179,9 +179,9 @@
 <path fill="none" stroke="black" d="M94.52,-586.76C102.16,-561.33 116.61,-513.26 123.96,-488.81"/>
 <polygon fill="black" stroke="black" points="125.65,-489.25 125.41,-483.96 122.3,-488.25 125.65,-489.25"/>
 </g>
-<!-- n23e0&#45;&gt;n20 -->
+<!-- n23e0&#45;&gt;n18 -->
 <g id="edge4" class="edge">
-<title>n23e0:c&#45;&gt;n20</title>
+<title>n23e0:c&#45;&gt;n18</title>
 <path fill="none" stroke="black" d="M40.18,-139.85C41.96,-137.56 44.37,-134.48 46.5,-131.77 55.75,-119.98 66.17,-106.73 74.32,-96.38"/>
 <ellipse fill="black" stroke="black" cx="38.73" cy="-141.69" rx="2" ry="2"/>
 <polygon fill="black" stroke="black" points="75.72,-97.44 77.44,-92.43 72.97,-95.27 75.72,-97.44"/>
@@ -193,9 +193,9 @@
 <ellipse fill="black" stroke="black" cx="79.11" cy="-273.08" rx="2" ry="2"/>
 <polygon fill="black" stroke="black" points="72.68,-232.1 69.98,-227.54 69.25,-232.79 72.68,-232.1"/>
 </g>
-<!-- n24e1&#45;&gt;n20 -->
+<!-- n24e1&#45;&gt;n18 -->
 <g id="edge9" class="edge">
-<title>n24e1:c&#45;&gt;n20</title>
+<title>n24e1:c&#45;&gt;n18</title>
 <path fill="none" stroke="black" d="M139.88,-205.16C138,-193.5 131.75,-158.65 120.5,-131.77 115.43,-119.67 107.98,-107.04 101.53,-97.1"/>
 <ellipse fill="black" stroke="black" cx="140.2" cy="-207.18" rx="2" ry="2"/>
 <polygon fill="black" stroke="black" points="102.87,-95.95 98.66,-92.74 99.95,-97.88 102.87,-95.95"/>

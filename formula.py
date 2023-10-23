@@ -1,6 +1,9 @@
 from typing import List
 from pysmt.shortcuts import Symbol, REAL, And, Or, Xor
 from pysmt.fnode import FNode
+from pysmt.smtlib.parser import SmtLibParser
+
+from normalizer import NormalizerWalker
 
 def get_phi() -> FNode:
     ' ' 'Returns the default SMT formula\'s root FNode' ' '
@@ -13,16 +16,22 @@ def get_phi() -> FNode:
 
 def read_phi(filename:str) -> FNode:
     ' ' 'Reads the SMT formula from a file and returns the corresponding root FNode' ' '
+    #pylint: disable=unused-argument
     print("Not yet implemented!!! Using standard phi instead!!!")
+    parser = SmtLibParser()
+    script = parser.get_script_fname('demo.smt')
+    print(script)
+    # To do: correctly parse the formula
     return get_phi()
 
 def get_atoms(phi:FNode) -> List[FNode]:
     ' ' 'returns a list of all the atoms in the SMT formula' ' '
     return list(phi.get_atoms())
 
-def add_theory_lemmas(phi:FNode,tlemmas:List[FNode]) -> None:
-    ' ' 'Adds theory lemmas to the formula phi as a conjunction' ' '
-    phi = And(phi,*tlemmas)
+def get_normalized(phi:FNode, converter) -> FNode:
+    '''Returns a normalized version of phi'''
+    walker = NormalizerWalker(converter)
+    return walker.walk(phi)
 
 def get_phi_and_lemmas(phi:FNode,tlemmas:List[FNode]) -> FNode:
     ' ' 'Returns a formula that is equivalent to phi and lemmas as an FNode' ' '

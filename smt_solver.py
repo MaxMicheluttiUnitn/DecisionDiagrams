@@ -6,7 +6,6 @@ import mathsat
 SAT = True
 UNSAT = False
 
-
 def _allsat_callback(model, converter, models):
     py_model = {converter.back(v) for v in model}
     models.append(py_model)
@@ -16,13 +15,14 @@ class SMTSolver:
     '''A wrapper for the mathsat T-solver'''
 
     def __init__(self) -> None:
-        self.last_phi=None
-        self.tlemmas=[]
-        self.models=[]
+        self._last_phi = None
+        self._tlemmas = []
+        self._models = []
+        self._converter = None
 
     def check_all_sat(self,phi:FNode) -> bool:
         '''computes All-SAT for the SMT-formula phi'''
-        self.last_phi = phi
+        self._last_phi = phi
         
         solver_options_dict = {
             "dpll.allsat_minimize_model": "false",  # - truth assignment totali
@@ -36,20 +36,28 @@ class SMTSolver:
         atoms = phi.get_atoms()
 
         with Solver("msat", solver_options=solver_options_dict) as solver:
-            converter = solver.converter
+            self._converter = solver.converter
             solver.add_assertion(phi)
-            self.models = []
-            mathsat.msat_all_sat(solver.msat_env(), [converter.convert(a) for a in atoms],
-                                callback=lambda model: _allsat_callback(model, converter, self.models))
-            self.tlemmas = [converter.back(l) for l in mathsat.msat_get_theory_lemmas(solver.msat_env())]
-            if len(self.models) == 0:
+            self._models = []
+            mathsat.msat_all_sat(solver.msat_env(), self.get_converted_atoms(atoms),
+                                callback=lambda model: _allsat_callback(model, self._converter, self._models))
+            self._tlemmas = [self._converter.back(l) for l in mathsat.msat_get_theory_lemmas(solver.msat_env())]
+            if len(self._models) == 0:
                 return UNSAT
             return SAT
 
     def get_theory_lemmas(self) -> List[FNode]:
         '''Returns the theory lemmas found during the All-SAT computation'''
-        return self.tlemmas
+        return self._tlemmas
 
     def get_models(self) -> List:
         '''Returns the models found during the All-SAT computation'''
-        return self.models
+        return self._models
+
+    def get_converter(self):
+        '''Returns the converter used for the normalization of T-atoms'''
+        return self._converter
+    
+    def get_converted_atoms(self,atoms):
+        '''Returns a list of normalized atoms'''
+        return [self._converter.convert(a) for a in atoms]
