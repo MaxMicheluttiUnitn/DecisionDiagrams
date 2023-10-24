@@ -26,6 +26,11 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
     print("Building V-Tree...")
     atoms = get_atoms(phi)
     var_count = len(atoms)
+    string_generator = SequentailStringGenerator()
+    name_to_atom_map = {}
+    for atom in atoms:
+        name_to_atom_map[string_generator.next_string().upper()] = atom
+    #print(name_to_atom_map)
     # for now just use appearance order in phi
     var_order = list(range(1, var_count + 1))
     vtree = Vtree(var_count, var_order, vtree_type)
@@ -35,7 +40,7 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
     if not vtree_output is None:
         start_time = time.time()
         print("Saving V-Tree...")
-        if _save_SDD_object(vtree, vtree_output):
+        if _save_SDD_object(vtree, vtree_output, name_to_atom_map, 'VTree'):
             print("V-Tree saved as "+vtree_output+" in ",
                   time.time()-start_time, " seconds")
         else:
@@ -48,7 +53,6 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
     manager = SddManager.from_vtree(vtree)
     sdd_literals = [manager.literal(i) for i in range(1, var_count + 1)]
     atom_literal_map = dict(zip(atoms, sdd_literals))
-    print(atom_literal_map)
     walker = SDDWalker(atom_literal_map, manager)
     sdd_formula = walker.walk(phi)
     print("SDD build in ", time.time()-start_time, " seconds")
@@ -56,7 +60,7 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
     # SAVING SDD
     start_time = time.time()
     print("Saving SDD...")
-    if _save_SDD_object(sdd_formula, output_file):
+    if _save_SDD_object(sdd_formula, output_file, name_to_atom_map, 'SDD'):
         print("SDD saved as "+output_file+" in ",
               time.time()-start_time, " seconds")
     else:
@@ -64,9 +68,13 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
               output_file, " is not supported")
 
 
-def _save_SDD_object(sdd_object, output_file: str) -> bool:
+def _save_SDD_object(sdd_object, output_file: str,mapping:dict[str,FNode], kind: str) -> bool:
     '''saves an SDD object on a file'''
     dot_content = sdd_object.dot()
+    if kind == 'VTree':
+        dot_content = _translate_vtree_vars(dot_content,mapping)
+    elif kind == 'SDD':
+        dot_content = _translate_SDD_vars(dot_content,mapping)
     tokenized_output_file = output_file.split('.')
     if tokenized_output_file[len(tokenized_output_file)-1] == 'dot':
         with open(output_file, "w") as out:
@@ -77,6 +85,71 @@ def _save_SDD_object(sdd_object, output_file: str) -> bool:
     else:
         return False
     return True
+
+VTREE_LINE_REGEX = r'n[0-9]+ [\[]label="[A-Z]+",fontname='
+VTREE_KEY_START_REGEX = r'[A-Z]+",fontname='
+VTREE_KEY_END_REGEX = r'",fontname='
+VTREE_REPLECE_REGEX = VTREE_KEY_START_REGEX
+
+def _translate_vtree_vars(original_dot:str,mapping:dict[str,FNode]) -> str:
+    '''translates variables in the dot representation of the VTree into their original names in phi'''
+    result = """"""
+    original_dot=original_dot.replace('width=.25','width=.75')
+    for line in original_dot.splitlines():
+        found = re.search(VTREE_LINE_REGEX, line)
+        if not found is None:
+            key_start_location = re.search(VTREE_KEY_START_REGEX, line).start()
+            key_end_location = re.search(VTREE_KEY_END_REGEX, line).start()
+            line = re.sub(VTREE_REPLECE_REGEX, _get_string_from_atom(
+                mapping[line[key_start_location:key_end_location]])+"\",fontname=", line)
+        result += line+"""
+"""
+    return result
+
+SDD_LINE_LEFT_REGEX = r'[\[]label= "<L>(&not;)?[A-Z]+[|]<R>(&#8869;)?",'
+SDD_LINE_RIGHT_REGEX = r'[\[]label= "<L>[|]<R>(&not;)?[A-Z]+",'
+SDD_LINE_BOTH_REGEX = r'[\[]label= "<L>(&not;)?[A-Z]+[|]<R>(&not;)?[A-Z]+",'
+SDD_KEY_START_LEFT_REGEX = r'[A-Z]+[|]'
+SDD_KEY_END_LEFT_REGEX = r'[|]<R>'
+SDD_KEY_START_RIGHT_REGEX = r'[A-Z]+",'
+SDD_KEY_END_RIGHT_REGEX = r'",'
+SDD_REPLACE_LEFT_REGEX = SDD_KEY_START_LEFT_REGEX
+SDD_REPLACE_RIGHT_REGEX = SDD_KEY_START_RIGHT_REGEX
+
+def _translate_SDD_vars(original_dot:str,mapping:dict[str,FNode]) -> str:
+    '''translates variables in the dot representation of the SDD into their original names in phi'''
+    result = """"""
+    original_dot=original_dot.replace('width=.65','width=3.0')
+    for line in original_dot.splitlines():
+        new_line = line
+        # ONLY LEFT
+        found = re.search(SDD_LINE_LEFT_REGEX, line)
+        if not found is None:
+            key_start_location = re.search(SDD_KEY_START_LEFT_REGEX, line).start()
+            key_end_location = re.search(SDD_KEY_END_LEFT_REGEX, line).start()
+            new_line = re.sub(SDD_REPLACE_LEFT_REGEX, _get_string_from_atom(
+                mapping[line[key_start_location:key_end_location]])+"|", new_line)
+        # ONLY RIGHT
+        found = re.search(SDD_LINE_RIGHT_REGEX, line)
+        if not found is None:
+            key_start_location = re.search(SDD_KEY_START_RIGHT_REGEX, line).start()
+            key_end_location = re.search(SDD_KEY_END_RIGHT_REGEX, line).start()
+            new_line = re.sub(SDD_REPLACE_RIGHT_REGEX, _get_string_from_atom(
+                mapping[line[key_start_location:key_end_location]])+"\",", new_line)
+        # BOTH SIDES
+        found = re.search(SDD_LINE_BOTH_REGEX, line)
+        if not found is None:
+            key_start_location = re.search(SDD_KEY_START_LEFT_REGEX, line).start()
+            key_end_location = re.search(SDD_KEY_END_LEFT_REGEX, line).start()
+            new_line = re.sub(SDD_REPLACE_LEFT_REGEX, _get_string_from_atom(
+                mapping[line[key_start_location:key_end_location]])+"|", new_line)
+            key_start_location = re.search(SDD_KEY_START_RIGHT_REGEX, line).start()
+            key_end_location = re.search(SDD_KEY_END_RIGHT_REGEX, line).start()
+            new_line = re.sub(SDD_REPLACE_RIGHT_REGEX, _get_string_from_atom(
+                mapping[line[key_start_location:key_end_location]])+"\",", new_line)
+        result += new_line+"""
+"""
+    return result
 
 
 def compute_sdd_formula(phi: FNode, mapping: dict[FNode, int]) -> int:
@@ -179,10 +252,10 @@ def compute_bdd_cudd(phi: FNode, output_file=None):
           time.time()-start_time, " seconds")
 
 
-LINE_REGEX = r">[a-z]+&#45;[0-9]+</text>"
-KEY_START_REGEX = r"[a-z]+&#45;[0-9]+<"
-KEY_END_REGEX = r"&#45;[0-9]+<"
-REPLECE_REGEX = r">[a-z]+&#45;[0-9]+<"
+BDD_LINE_REGEX = r">[a-z]+&#45;[0-9]+</text>"
+BDD_KEY_START_REGEX = r"[a-z]+&#45;[0-9]+<"
+BDD_KEY_END_REGEX = r"&#45;[0-9]+<"
+BDD_REPLECE_REGEX = r">[a-z]+&#45;[0-9]+<"
 
 
 def _change_svg_names(output_file, mapping):
@@ -191,12 +264,12 @@ def _change_svg_names(output_file, mapping):
     svg_lines = svg_file.readlines()
     svg_output = """"""
     for line in svg_lines:
-        found = re.search(LINE_REGEX, line)
+        found = re.search(BDD_LINE_REGEX, line)
         if not found is None:
-            key_start_location = re.search(KEY_START_REGEX, line).start()
-            key_end_location = re.search(KEY_END_REGEX, line).start()
-            line = re.sub(REPLECE_REGEX, _get_string_from_atom(
-                mapping[line[key_start_location:key_end_location]]), line)
+            key_start_location = re.search(BDD_KEY_START_REGEX, line).start()
+            key_end_location = re.search(BDD_KEY_END_REGEX, line).start()
+            line = re.sub(BDD_REPLECE_REGEX, ">"+_get_string_from_atom(
+                mapping[line[key_start_location:key_end_location]])+"<", line)
         svg_output += line
     svg_file.close()
     with open(output_file, 'w') as out:
@@ -208,7 +281,7 @@ def _get_string_from_atom(atom):
     # svg format special characters source: https://rdrr.io/cran/RSVGTipsDevice/man/encodeSVGSpecialChars.html
     atom_str = str(atom).replace('&', '&#38;').replace('\'', "&#30;").replace(
         '"', "&#34;").replace('<', '&#60;').replace('>', "&#62;")
-    return ">"+atom_str[1:len(atom_str)-1]+"<"
+    return atom_str[1:len(atom_str)-1]
 
 
 def compute_bdd_formula(phi: FNode, mapping: dict[FNode, str], handler: BDD):
