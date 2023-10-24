@@ -15,6 +15,7 @@ from bdd_cudd_walker import BDDCUDDParser
 
 def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtree_output: str = None) -> None:
     ' ' 'Computes the SDD for the boolean formula phi and saves it on a file' ' '
+    # Setting default values
     if vtree_type is None:
         vtree_type = "right"
     if output_file is None:
@@ -47,6 +48,7 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
     manager = SddManager.from_vtree(vtree)
     sdd_literals = [manager.literal(i) for i in range(1, var_count + 1)]
     atom_literal_map = dict(zip(atoms, sdd_literals))
+    print(atom_literal_map)
     walker = SDDWalker(atom_literal_map, manager)
     sdd_formula = walker.walk(phi)
     print("SDD build in ", time.time()-start_time, " seconds")
@@ -139,6 +141,7 @@ def compute_bdd(phi: FNode, output_file=None) -> None:
 
 def compute_bdd_cudd(phi: FNode, output_file=None):
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.cudd'''
+    # setting default values
     if output_file is None:
         output_file = "bdd.svg"
 

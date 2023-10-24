@@ -1,6 +1,9 @@
 from dd.autoref import BDD
 from pysmt.fnode import FNode
-from pysmt.walkers import DagWalker
+from pysmt.walkers import DagWalker, handles
+import pysmt.operators as op
+
+from custom_exceptions import UnsupportedNodeException
 
 
 class BDDWalker(DagWalker):
@@ -72,57 +75,18 @@ class BDDWalker(DagWalker):
         # pylint: disable=unused-argument
         return ((~ args[0]) | args[1]) & (args[0] | args[2])
 
-    def walk_le(self, formula, args, **kwargs):
-        '''translate LE node'''
+    def walk_forall(self, formula, args, **kwargs):
+        '''translate For-all node'''
         # pylint: disable=unused-argument
-        return self._apply_mapping(formula)
-
-    def walk_lt(self, formula, args, **kwargs):
-        '''translate LT node'''
+        raise UnsupportedNodeException('Quantifiers are yet to be supported')
+    
+    def walk_exists(self, formula, args, **kwargs):
+        '''translate Exists node'''
         # pylint: disable=unused-argument
-        return self._apply_mapping(formula)
+        raise UnsupportedNodeException('Quantifiers are yet to be supported')
 
-    def walk_equals(self, formula, args, **kwargs):
-        '''translate EQUALS node'''
-        # pylint: disable=unused-argument
-        return self._apply_mapping(formula)
-
-    def walk_plus(self, formula, args, **kwargs):
-        '''translate PLUS node'''
-        # pylint: disable=unused-argument
-        return self._apply_mapping(formula)
-
-    def walk_times(self, formula, args, **kwargs):
-        '''translate TIMES node'''
-        # pylint: disable=unused-argument
-        return self._apply_mapping(formula)
-
-    def walk_pow(self, formula, args, **kwargs):
-        '''translate POW node'''
-        # pylint: disable=unused-argument
-        return self._apply_mapping(formula)
-
-    def walk_minus(self, formula, args, **kwargs):
-        '''translate MINUS node'''
-        # pylint: disable=unused-argument
-        return self._apply_mapping(formula)
-
-    def walk_algebraic_constant(self, formula, args, **kwargs):
-        '''translate ALGEBRAIC CONST node'''
-        # pylint: disable=unused-argument
-        return self._apply_mapping(formula)
-
-    def walk_real_constant(self, formula, args, **kwargs):
-        '''translate REAL CONST node'''
-        # pylint: disable=unused-argument
-        return self._apply_mapping(formula)
-
-    def walk_int_constant(self, formula, args, **kwargs):
-        '''translate INT CONST node'''
-        # pylint: disable=unused-argument
-        return self._apply_mapping(formula)
-
-    def walk_str_constant(self, formula, **kwargs):
-        '''translate STR CONST node'''
+    @handles(*op.THEORY_OPERATORS, *op.BV_RELATIONS, *op.IRA_RELATIONS, *op.STR_RELATIONS)
+    def walk_theory(self, formula, args, **kwargs):
+        '''translate theory node'''
         # pylint: disable=unused-argument
         return self._apply_mapping(formula)
