@@ -1,6 +1,7 @@
 from typing import List
 
-def _char_from_remainder(remainder:int) -> str:
+
+def _char_from_remainder(remainder: int) -> str:
     '''matches the integer from the remainder with the corresponding char in the sequential string generation'''
     match remainder:
         case 0: return 'a'
@@ -31,13 +32,15 @@ def _char_from_remainder(remainder:int) -> str:
         case 25: return 'z'
         case _: return None
 
-def _concatenate_string_array(array:List[str]) -> str:
+
+def _concatenate_string_array(array: List[str]) -> str:
     '''concatenates an array of strings into a single string'''
     result = ''
     array.reverse()
     for string in array:
         result += string
     return result
+
 
 class SequentailStringGenerator:
     '''A class that generates possibly infinitely many strings in sequential order'''
@@ -48,12 +51,12 @@ class SequentailStringGenerator:
     def next_string(self) -> str:
         '''generates the next string in sequential order'''
         temp = self._string_serial
-        result,remainder=divmod(temp,26)
+        result, remainder = divmod(temp, 26)
         str_builder = []
         next_char = _char_from_remainder(remainder)
         str_builder.append(next_char)
         while result > 0:
-            result,remainder=divmod(result-1,26)
+            result, remainder = divmod(result-1, 26)
             next_char = _char_from_remainder(remainder)
             str_builder.append(next_char)
         self._string_serial += 1
@@ -63,7 +66,8 @@ class SequentailStringGenerator:
         '''resets the generator'''
         self._string_serial = 0
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     s = SequentailStringGenerator()
-    for i in range(0,100):
+    for i in range(0, 100):
         print(s.next_string())

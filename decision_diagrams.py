@@ -10,6 +10,7 @@ from formula import get_atoms, get_phi
 from sdd_walker import SDDWalker
 from bdd_walker import BDDWalker
 from bdd_cudd_walker import BDDCUDDParser
+import pydot
 
 
 def compute_sdd(phi: FNode, vtree_type=None, output_file=None) -> None:
@@ -42,9 +43,15 @@ def compute_sdd(phi: FNode, vtree_type=None, output_file=None) -> None:
     # SAVING SDD
     start_time = time.time()
     print("Saving SDD...")
-    with open(output_file, "w") as out:
-        print(sdd_formula.dot(), file=out)
-        print("SDD saved as "+output_file+" in ", time.time()-start_time, " seconds")
+    dot_content = sdd_formula.dot()
+    tokenized_output_file = output_file.split('.')
+    if tokenized_output_file[len(tokenized_output_file)-1] == 'dot':
+        with open(output_file, "w") as out:
+            print(dot_content, file=out)
+    elif tokenized_output_file[len(tokenized_output_file)-1] == 'svg':
+        (graph,) = pydot.graph_from_dot_data(dot_content)
+        graph.write_svg(output_file)
+    print("SDD saved as "+output_file+" in ", time.time()-start_time, " seconds")
 
 
 def compute_sdd_formula(phi: FNode, mapping: dict[FNode, int]) -> int:
