@@ -29,6 +29,10 @@ def get_args() -> argparse.Namespace:
         type=str,
         choices=VALID_VTREE)
     parser.add_argument(
+        "--vtree_output",
+        help="Specify a .dot or .svg file to save the vtree (by default the vtree is not saved)",
+        type=str)
+    parser.add_argument(
         "-i", "--input",
         help="Specify a file from witch to read the formula",
         type=str)

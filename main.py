@@ -51,7 +51,7 @@ def main() -> None:
         start_time = time.time()
         print("Starting SDD Procesing...")
         decision_diagrams.compute_sdd(
-            phi, output_file=args.sdd_output, vtree_type=args.vtree)
+            phi, output_file=args.sdd_output, vtree_type=args.vtree, vtree_output=args.vtree_output)
         print("SDD processed in ", time.time()-start_time, " seconds")
     if args.bdd:
         start_time = time.time()

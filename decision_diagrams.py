@@ -1,6 +1,7 @@
 import time
-
 import re
+import pydot
+
 from pysmt.fnode import FNode
 from pysdd.sdd import SddManager, Vtree
 from dd.autoref import BDD, Function
@@ -10,10 +11,9 @@ from formula import get_atoms, get_phi
 from sdd_walker import SDDWalker
 from bdd_walker import BDDWalker
 from bdd_cudd_walker import BDDCUDDParser
-import pydot
 
 
-def compute_sdd(phi: FNode, vtree_type=None, output_file=None) -> None:
+def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtree_output: str = None) -> None:
     ' ' 'Computes the SDD for the boolean formula phi and saves it on a file' ' '
     if vtree_type is None:
         vtree_type = "right"
@@ -30,20 +30,41 @@ def compute_sdd(phi: FNode, vtree_type=None, output_file=None) -> None:
     vtree = Vtree(var_count, var_order, vtree_type)
     print("V-Tree built in ", time.time()-start_time, " seconds")
 
+    # SAVING VTREE
+    if not vtree_output is None:
+        start_time = time.time()
+        print("Saving V-Tree...")
+        if _save_SDD_object(vtree, vtree_output):
+            print("V-Tree saved as "+vtree_output+" in ",
+                  time.time()-start_time, " seconds")
+        else:
+            print("V-Tree could not be saved: The file format of ",
+                  vtree_output, " is not supported")
+
     # BUILDING SDD WITH WALKER
     start_time = time.time()
     print("Building SDD...")
     manager = SddManager.from_vtree(vtree)
     sdd_literals = [manager.literal(i) for i in range(1, var_count + 1)]
     atom_literal_map = dict(zip(atoms, sdd_literals))
-    walker = SDDWalker(atom_literal_map,manager)
+    walker = SDDWalker(atom_literal_map, manager)
     sdd_formula = walker.walk(phi)
     print("SDD build in ", time.time()-start_time, " seconds")
 
     # SAVING SDD
     start_time = time.time()
     print("Saving SDD...")
-    dot_content = sdd_formula.dot()
+    if _save_SDD_object(sdd_formula, output_file):
+        print("SDD saved as "+output_file+" in ",
+              time.time()-start_time, " seconds")
+    else:
+        print("SDD could not be saved: The file format of ",
+              output_file, " is not supported")
+
+
+def _save_SDD_object(sdd_object, output_file: str) -> bool:
+    '''saves an SDD object on a file'''
+    dot_content = sdd_object.dot()
     tokenized_output_file = output_file.split('.')
     if tokenized_output_file[len(tokenized_output_file)-1] == 'dot':
         with open(output_file, "w") as out:
@@ -51,7 +72,9 @@ def compute_sdd(phi: FNode, vtree_type=None, output_file=None) -> None:
     elif tokenized_output_file[len(tokenized_output_file)-1] == 'svg':
         (graph,) = pydot.graph_from_dot_data(dot_content)
         graph.write_svg(output_file)
-    print("SDD saved as "+output_file+" in ", time.time()-start_time, " seconds")
+    else:
+        return False
+    return True
 
 
 def compute_sdd_formula(phi: FNode, mapping: dict[FNode, int]) -> int:
@@ -91,11 +114,10 @@ def compute_sdd_formula_recursive(source: FNode, mapping: dict[FNode, int]) -> i
         return (translated_subformulae[0] & translated_subformulae[1]) | ((~ translated_subformulae[0]) & (~ translated_subformulae[1]))
 
 
-
 def compute_bdd(phi: FNode, output_file=None) -> None:
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.autoref'''
     # For now always use compute_bdd_cudd
-    return compute_bdd_cudd(phi,output_file)
+    return compute_bdd_cudd(phi, output_file)
     if output_file is None:
         output_file = "bdd.svg"
     bdd = BDD()
@@ -108,17 +130,18 @@ def compute_bdd(phi: FNode, output_file=None) -> None:
     for value in mapping.values():
         all_values.append(value)
     bdd.declare(*all_values)
-    walker = BDDWalker(mapping,bdd)
+    walker = BDDWalker(mapping, bdd)
     root = walker.walk(phi)
     bdd.collect_garbage()
-    bdd.dump("bdd.svg",filetype='svg',roots=[root])
-    #bdd.dump(output_file, filetype='svg')
+    bdd.dump("bdd.svg", filetype='svg', roots=[root])
+    # bdd.dump(output_file, filetype='svg')
 
-def compute_bdd_cudd(phi: FNode,output_file = None):
+
+def compute_bdd_cudd(phi: FNode, output_file=None):
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.cudd'''
     if output_file is None:
         output_file = "bdd.svg"
-    
+
     # REPRESENT PHI IN PROMELA SYNTAX
     start_time = time.time()
     print("Translating phi...")
@@ -129,8 +152,8 @@ def compute_bdd_cudd(phi: FNode,output_file = None):
         mapping[atom] = string_generator.next_string()
     walker = BDDCUDDParser(mapping)
     translated_phi = walker.walk(phi)
-    print("Phi translated in ",(time.time() - start_time)," seconds")
-    
+    print("Phi translated in ", (time.time() - start_time), " seconds")
+
     # BUILDING ACTUAL BDD
     start_time = time.time()
     print("Building BDD...")
@@ -140,42 +163,48 @@ def compute_bdd_cudd(phi: FNode,output_file = None):
         all_values.append(value)
     bdd.declare(*all_values)
     root = bdd.add_expr(translated_phi)
-    print("BDD for phi built in ",(time.time() - start_time)," seconds")
-    
+    print("BDD for phi built in ", (time.time() - start_time), " seconds")
+
     # SAVING BDD
     start_time = time.time()
     print("Saving BDD...")
-    bdd.dump(output_file,filetype='svg',roots=[root])
+    bdd.dump(output_file, filetype='svg', roots=[root])
     # translate svg variables in original variables
     reverse_mapping = dict((v, k) for k, v in mapping.items())
-    _change_svg_names(output_file,reverse_mapping)
-    print("BDD saved as "+output_file+" in ", time.time()-start_time, " seconds")
+    _change_svg_names(output_file, reverse_mapping)
+    print("BDD saved as "+output_file+" in ",
+          time.time()-start_time, " seconds")
+
 
 LINE_REGEX = r">[a-z]+&#45;[0-9]+</text>"
 KEY_START_REGEX = r"[a-z]+&#45;[0-9]+<"
 KEY_END_REGEX = r"&#45;[0-9]+<"
 REPLECE_REGEX = r">[a-z]+&#45;[0-9]+<"
 
-def _change_svg_names(output_file,mapping):
+
+def _change_svg_names(output_file, mapping):
     '''Changes the names into the svg to match theory atoms' names'''
     svg_file = open(output_file, 'r')
     svg_lines = svg_file.readlines()
     svg_output = """"""
     for line in svg_lines:
-        found = re.search(LINE_REGEX,line)
+        found = re.search(LINE_REGEX, line)
         if not found is None:
-            key_start_location = re.search(KEY_START_REGEX,line).start()
-            key_end_location = re.search(KEY_END_REGEX,line).start()
-            line = re.sub(REPLECE_REGEX,_get_string_from_atom(mapping[line[key_start_location:key_end_location]]),line)
+            key_start_location = re.search(KEY_START_REGEX, line).start()
+            key_end_location = re.search(KEY_END_REGEX, line).start()
+            line = re.sub(REPLECE_REGEX, _get_string_from_atom(
+                mapping[line[key_start_location:key_end_location]]), line)
         svg_output += line
     svg_file.close()
     with open(output_file, 'w') as out:
-        print(svg_output,file=out)
+        print(svg_output, file=out)
+
 
 def _get_string_from_atom(atom):
     '''Changes special characters into ASCII encoding'''
     # svg format special characters source: https://rdrr.io/cran/RSVGTipsDevice/man/encodeSVGSpecialChars.html
-    atom_str =str(atom).replace('&','&#38;').replace('\'',"&#30;").replace('"',"&#34;").replace('<','&#60;').replace('>',"&#62;")
+    atom_str = str(atom).replace('&', '&#38;').replace('\'', "&#30;").replace(
+        '"', "&#34;").replace('<', '&#60;').replace('>', "&#62;")
     return ">"+atom_str[1:len(atom_str)-1]+"<"
 
 
