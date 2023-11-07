@@ -1,3 +1,5 @@
+'''the main module for this project'''
+
 import time
 import decision_diagrams
 from smt_solver import UNSAT, SMTSolver
@@ -43,7 +45,7 @@ def main() -> None:
     # ADDING THEORY LEMMAS
     start_time = time.time()
     print("Adding theory lemmas to phi...")
-    phi = formula.get_phi_and_lemmas(phi, lemmas)
+    phi_and_lemmas = formula.get_phi_and_lemmas(phi, lemmas)
     print("Theory lemmas added to phi in ", time.time()-start_time, " seconds")
 
     # GENERATING DDs
@@ -51,13 +53,18 @@ def main() -> None:
         start_time = time.time()
         print("Starting SDD Procesing...")
         decision_diagrams.compute_sdd(
-            phi, output_file=args.sdd_output, vtree_type=args.vtree, vtree_output=args.vtree_output)
+            phi_and_lemmas, output_file=args.sdd_output, vtree_type=args.vtree, vtree_output=args.vtree_output)
         print("SDD processed in ", time.time()-start_time, " seconds")
     if args.bdd:
         start_time = time.time()
         print("Starting BDD Procesing...")
-        decision_diagrams.compute_bdd_cudd(phi, output_file=args.bdd_output)
+        decision_diagrams.compute_bdd_cudd(phi_and_lemmas, output_file=args.bdd_output)
         print("BDD processed in ", time.time()-start_time, " seconds")
+    if args.xsdd:
+        start_time = time.time()
+        print("Starting XSDD Procesing...")
+        decision_diagrams.compute_xsdd(phi)
+        print("XSDD processed in ", time.time()-start_time, " seconds")
 
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+'''this module defines a Walker that takes a pysmt formula and converts it into a SDD formula'''
+
 from pysdd.sdd import SddManager
 from pysmt.fnode import FNode
 from pysmt.walkers import DagWalker, handles

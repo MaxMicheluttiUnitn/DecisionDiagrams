@@ -2,3 +2,4 @@ dd==0.5.7
 pydot==1.4.2
 PySDD==0.2.11
 PySMT==0.9.6.dev44
+pywmi==0.7.15

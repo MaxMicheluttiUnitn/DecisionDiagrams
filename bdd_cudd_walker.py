@@ -1,3 +1,6 @@
+'''this module defines a Walker that takes a pysmt formula 
+and converts it into a BDD formula for CUDD'''
+
 from pysmt.fnode import FNode
 from pysmt.walkers import DagWalker, handles
 import pysmt.operators as op

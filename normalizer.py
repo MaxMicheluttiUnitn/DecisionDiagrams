@@ -1,3 +1,5 @@
+'''this module defines a Walker that takes a pysmt formula and normalizes its atoms'''
+
 from pysmt.walkers import DagWalker, handles
 import pysmt.operators as op
 from pysmt.fnode import FNode

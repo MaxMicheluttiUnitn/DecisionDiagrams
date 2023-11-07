@@ -1,16 +1,52 @@
+'''this module builds an handles DDs from pysmt formulas'''
+
 import time
 import re
 import pydot
 
 from pysmt.fnode import FNode
+from pysmt.shortcuts import BOOL,REAL,Real
 from pysdd.sdd import SddManager, Vtree
 from dd.autoref import BDD, Function
 from dd import cudd as cudd_bdd
+from pywmi.domain import Domain
+from pywmi import XsddEngine
+
 from string_generator import SequentailStringGenerator
-from formula import get_atoms, get_phi
+from formula import get_atoms, get_phi, get_symbols
 from sdd_walker import SDDWalker
 from bdd_walker import BDDWalker
 from bdd_cudd_walker import BDDCUDDParser
+from xsdd_walker import XsddParser
+
+def compute_xsdd(phi: FNode):
+    '''computing xsdd'''
+    symbols = get_symbols(phi)
+
+    boolean_symbols=[]
+    real_symbols=[]
+    # real_bounds=[]
+
+    for symbol in symbols:
+        if symbol.get_type() == BOOL:
+            boolean_symbols.append(str(symbol))
+        elif symbol.get_type() == REAL:
+            real_symbols.append(str(symbol))
+            # just putting very big bounds to let not limit the variable
+            # real_bounds.append((-1000000,1000000))
+
+    # bounds are necesssary (XSDD are designed for WMI), so I just put them very big
+    xsdd_domain = Domain.make(boolean_symbols,real_symbols,real_bounds=(-1000000,1000000))
+
+    xsdd_boolean_symbols=xsdd_domain.get_bool_symbols()
+    xsdd_real_symbols=xsdd_domain.get_real_symbols()
+    weight_function = Real(1)
+    
+    walker = XsddParser(boolean_symbols,xsdd_boolean_symbols,real_symbols,xsdd_real_symbols)
+    xsdd_support = walker.walk(phi)
+
+    xsdd_engine = XsddEngine(xsdd_domain,xsdd_support,weight_function)
+    print(xsdd_engine.compute_volume())
 
 
 def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtree_output: str = None) -> None:
@@ -281,7 +317,9 @@ def _get_string_from_atom(atom):
     # svg format special characters source: https://rdrr.io/cran/RSVGTipsDevice/man/encodeSVGSpecialChars.html
     atom_str = str(atom).replace('&', '&#38;').replace('\'', "&#30;").replace(
         '"', "&#34;").replace('<', '&#60;').replace('>', "&#62;")
-    return atom_str[1:len(atom_str)-1]
+    if atom_str.startswith('('):
+        return atom_str[1:len(atom_str)-1]
+    return atom_str
 
 
 def compute_bdd_formula(phi: FNode, mapping: dict[FNode, str], handler: BDD):

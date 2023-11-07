@@ -1,8 +1,12 @@
+'''this module defines a Walker that takes an object that 
+sequantially generates strings of letters'''
+
 from typing import List
 
 
 def _char_from_remainder(remainder: int) -> str:
-    '''matches the integer from the remainder with the corresponding char in the sequential string generation'''
+    '''matches the integer from the remainder with the 
+    corresponding char in the sequential string generation'''
     match remainder:
         case 0: return 'a'
         case 1: return 'b'

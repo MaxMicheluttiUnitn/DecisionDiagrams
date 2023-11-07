@@ -11,6 +11,10 @@ def get_args() -> argparse.Namespace:
         help="Generate the SDD of the formula",
         action="store_true")
     parser.add_argument(
+        "--xsdd",
+        help="Generate the XSDD of the formula",
+        action="store_true")
+    parser.add_argument(
         "--bdd",
         help="Generate the BDD of the formula",
         action="store_true")

@@ -1,3 +1,5 @@
+'''this module handles interactions with the mathsat solver'''
+
 from typing import List
 from pysmt.shortcuts import Solver
 from pysmt.fnode import FNode
