@@ -8,3 +8,5 @@ To try out the code just type in the project folder:
 ```
 
 When using XSDDs be careful to install https://github.com/ML-KULeuven/psipy instead of the default psipy to use the PSI solver
+
+The dd library was slightly changed to allow for .dot dumping
