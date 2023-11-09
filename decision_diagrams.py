@@ -3,11 +3,13 @@
 import time
 import re
 import pydot
+import os
 
 from pysmt.fnode import FNode
 from pysmt.shortcuts import BOOL,REAL,Real,Times
 from pysdd.sdd import SddManager, Vtree
 from dd.autoref import BDD, Function
+from dd.bdd import to_pydot
 from dd import cudd as cudd_bdd
 from pywmi.domain import Domain
 from pywmi import XsddEngine
@@ -155,7 +157,7 @@ SDD_REPLACE_RIGHT_REGEX = SDD_KEY_START_RIGHT_REGEX
 def _translate_SDD_vars(original_dot:str,mapping:dict[str,FNode]) -> str:
     '''translates variables in the dot representation of the SDD into their original names in phi'''
     result = """"""
-    original_dot=original_dot.replace('width=.65','width=10.0')
+    original_dot=original_dot.replace('fixedsize=true','fixedsize=false')
     for line in original_dot.splitlines():
         new_line = line
         # ONLY LEFT
@@ -280,19 +282,59 @@ def compute_bdd_cudd(phi: FNode, output_file=None):
     # SAVING BDD
     start_time = time.time()
     print("Saving BDD...")
-    bdd.dump(output_file, filetype='svg', roots=[root])
-    # translate svg variables in original variables
     reverse_mapping = dict((v, k) for k, v in mapping.items())
-    _change_svg_names(output_file, reverse_mapping)
+    dump_bdd(bdd,reverse_mapping,output_file,root)
     print("BDD saved as "+output_file+" in ",
           time.time()-start_time, " seconds")
 
+TEMPORARY_DOT = 'bdd_temporary_dot.dot'
+
+def dump_bdd(bdd: BDD,mapping: dict,output_file: str,root):
+    '''dumps bdd into the desired file'''
+    if output_file.endswith('.dot'):
+        bdd.dump(output_file, filetype='dot', roots=[root])
+        _change_bbd_dot_names(output_file,mapping)
+    elif output_file.endswith('.svg'):
+        bdd.dump(TEMPORARY_DOT, filetype='dot', roots=[root])
+        _change_bbd_dot_names(TEMPORARY_DOT,mapping)
+        with open(TEMPORARY_DOT,'r') as dot_content:
+            (graph,) = pydot.graph_from_dot_data(dot_content.read())
+            graph.write_svg(output_file)
+        os.remove(TEMPORARY_DOT)
+    else:
+        print('Unable to dump BDD file: format unsupported')
+    #bdd.dump(output_file, filetype='svg', roots=[root])
+    #bdd.dump(output_file, filetype='svg', roots=[root])
+    # translate svg variables in original variables
+    #_change_svg_names(output_file,mapping)
+
+BDD_DOT_LINE_REGEX = r'[\[]label="[a-z]*-[0-9]*"[]]'
+BDD_DOT_TRUE_LABEL = '[label="True-1"]'
+BDD_DOT_KEY_START_REGEX = r'"[a-z]*-[0-9]*"]'
+BDD_DOT_KEY_END_REGEX = r'-[0-9]*"]'
+BDD_DOT_REPLACE_REGEX = BDD_DOT_LINE_REGEX
+
+def _change_bbd_dot_names(output_file,mapping):
+    '''changes the name in the dot file with the actual names of the atoms'''
+    dot_file = open(output_file, 'r')
+    dot_lines = dot_file.readlines()
+    dot_output = """"""
+    for line in dot_lines:
+        found = re.search(BDD_DOT_LINE_REGEX, line)
+        if not found is None:
+            key_start_location = re.search(BDD_DOT_KEY_START_REGEX, line).start() + 1
+            key_end_location = re.search(BDD_DOT_KEY_END_REGEX, line).start()
+            line = re.sub(BDD_DOT_REPLACE_REGEX, "[label=\""+_get_string_from_atom(
+                mapping[line[key_start_location:key_end_location]])+"\"]", line)
+        dot_output += line
+    dot_file.close()
+    with open(output_file, 'w') as out:
+        print(dot_output, file=out)
 
 BDD_LINE_REGEX = r">[a-z]+&#45;[0-9]+</text>"
 BDD_KEY_START_REGEX = r"[a-z]+&#45;[0-9]+<"
 BDD_KEY_END_REGEX = r"&#45;[0-9]+<"
 BDD_REPLECE_REGEX = r">[a-z]+&#45;[0-9]+<"
-
 
 def _change_svg_names(output_file, mapping):
     '''Changes the names into the svg to match theory atoms' names'''
