@@ -93,10 +93,7 @@ class XsddParser(DagWalker):
         # pylint: disable=unused-argument
         raise UnsupportedNodeException('Quantifiers are yet to be supported')
 
-    def walk_real_constant(self, formula, args, **kwargs):
-        '''translate real constant node'''
-        # pylint: disable=unused-argument
-        return formula.constant_value()
+    
 
     def walk_equals(self, formula, args, **kwargs):
         '''translate equals relation'''
@@ -157,6 +154,12 @@ class XsddParser(DagWalker):
         '''translate LT node'''
         # pylint: disable=unused-argument
         return args[0] < args[1]
+    
+    @handles(op.REAL_CONSTANT,op.INT_CONSTANT)
+    def walk_numeric_constant(self, formula, args, **kwargs):
+        '''translate real constant node'''
+        # pylint: disable=unused-argument
+        return formula.constant_value()
 
     @handles(*op.BV_OPERATORS,*op.BV_RELATIONS,*op.STR_OPERATORS,*op.STR_RELATIONS,*op.ARRAY_OPERATORS)
     def walk_theory(self, formula, args, **kwargs):

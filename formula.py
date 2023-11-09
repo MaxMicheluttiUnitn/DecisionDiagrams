@@ -1,7 +1,7 @@
 '''this module simplifies interactions with the pysmt library for handling SMT formulas'''
 
 from typing import List
-from pysmt.shortcuts import Symbol, REAL, And, Or, Xor, BOOL
+from pysmt.shortcuts import Symbol, REAL, And, Or, Xor, BOOL, Real, LT, Minus, Plus, Not, read_smtlib
 from pysmt.fnode import FNode
 from pysmt.smtlib.parser import SmtLibParser
 
@@ -16,19 +16,27 @@ def get_phi() -> FNode:
     left_xor = Or(x1 > x2, x2 > x1)
     right_xor = Or(x3 > x4, x4 > x3)
     phi = And(left_xor, right_xor, Xor(x1 > x4, x4 > x1), a)
+
     # phi = Xor(x1>x4,x4>x1)
+    # [(x>0) ∧ (x<1)] ∧ [(y<1) ∨ ((x>y) ∧ (y>1/2))]
+    phi =  And( And(LT(Real(0),x1),LT(x1,Real(1))), Or(LT(x2,Real(1)),And(LT(x2,x1),LT(Real(0.5),x2))) )
+
+    b1 = LT(x1,Minus(x2,Real(1)))
+    b2 = LT(Plus(x2,Real(1)),x1)
+    a = LT(Real(20),x1)
+
+    phi = And(Or(b1,b2),Or(Not(b1),a))
+
+
+    #phi = Or(LT(x1,Real(0)),LT(Real(1),x1))
     return phi
 
 
 def read_phi(filename: str) -> FNode:
     ' ' 'Reads the SMT formula from a file and returns the corresponding root FNode' ' '
     # pylint: disable=unused-argument
-    print("Not yet implemented!!! Using standard phi instead!!!")
-    parser = SmtLibParser()
-    script = parser.get_script_fname('demo.smt')
-    print(script)
-    # To do: correctly parse the formula
-    return get_phi()
+    other_phi = read_smtlib(filename)
+    return other_phi
 
 
 def get_atoms(phi: FNode) -> List[FNode]:
@@ -44,7 +52,6 @@ def get_normalized(phi: FNode, converter) -> FNode:
     '''Returns a normalized version of phi'''
     walker = NormalizerWalker(converter)
     return walker.walk(phi)
-
 
 def get_phi_and_lemmas(phi: FNode, tlemmas: List[FNode]) -> FNode:
     ' ' 'Returns a formula that is equivalent to phi and lemmas as an FNode' ' '

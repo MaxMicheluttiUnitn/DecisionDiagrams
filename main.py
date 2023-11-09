@@ -6,6 +6,7 @@ from smt_solver import UNSAT, SMTSolver
 import commands
 import formula
 
+import logging
 
 def main() -> None:
     '''Main function for this project'''
@@ -43,10 +44,13 @@ def main() -> None:
     print("Phi was normalized in ", time.time()-start_time, " seconds")
 
     # ADDING THEORY LEMMAS
-    start_time = time.time()
-    print("Adding theory lemmas to phi...")
-    phi_and_lemmas = formula.get_phi_and_lemmas(phi, lemmas)
-    print("Theory lemmas added to phi in ", time.time()-start_time, " seconds")
+    if args.pure_abstraction:
+        phi_and_lemmas = phi
+    else:
+        start_time = time.time()
+        print("Adding theory lemmas to phi...")
+        phi_and_lemmas = formula.get_phi_and_lemmas(phi, lemmas)
+        print("Theory lemmas added to phi in ", time.time()-start_time, " seconds")
 
     # GENERATING DDs
     if args.sdd:
@@ -61,6 +65,8 @@ def main() -> None:
         decision_diagrams.compute_bdd_cudd(phi_and_lemmas, output_file=args.bdd_output)
         print("BDD processed in ", time.time()-start_time, " seconds")
     if args.xsdd:
+        logger = logging.getLogger("pywmi.engines.xsdd.engine")
+        logger.setLevel(logging.DEBUG)
         start_time = time.time()
         print("Starting XSDD Procesing...")
         decision_diagrams.compute_xsdd(phi)

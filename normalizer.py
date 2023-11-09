@@ -73,7 +73,7 @@ class NormalizerWalker(DagWalker):
         # pylint: disable=unused-argument
         raise UnsupportedNodeException('Quantifiers are yet to be supported')
 
-    @handles(*op.THEORY_OPERATORS, *op.BV_RELATIONS, *op.IRA_RELATIONS, *op.STR_RELATIONS)
+    @handles(*op.THEORY_OPERATORS, *op.BV_RELATIONS, *op.IRA_RELATIONS, *op.STR_RELATIONS, op.REAL_CONSTANT, op.BV_CONSTANT, op.INT_CONSTANT)
     def walk_theory(self, formula, args, **kwargs):
         '''translate theory node'''
         # pylint: disable=unused-argument

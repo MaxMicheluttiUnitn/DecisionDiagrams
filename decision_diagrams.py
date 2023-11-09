@@ -5,7 +5,7 @@ import re
 import pydot
 
 from pysmt.fnode import FNode
-from pysmt.shortcuts import BOOL,REAL,Real
+from pysmt.shortcuts import BOOL,REAL,Real,Times
 from pysdd.sdd import SddManager, Vtree
 from dd.autoref import BDD, Function
 from dd import cudd as cudd_bdd
@@ -40,13 +40,13 @@ def compute_xsdd(phi: FNode):
 
     xsdd_boolean_symbols=xsdd_domain.get_bool_symbols()
     xsdd_real_symbols=xsdd_domain.get_real_symbols()
-    weight_function = Real(1)
+    weight_function = Times(Real(2),xsdd_real_symbols[0],xsdd_real_symbols[1])
     
     walker = XsddParser(boolean_symbols,xsdd_boolean_symbols,real_symbols,xsdd_real_symbols)
     xsdd_support = walker.walk(phi)
 
     xsdd_engine = XsddEngine(xsdd_domain,xsdd_support,weight_function)
-    print(xsdd_engine.compute_volume())
+    print(xsdd_engine.compute_volume(add_bounds=False))
 
 
 def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtree_output: str = None) -> None:
@@ -55,7 +55,7 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
     if vtree_type is None:
         vtree_type = "right"
     if output_file is None:
-        output_file = "sdd.dot"
+        output_file = "output/sdd.dot"
 
     # BUILDING V-TREE
     start_time = time.time()
@@ -142,7 +142,7 @@ def _translate_vtree_vars(original_dot:str,mapping:dict[str,FNode]) -> str:
 """
     return result
 
-SDD_LINE_LEFT_REGEX = r'[\[]label= "<L>(&not;)?[A-Z]+[|]<R>(&#8869;)?",'
+SDD_LINE_LEFT_REGEX = r'[\[]label= "<L>(&not;)?[A-Z]+[|]<R>(&#8869;|&#8868;)?",'
 SDD_LINE_RIGHT_REGEX = r'[\[]label= "<L>[|]<R>(&not;)?[A-Z]+",'
 SDD_LINE_BOTH_REGEX = r'[\[]label= "<L>(&not;)?[A-Z]+[|]<R>(&not;)?[A-Z]+",'
 SDD_KEY_START_LEFT_REGEX = r'[A-Z]+[|]'
@@ -155,7 +155,7 @@ SDD_REPLACE_RIGHT_REGEX = SDD_KEY_START_RIGHT_REGEX
 def _translate_SDD_vars(original_dot:str,mapping:dict[str,FNode]) -> str:
     '''translates variables in the dot representation of the SDD into their original names in phi'''
     result = """"""
-    original_dot=original_dot.replace('width=.65','width=3.0')
+    original_dot=original_dot.replace('width=.65','width=10.0')
     for line in original_dot.splitlines():
         new_line = line
         # ONLY LEFT
@@ -252,7 +252,7 @@ def compute_bdd_cudd(phi: FNode, output_file=None):
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.cudd'''
     # setting default values
     if output_file is None:
-        output_file = "bdd.svg"
+        output_file = "output/bdd.svg"
 
     # REPRESENT PHI IN PROMELA SYNTAX
     start_time = time.time()

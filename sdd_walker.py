@@ -58,6 +58,11 @@ class SDDWalker(DagWalker):
         if value:
             return self.manager.true()
         return self.manager.false()
+    
+    def walk_real_constant(self, formula: FNode, args, **kwargs):
+        '''translate REAl const node'''
+        # pylint: disable=unused-argument
+        return formula.constant_value()
 
     def walk_iff(self, formula, args, **kwargs):
         '''translate IFF node'''
@@ -89,3 +94,8 @@ class SDDWalker(DagWalker):
         '''translate theory node'''
         # pylint: disable=unused-argument
         return self._apply_mapping(formula)
+    
+    @handles(op.REAL_CONSTANT,op.INT_CONSTANT,op.BV_CONSTANT)
+    def do_nothing(self, formula, args, **kwargs):
+        '''do nothing when seeing theory constants'''
+        return
