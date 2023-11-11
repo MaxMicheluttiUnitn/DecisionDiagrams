@@ -56,13 +56,12 @@ def main() -> None:
     if args.sdd:
         start_time = time.time()
         print("Starting SDD Procesing...")
-        decision_diagrams.compute_sdd(
-            phi_and_lemmas, output_file=args.sdd_output, vtree_type=args.vtree, vtree_output=args.vtree_output)
+        decision_diagrams.compute_sdd(phi_and_lemmas, output_file=args.sdd_output, vtree_type=args.vtree, vtree_output=args.vtree_output,print_mapping=args.print_mapping,dump_abstraction=args.dump_abstraction)
         print("SDD processed in ", time.time()-start_time, " seconds")
     if args.bdd:
         start_time = time.time()
         print("Starting BDD Procesing...")
-        decision_diagrams.compute_bdd_cudd(phi_and_lemmas, output_file=args.bdd_output)
+        decision_diagrams.compute_bdd_cudd(phi_and_lemmas, output_file=args.bdd_output,print_mapping=args.print_mapping,dump_abstraction=args.dump_abstraction)
         print("BDD processed in ", time.time()-start_time, " seconds")
     if args.xsdd:
         logger = logging.getLogger("pywmi.engines.xsdd.engine")

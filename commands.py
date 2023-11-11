@@ -52,6 +52,14 @@ def get_args() -> argparse.Namespace:
         "--pure_abstraction",
         help="Use only the boolean abstraction (without lemmas) for the DD generation",
         action="store_true")
+    parser.add_argument(
+        "--dump_abstraction",
+        help="Dump the boolean abstraction of the SMT formula instead of the actual formula",
+        action="store_true")
+    parser.add_argument(
+        "--print_mapping",
+        help="Print the boolean abstraction-SMT atom mapping",
+        action="store_true")
     args = parser.parse_args()
     return args
 

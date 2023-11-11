@@ -51,7 +51,7 @@ def compute_xsdd(phi: FNode):
     print(xsdd_engine.compute_volume(add_bounds=False))
 
 
-def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtree_output: str = None) -> None:
+def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtree_output: str = None,dump_abstraction=False, print_mapping=False) -> None:
     ' ' 'Computes the SDD for the boolean formula phi and saves it on a file' ' '
     # Setting default values
     if vtree_type is None:
@@ -98,7 +98,10 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
     # SAVING SDD
     start_time = time.time()
     print("Saving SDD...")
-    if _save_SDD_object(sdd_formula, output_file, name_to_atom_map, 'SDD'):
+    if print_mapping:
+        print("Mapping:")
+        print(name_to_atom_map)
+    if _save_SDD_object(sdd_formula, output_file, name_to_atom_map, 'SDD', dump_abstraction):
         print("SDD saved as "+output_file+" in ",
               time.time()-start_time, " seconds")
     else:
@@ -106,12 +109,12 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
               output_file, " is not supported")
 
 
-def _save_SDD_object(sdd_object, output_file: str,mapping:dict[str,FNode], kind: str) -> bool:
+def _save_SDD_object(sdd_object, output_file: str,mapping:dict[str,FNode], kind: str, dump_abstraction=False) -> bool:
     '''saves an SDD object on a file'''
     dot_content = sdd_object.dot()
     if kind == 'VTree':
         dot_content = _translate_vtree_vars(dot_content,mapping)
-    elif kind == 'SDD':
+    elif kind == 'SDD' and not dump_abstraction:
         dot_content = _translate_SDD_vars(dot_content,mapping)
     tokenized_output_file = output_file.split('.')
     if tokenized_output_file[len(tokenized_output_file)-1] == 'dot':
@@ -227,10 +230,10 @@ def compute_sdd_formula_recursive(source: FNode, mapping: dict[FNode, int]) -> i
         return (translated_subformulae[0] & translated_subformulae[1]) | ((~ translated_subformulae[0]) & (~ translated_subformulae[1]))
 
 
-def compute_bdd(phi: FNode, output_file=None) -> None:
+def compute_bdd(phi: FNode, output_file=None, dump_abstraction=False, print_mapping=False) -> None:
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.autoref'''
     # For now always use compute_bdd_cudd
-    return compute_bdd_cudd(phi, output_file)
+    return compute_bdd_cudd(phi, output_file,dump_abstraction,print_mapping)
     if output_file is None:
         output_file = "bdd.svg"
     bdd = BDD()
@@ -250,7 +253,7 @@ def compute_bdd(phi: FNode, output_file=None) -> None:
     # bdd.dump(output_file, filetype='svg')
 
 
-def compute_bdd_cudd(phi: FNode, output_file=None):
+def compute_bdd_cudd(phi: FNode, output_file=None, dump_abstraction=False, print_mapping=False):
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.cudd'''
     # setting default values
     if output_file is None:
@@ -282,31 +285,27 @@ def compute_bdd_cudd(phi: FNode, output_file=None):
     # SAVING BDD
     start_time = time.time()
     print("Saving BDD...")
+    TEMPORARY_DOT = 'bdd_temporary_dot.dot'
     reverse_mapping = dict((v, k) for k, v in mapping.items())
-    dump_bdd(bdd,reverse_mapping,output_file,root)
-    print("BDD saved as "+output_file+" in ",
-          time.time()-start_time, " seconds")
-
-TEMPORARY_DOT = 'bdd_temporary_dot.dot'
-
-def dump_bdd(bdd: BDD,mapping: dict,output_file: str,root):
-    '''dumps bdd into the desired file'''
+    if print_mapping:
+        print("Mapping:")
+        print(reverse_mapping)
     if output_file.endswith('.dot'):
         bdd.dump(output_file, filetype='dot', roots=[root])
-        _change_bbd_dot_names(output_file,mapping)
+        if not dump_abstraction:
+            _change_bbd_dot_names(output_file,reverse_mapping)
     elif output_file.endswith('.svg'):
         bdd.dump(TEMPORARY_DOT, filetype='dot', roots=[root])
-        _change_bbd_dot_names(TEMPORARY_DOT,mapping)
+        if not dump_abstraction:
+            _change_bbd_dot_names(TEMPORARY_DOT,reverse_mapping)
         with open(TEMPORARY_DOT,'r') as dot_content:
             (graph,) = pydot.graph_from_dot_data(dot_content.read())
             graph.write_svg(output_file)
         os.remove(TEMPORARY_DOT)
     else:
         print('Unable to dump BDD file: format unsupported')
-    #bdd.dump(output_file, filetype='svg', roots=[root])
-    #bdd.dump(output_file, filetype='svg', roots=[root])
-    # translate svg variables in original variables
-    #_change_svg_names(output_file,mapping)
+    print("BDD saved as "+output_file+" in ",
+          time.time()-start_time, " seconds")
 
 BDD_DOT_LINE_REGEX = r'[\[]label="[a-z]*-[0-9]*"[]]'
 BDD_DOT_TRUE_LABEL = '[label="True-1"]'
