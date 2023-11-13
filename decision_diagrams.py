@@ -4,6 +4,7 @@ import time
 import re
 import pydot
 import os
+import math
 
 from pysmt.fnode import FNode
 from pysmt.shortcuts import BOOL,REAL,Real,Times
@@ -51,7 +52,7 @@ def compute_xsdd(phi: FNode):
     print(xsdd_engine.compute_volume(add_bounds=False))
 
 
-def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtree_output: str = None,dump_abstraction=False, print_mapping=False) -> None:
+def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtree_output: str = None,dump_abstraction=False, print_mapping=False, count_models=False) -> None:
     ' ' 'Computes the SDD for the boolean formula phi and saves it on a file' ' '
     # Setting default values
     if vtree_type is None:
@@ -94,6 +95,15 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
     walker = SDDWalker(atom_literal_map, manager)
     sdd_formula = walker.walk(phi)
     print("SDD build in ", time.time()-start_time, " seconds")
+
+    # MODEL COUNTING
+    if count_models:
+        start_time = time.time()
+        print("Counting models through the SDD...")
+        wmc = sdd_formula.wmc(log_mode=True)
+        w = wmc.propagate()
+        print(f"Model count: {int(math.exp(w))}")
+        print("Models counted in ", time.time()-start_time, " seconds")
 
     # SAVING SDD
     start_time = time.time()
@@ -253,7 +263,7 @@ def compute_bdd(phi: FNode, output_file=None, dump_abstraction=False, print_mapp
     # bdd.dump(output_file, filetype='svg')
 
 
-def compute_bdd_cudd(phi: FNode, output_file=None, dump_abstraction=False, print_mapping=False):
+def compute_bdd_cudd(phi: FNode, output_file=None, dump_abstraction=False, print_mapping=False, count_models=False):
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.cudd'''
     # setting default values
     if output_file is None:
@@ -281,6 +291,10 @@ def compute_bdd_cudd(phi: FNode, output_file=None, dump_abstraction=False, print
     bdd.declare(*all_values)
     root = bdd.add_expr(translated_phi)
     print("BDD for phi built in ", (time.time() - start_time), " seconds")
+
+    # MODEL COUNTING
+    if count_models:
+        pass
 
     # SAVING BDD
     start_time = time.time()

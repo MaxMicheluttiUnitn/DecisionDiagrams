@@ -60,6 +60,10 @@ def get_args() -> argparse.Namespace:
         "--print_mapping",
         help="Print the boolean abstraction-SMT atom mapping",
         action="store_true")
+    parser.add_argument(
+        "--count_models",
+        help="Print the amount of models represented by the DD",
+        action="store_true")
     args = parser.parse_args()
     return args
 
