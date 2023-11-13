@@ -29,9 +29,11 @@ def main() -> None:
         return
     print("Computed All Sat in ", time.time()-start_time, " seconds")
     print("Phi is SAT")
+    models = smt_solver.get_models()
     if args.print_models:
-        print("Models:")
-        print("\n".join(map(str, smt_solver.get_models())))
+        
+        print(len(models)," models:")
+        print("\n".join(map(str, models)))
     lemmas = smt_solver.get_theory_lemmas()
     if args.print_lemmas:
         print("T-lemmas:")
@@ -59,7 +61,7 @@ def main() -> None:
         decision_diagrams.compute_sdd(phi_and_lemmas, output_file=args.sdd_output, 
                                       vtree_type=args.vtree, vtree_output=args.vtree_output,
                                       print_mapping=args.print_mapping,dump_abstraction=args.dump_abstraction,
-                                      count_models=args.count_models)
+                                      count_models=args.count_models, all_sat_models=models)
         print("SDD processed in ", time.time()-start_time, " seconds")
     if args.bdd:
         start_time = time.time()

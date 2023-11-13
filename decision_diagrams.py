@@ -8,7 +8,7 @@ import math
 
 from pysmt.fnode import FNode
 from pysmt.shortcuts import BOOL,REAL,Real,Times
-from pysdd.sdd import SddManager, Vtree
+from pysdd.sdd import SddManager, Vtree, WmcManager
 from dd.autoref import BDD, Function
 from dd.bdd import to_pydot
 from dd import cudd as cudd_bdd
@@ -52,7 +52,7 @@ def compute_xsdd(phi: FNode):
     print(xsdd_engine.compute_volume(add_bounds=False))
 
 
-def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtree_output: str = None,dump_abstraction=False, print_mapping=False, count_models=False) -> None:
+def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtree_output: str = None,dump_abstraction=False, print_mapping=False, count_models=False, all_sat_models=None) -> None:
     ' ' 'Computes the SDD for the boolean formula phi and saves it on a file' ' '
     # Setting default values
     if vtree_type is None:
@@ -97,12 +97,28 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
     print("SDD build in ", time.time()-start_time, " seconds")
 
     # MODEL COUNTING
+    '''c=0
+    if not all_sat_models is None:
+        
+        for model in all_sat_models:
+            conditioned = sdd_formula
+            for atom in model:
+                if atom.is_not():
+                    lit = atom_literal_map[atom.args()[0]]
+                    conditioned = conditioned & -lit
+                else:
+                    lit = atom_literal_map[atom]
+                    conditioned = conditioned & lit
+            wmc: WmcManager = conditioned.wmc(log_mode=False)
+            w = wmc.propagate()
+            c+=1
+            print(f"{c} : Model count: {w}")'''
     if count_models:
         start_time = time.time()
         print("Counting models through the SDD...")
-        wmc = sdd_formula.wmc(log_mode=True)
+        wmc: WmcManager = sdd_formula.wmc(log_mode=False)
         w = wmc.propagate()
-        print(f"Model count: {int(math.exp(w))}")
+        print(f"Model count: {w}")
         print("Models counted in ", time.time()-start_time, " seconds")
 
     # SAVING SDD
@@ -294,7 +310,8 @@ def compute_bdd_cudd(phi: FNode, output_file=None, dump_abstraction=False, print
 
     # MODEL COUNTING
     if count_models:
-        pass
+        print("Models:")
+        print(root.count(nvars=len(mapping.keys())))
 
     # SAVING BDD
     start_time = time.time()
