@@ -3,15 +3,13 @@
 from pysmt.fnode import FNode
 from pysmt.walkers import DagWalker, handles
 import pysmt.operators as op
-from pysmt.shortcuts import Equals
 
 from custom_exceptions import UnsupportedNodeException
-
 
 class XsddParser(DagWalker):
     '''A walker to translate the DAG formula quickly with memoization into the Promela syntax representation of the formula'''
 
-    def __init__(self, bool_source: list, bool_dest: list, real_source: list, real_dest: list, env=None, invalidate_memoization=False):
+    def __init__(self, bool_source:list, bool_dest:list, real_source: list, real_dest:list, env=None, invalidate_memoization=False):
         DagWalker.__init__(self, env, invalidate_memoization)
         self.bool_source = bool_source
         self.bool_dest = bool_dest
@@ -21,11 +19,14 @@ class XsddParser(DagWalker):
 
     def _apply_mapping(self, arg: FNode, isBool: bool):
         '''applies the mapping when possible, returns None othrwise'''
-        if isBool:
-            item_id = self.bool_source.index(str(arg)+'_xsdd')
-            return self.bool_dest[item_id]
-        item_id = self.real_source.index(str(arg)+'_xsdd')
-        return self.real_dest[item_id]
+        try:
+            if isBool:
+                item_id = self.bool_source.index(str(arg))
+                return self.bool_dest[item_id]
+            item_id = self.real_source.index(str(arg))
+            return self.real_dest[item_id]
+        except:
+            return None
 
     def walk_and(self, formula: FNode, args, **kwargs):
         '''translate AND node'''
@@ -56,8 +57,8 @@ class XsddParser(DagWalker):
         '''translate SYMBOL node'''
         # pylint: disable=unused-argument
         if str(formula.get_type()) == 'Bool':
-            return self._apply_mapping(formula, True)
-        return self._apply_mapping(formula, False)
+            return self._apply_mapping(formula,True)
+        return self._apply_mapping(formula,False)
 
     def walk_bool_constant(self, formula: FNode, args, **kwargs):
         '''translate BOOL const node'''
@@ -81,17 +82,24 @@ class XsddParser(DagWalker):
         '''translate ITE node'''
         # pylint: disable=unused-argument
         return ((~ args[0]) | args[1]) & (args[0] | args[2])
-
+    
     def walk_forall(self, formula, args, **kwargs):
         '''translate For-all node'''
         # pylint: disable=unused-argument
         raise UnsupportedNodeException('Quantifiers are yet to be supported')
-
+    
     def walk_exists(self, formula, args, **kwargs):
         '''translate Exists node'''
         # pylint: disable=unused-argument
         raise UnsupportedNodeException('Quantifiers are yet to be supported')
 
+    
+
+    def walk_equals(self, formula, args, **kwargs):
+        '''translate equals relation'''
+        # pylint: disable=unused-argument
+        return args[0] == args[1]
+    
     def walk_plus(self, formula, args, **kwargs):
         '''translate Plus node'''
         # pylint: disable=unused-argument
@@ -101,7 +109,7 @@ class XsddParser(DagWalker):
         for i in range(1, len(args)):
             res = res + args[i]
         return res
-
+    
     @handles(op.MINUS)
     def walk_minus(self, formula, args, **kwargs):
         '''translate Plus node'''
@@ -112,7 +120,7 @@ class XsddParser(DagWalker):
         for i in range(1, len(args)):
             res = res - args[i]
         return res
-
+    
     @handles(op.TIMES)
     def walk_times(self, formula, args, **kwargs):
         '''translate Plus node'''
@@ -123,7 +131,7 @@ class XsddParser(DagWalker):
         for i in range(1, len(args)):
             res = res * args[i]
         return res
-
+    
     @handles(op.DIV)
     def walk_div(self, formula, args, **kwargs):
         '''translate Plus node'''
@@ -134,32 +142,26 @@ class XsddParser(DagWalker):
         for i in range(1, len(args)):
             res = res / args[i]
         return res
-
+    
     @handles(op.LE)
     def walk_le(self, formula, args, **kwargs):
         '''translate LE node'''
         # pylint: disable=unused-argument
-        return ~ (args[0] > args[1])
-
+        return args[0] <= args[1]
+    
     @handles(op.LT)
     def walk_lt(self, formula, args, **kwargs):
         '''translate LT node'''
         # pylint: disable=unused-argument
         return args[0] < args[1]
-
-    @handles(op.REAL_CONSTANT, op.INT_CONSTANT)
+    
+    @handles(op.REAL_CONSTANT,op.INT_CONSTANT)
     def walk_numeric_constant(self, formula, args, **kwargs):
         '''translate real constant node'''
         # pylint: disable=unused-argument
         return formula.constant_value()
 
-    @handles(op.EQUALS)
-    def walk_equals(self, formula, args, **kwargs):
-        '''translate equals node'''
-        # pylint: disable=unused-argument
-        return ~ ((args[0] > args[1]) | (args[0] < args[1]))
-
-    @handles(*op.BV_OPERATORS, *op.BV_RELATIONS, *op.STR_OPERATORS, *op.STR_RELATIONS, *op.ARRAY_OPERATORS)
+    @handles(*op.BV_OPERATORS,*op.BV_RELATIONS,*op.STR_OPERATORS,*op.STR_RELATIONS,*op.ARRAY_OPERATORS,op.EQUALS)
     def walk_theory(self, formula, args, **kwargs):
         '''translate theory node'''
         # pylint: disable=unused-argument

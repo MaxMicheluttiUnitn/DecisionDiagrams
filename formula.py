@@ -1,12 +1,12 @@
 '''this module simplifies interactions with the pysmt library for handling SMT formulas'''
 
-from typing import List, Dict
+from typing import List
 from pysmt.shortcuts import Symbol, REAL, And, Or, Xor, BOOL, Real, LT, Minus, Plus, Not, read_smtlib
 from pysmt.fnode import FNode
 from pysmt.smtlib.parser import SmtLibParser
 
 from normalizer import NormalizerWalker
-from string_generator import SequentailStringGenerator
+
 
 def get_phi() -> FNode:
     ' ' 'Returns the default SMT formula\'s root FNode' ' '
@@ -31,14 +31,6 @@ def get_phi() -> FNode:
     #phi = Or(LT(x1,Real(0)),LT(Real(1),x1))
     return phi
 
-def get_boolean_mapping(phi: FNode) -> Dict[FNode,FNode]:
-    """returns a mapping from boolean variables to t-atoms"""
-    phi_atoms = get_atoms(phi)
-    boolean_mapping = {}
-    gen = SequentailStringGenerator()
-    for atom in phi_atoms:
-        boolean_mapping.update({Symbol(f"fresh_{gen.next_string()}",BOOL):atom})
-    return boolean_mapping
 
 def read_phi(filename: str) -> FNode:
     ' ' 'Reads the SMT formula from a file and returns the corresponding root FNode' ' '

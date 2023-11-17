@@ -2,13 +2,15 @@
 
 import time
 import re
-import os
 import pydot
+import os
+import math
 
 from pysmt.fnode import FNode
-from pysmt.shortcuts import BOOL,REAL,INT,Real,Times
+from pysmt.shortcuts import BOOL,REAL,Real,Times
 from pysdd.sdd import SddManager, Vtree, WmcManager
 from dd.autoref import BDD, Function
+from dd.bdd import to_pydot
 from dd import cudd as cudd_bdd
 from pywmi.domain import Domain
 from pywmi import XsddEngine
@@ -30,19 +32,19 @@ def compute_xsdd(phi: FNode):
 
     for symbol in symbols:
         if symbol.get_type() == BOOL:
-            boolean_symbols.append(str(symbol)+'_xsdd')
+            boolean_symbols.append(str(symbol))
         elif symbol.get_type() == REAL:
-            real_symbols.append(str(symbol)+'_xsdd')
+            real_symbols.append(str(symbol))
             # just putting very big bounds to let not limit the variable
             # real_bounds.append((-1000000,1000000))
-        elif symbol.get_type() == INT:
-            real_symbols.append(str(symbol)+'_xsdd')
 
     # bounds are necesssary (XSDD are designed for WMI), so I just put them very big
     xsdd_domain = Domain.make(boolean_symbols,real_symbols,real_bounds=(-1000000,1000000))
+
     xsdd_boolean_symbols=xsdd_domain.get_bool_symbols()
     xsdd_real_symbols=xsdd_domain.get_real_symbols()
-    weight_function = Times(Real(2),Real(1))
+    weight_function = Times(Real(2),xsdd_real_symbols[0],xsdd_real_symbols[1])
+    
     walker = XsddParser(boolean_symbols,xsdd_boolean_symbols,real_symbols,xsdd_real_symbols)
     xsdd_support = walker.walk(phi)
 
@@ -95,22 +97,22 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
     print("SDD build in ", time.time()-start_time, " seconds")
 
     # MODEL COUNTING
-    # c=0
-    # if not all_sat_models is None:
+    '''c=0
+    if not all_sat_models is None:
         
-    #     for model in all_sat_models:
-    #         conditioned = sdd_formula
-    #         for atom in model:
-    #             if atom.is_not():
-    #                 lit = atom_literal_map[atom.args()[0]]
-    #                 conditioned = conditioned & -lit
-    #             else:
-    #                 lit = atom_literal_map[atom]
-    #                 conditioned = conditioned & lit
-    #         wmc: WmcManager = conditioned.wmc(log_mode=False)
-    #         w = wmc.propagate()
-    #         c+=1
-    #         print(f"{c} : Model count: {w}")
+        for model in all_sat_models:
+            conditioned = sdd_formula
+            for atom in model:
+                if atom.is_not():
+                    lit = atom_literal_map[atom.args()[0]]
+                    conditioned = conditioned & -lit
+                else:
+                    lit = atom_literal_map[atom]
+                    conditioned = conditioned & lit
+            wmc: WmcManager = conditioned.wmc(log_mode=False)
+            w = wmc.propagate()
+            c+=1
+            print(f"{c} : Model count: {w}")'''
     if count_models:
         start_time = time.time()
         print("Counting models through the SDD...")
@@ -157,8 +159,7 @@ VTREE_KEY_END_REGEX = r'",fontname='
 VTREE_REPLECE_REGEX = VTREE_KEY_START_REGEX
 
 def _translate_vtree_vars(original_dot:str,mapping:dict[str,FNode]) -> str:
-    '''translates variables in the dot representation of the 
-    VTree into their original names in phi'''
+    '''translates variables in the dot representation of the VTree into their original names in phi'''
     result = """"""
     original_dot=original_dot.replace('width=.25','width=.75')
     for line in original_dot.splitlines():

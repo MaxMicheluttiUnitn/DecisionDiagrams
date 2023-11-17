@@ -1,7 +1,7 @@
 '''this module handles interactions with the mathsat solver'''
 
-from typing import List, Dict
-from pysmt.shortcuts import Solver, Iff
+from typing import List
+from pysmt.shortcuts import Solver
 from pysmt.fnode import FNode
 import mathsat
 
@@ -19,6 +19,15 @@ class SMTSolver:
     '''A wrapper for the mathsat T-solver'''
 
     def __init__(self) -> None:
+        self._last_phi = None
+        self._tlemmas = []
+        self._models = []
+        self._converter = None
+
+    def check_all_sat(self, phi: FNode) -> bool:
+        '''computes All-SAT for the SMT-formula phi'''
+        self._last_phi = phi
+
         solver_options_dict = {
             "dpll.allsat_minimize_model": "false",  # - truth assignment totali
             # "dpll.allsat_allow_duplicates": "false", # - per produrre truth assignment non necessariamente disjoint.
@@ -28,28 +37,20 @@ class SMTSolver:
             "preprocessor.simplification": "0",  # da mathsat
             "dpll.store_tlemmas": "true",  # - necessario per ottenere t-lemmi
         }
-        self.solver = Solver("msat", solver_options=solver_options_dict)
-        self._last_phi = None
-        self._tlemmas = []
-        self._models = []
-        self._converter = self.solver.converter
 
-    def check_all_sat(self, phi: FNode, boolean_mapping: Dict[FNode,FNode] = None) -> bool:
-        '''computes All-SAT for the SMT-formula phi'''
-        self._last_phi = phi
-        self.solver.add_assertion(phi)
-        if not boolean_mapping is None:
-            for [k,v] in boolean_mapping.items():
-                self.solver.add_assertion(Iff(k,v))
         atoms = phi.get_atoms()
-        self._models = []
-        mathsat.msat_all_sat(self.solver.msat_env(), self.get_converted_atoms(atoms),
-                                callback=lambda model: _allsat_callback(model, self._converter, self._models))
-        self._tlemmas = [self._converter.back(
-            l) for l in mathsat.msat_get_theory_lemmas(self.solver.msat_env())]
-        if len(self._models) == 0:
-            return UNSAT
-        return SAT
+
+        with Solver("msat", solver_options=solver_options_dict) as solver:
+            self._converter = solver.converter
+            solver.add_assertion(phi)
+            self._models = []
+            mathsat.msat_all_sat(solver.msat_env(), self.get_converted_atoms(atoms),
+                                 callback=lambda model: _allsat_callback(model, self._converter, self._models))
+            self._tlemmas = [self._converter.back(
+                l) for l in mathsat.msat_get_theory_lemmas(solver.msat_env())]
+            if len(self._models) == 0:
+                return UNSAT
+            return SAT
 
     def get_theory_lemmas(self) -> List[FNode]:
         '''Returns the theory lemmas found during the All-SAT computation'''
