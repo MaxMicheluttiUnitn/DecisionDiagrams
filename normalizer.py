@@ -61,6 +61,7 @@ class NormalizerWalker(DagWalker):
 
     def _convert(self, formula):
         msat_term = self._converter.convert(formula)
+        #print(formula," --> ",msat_term)
         return self._converter.back(msat_term)
 
     def walk_forall(self, formula, args, **kwargs):
