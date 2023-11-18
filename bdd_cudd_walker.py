@@ -19,7 +19,7 @@ class BDDCUDDParser(DagWalker):
 
     def _apply_mapping(self, arg: FNode):
         '''applies the mapping when possible, returns None othrwise'''
-        if not (self.mapping.get(arg) is None):
+        if not self.mapping.get(arg) is None:
             return self.mapping[arg]
         return None
 
@@ -86,7 +86,8 @@ class BDDCUDDParser(DagWalker):
         # pylint: disable=unused-argument
         raise UnsupportedNodeException('Quantifiers are yet to be supported')
 
-    @handles(*op.THEORY_OPERATORS, *op.BV_RELATIONS, *op.IRA_RELATIONS, *op.STR_RELATIONS,op.EQUALS)
+    @handles(*op.THEORY_OPERATORS, *op.BV_RELATIONS, 
+             *op.IRA_RELATIONS, *op.STR_RELATIONS, op.EQUALS)
     def walk_theory(self, formula, args, **kwargs):
         '''translate theory node'''
         # pylint: disable=unused-argument

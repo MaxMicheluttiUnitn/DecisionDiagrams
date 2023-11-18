@@ -6,10 +6,12 @@ from pysmt.walkers import DagWalker, handles
 import pysmt.operators as op
 from custom_exceptions import UnsupportedNodeException
 
+
 class SDDWalker(DagWalker):
     '''A walker to translate the DAG formula quickly with memoization into the SDD'''
 
-    def __init__(self, mapping: dict[FNode, int], manager: SddManager, env=None, invalidate_memoization=False):
+    def __init__(self, mapping: dict[FNode, int],
+                 manager: SddManager, env=None, invalidate_memoization=False):
         DagWalker.__init__(self, env, invalidate_memoization)
         self.mapping = mapping
         self.manager = manager
@@ -17,7 +19,7 @@ class SDDWalker(DagWalker):
 
     def _apply_mapping(self, arg):
         '''applies the mapping when possible, returns None otherwise'''
-        if not (self.mapping.get(arg) is None):
+        if not self.mapping.get(arg) is None:
             return self.mapping[arg]
         return None
 
@@ -58,7 +60,7 @@ class SDDWalker(DagWalker):
         if value:
             return self.manager.true()
         return self.manager.false()
-    
+
     def walk_real_constant(self, formula: FNode, args, **kwargs):
         '''translate REAl const node'''
         # pylint: disable=unused-argument
@@ -78,12 +80,12 @@ class SDDWalker(DagWalker):
         '''translate ITE node'''
         # pylint: disable=unused-argument
         return ((~ args[0]) | args[1]) & (args[0] | args[2])
-    
+
     def walk_forall(self, formula, args, **kwargs):
         '''translate For-all node'''
         # pylint: disable=unused-argument
         raise UnsupportedNodeException('Quantifiers are yet to be supported')
-    
+
     def walk_exists(self, formula, args, **kwargs):
         '''translate Exists node'''
         # pylint: disable=unused-argument
@@ -94,8 +96,9 @@ class SDDWalker(DagWalker):
         '''translate theory node'''
         # pylint: disable=unused-argument
         return self._apply_mapping(formula)
-    
-    @handles(op.REAL_CONSTANT,op.INT_CONSTANT,op.BV_CONSTANT)
+
+    @handles(op.REAL_CONSTANT, op.INT_CONSTANT, op.BV_CONSTANT)
     def do_nothing(self, formula, args, **kwargs):
         '''do nothing when seeing theory constants'''
+        # pylint: disable=unused-argument
         return

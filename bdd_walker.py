@@ -12,7 +12,8 @@ class BDDWalker(DagWalker):
     '''A walker to translate the DAG formula quickly with memoization into the BDD'''
     # Fix me: references at __del__!!!
 
-    def __init__(self, mapping: dict[FNode, str], manager: BDD, env=None, invalidate_memoization=False):
+    def __init__(self, mapping: dict[FNode, str],
+                 manager: BDD, env=None, invalidate_memoization=False):
         DagWalker.__init__(self, env, invalidate_memoization)
         self.mapping = mapping
         self.manager = manager
@@ -20,7 +21,7 @@ class BDDWalker(DagWalker):
 
     def _apply_mapping(self, arg: FNode):
         '''applies the mapping when possible, returns None othrwise'''
-        if not (self.mapping.get(arg) is None):
+        if not self.mapping.get(arg) is None:
             return self.manager.add_expr(self.mapping[arg])
         return None
 
@@ -81,13 +82,14 @@ class BDDWalker(DagWalker):
         '''translate For-all node'''
         # pylint: disable=unused-argument
         raise UnsupportedNodeException('Quantifiers are yet to be supported')
-    
+
     def walk_exists(self, formula, args, **kwargs):
         '''translate Exists node'''
         # pylint: disable=unused-argument
         raise UnsupportedNodeException('Quantifiers are yet to be supported')
 
-    @handles(*op.THEORY_OPERATORS, *op.BV_RELATIONS, *op.IRA_RELATIONS, *op.STR_RELATIONS,op.EQUALS)
+    @handles(*op.THEORY_OPERATORS, *op.BV_RELATIONS,
+             *op.IRA_RELATIONS, *op.STR_RELATIONS, op.EQUALS)
     def walk_theory(self, formula, args, **kwargs):
         '''translate theory node'''
         # pylint: disable=unused-argument

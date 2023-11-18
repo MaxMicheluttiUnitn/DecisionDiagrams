@@ -8,6 +8,7 @@ from pysmt.shortcuts import And, Or, Iff, Implies, TRUE, FALSE, Not, Ite
 
 from custom_exceptions import UnsupportedNodeException
 
+
 class NormalizerWalker(DagWalker):
     '''A walker to normalize smt formulas'''
 
@@ -67,19 +68,20 @@ class NormalizerWalker(DagWalker):
         '''translate For-all node'''
         # pylint: disable=unused-argument
         raise UnsupportedNodeException('Quantifiers are yet to be supported')
-    
+
     def walk_exists(self, formula, args, **kwargs):
         '''translate Exists node'''
         # pylint: disable=unused-argument
         raise UnsupportedNodeException('Quantifiers are yet to be supported')
-    
+
     @handles(op.EQUALS)
     def walk_equals(self, formula, args, **kwargs):
         '''translate Equals node'''
         # pylint: disable=unused-argument
         return self._convert(formula)
 
-    @handles(*op.THEORY_OPERATORS, *op.BV_RELATIONS, *op.IRA_RELATIONS, *op.STR_RELATIONS, op.REAL_CONSTANT, op.BV_CONSTANT, op.INT_CONSTANT)
+    @handles(*op.THEORY_OPERATORS, *op.BV_RELATIONS, *op.IRA_RELATIONS, 
+             *op.STR_RELATIONS, op.REAL_CONSTANT, op.BV_CONSTANT, op.INT_CONSTANT)
     def walk_theory(self, formula, args, **kwargs):
         '''translate theory node'''
         # pylint: disable=unused-argument
