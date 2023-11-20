@@ -66,5 +66,5 @@ def get_boolean_mapping(phi: FNode) -> Dict[FNode, FNode]:
     res: Dict[FNode, FNode] = {}
     gen = SequentailStringGenerator()
     for atom in phi_atoms:
-        res.update({Symbol(BOOL, f"fresh_{gen.next_string()}"): atom})
+        res.update({Symbol(f"fresh_{gen.next_string()}", BOOL): atom})
     return res

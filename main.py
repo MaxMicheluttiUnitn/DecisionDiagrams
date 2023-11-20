@@ -28,7 +28,8 @@ def main() -> None:
     # COMPUTING ALL-SAT
     start_time = time.time()
     print("Starting All Sat computation...")
-    if smt_solver.check_all_sat(phi) == UNSAT:
+    boolean_mapping = formula.get_boolean_mapping(phi)
+    if smt_solver.check_all_sat(phi, boolean_mapping) == UNSAT:
         print("Computed All Sat in ", time.time()-start_time, " seconds")
         print("Phi is UNSAT. Cannot generate any DD...")
         return
@@ -52,6 +53,9 @@ def main() -> None:
         phi_and_lemmas = formula.get_phi_and_lemmas(phi, lemmas)
         print("Theory lemmas added to phi in ",
               time.time()-start_time, " seconds")
+
+    # print(formula.get_atoms(phi))
+    # print(formula.get_atoms(phi_and_lemmas))
 
     # GENERATING DDs
     if args.sdd:
