@@ -108,10 +108,10 @@ class XsddParser(DagWalker):
 
     @handles(op.MINUS)
     def walk_minus(self, formula, args, **kwargs):
-        '''translate Plus node'''
+        '''translate Minus node'''
         # pylint: disable=unused-argument
         if len(args) == 1:
-            return args[0]
+            return - args[0]
         res = args[0]
         for i in range(1, len(args)):
             res = res - args[i]

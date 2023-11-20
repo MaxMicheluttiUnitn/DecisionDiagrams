@@ -38,7 +38,7 @@ class SMTSolver:
         '''computes All-SAT for the SMT-formula phi'''
         self._last_phi = phi
 
-        atoms = phi.get_atoms()
+        # atoms = phi.get_atoms()
 
         self.solver.add_assertion(phi)
 

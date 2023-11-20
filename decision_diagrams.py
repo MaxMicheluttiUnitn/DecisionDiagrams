@@ -15,7 +15,7 @@ from dd import cudd as cudd_bdd
 from pywmi.domain import Domain
 from pywmi import XsddEngine
 
-from string_generator import SequentailStringGenerator
+from string_generator import SequentailStringGenerator, SDDSequentailStringGenerator
 from formula import get_atoms, get_phi, get_symbols
 from sdd_walker import SDDWalker
 from bdd_walker import BDDWalker
@@ -71,7 +71,7 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
     print("Building V-Tree...")
     atoms = get_atoms(phi)
     var_count = len(atoms)
-    string_generator = SequentailStringGenerator()
+    string_generator = SDDSequentailStringGenerator()
     name_to_atom_map = {}
     for atom in atoms:
         name_to_atom_map[string_generator.next_string().upper()] = atom
@@ -183,12 +183,12 @@ def _translate_vtree_vars(original_dot: str, mapping: dict[str, FNode]) -> str:
     return result
 
 
-SDD_LINE_LEFT_REGEX = r'[\[]label= "<L>(&not;)?[A-Z]+[|]<R>(&#8869;|&#8868;)?",'
-SDD_LINE_RIGHT_REGEX = r'[\[]label= "<L>[|]<R>(&not;)?[A-Z]+",'
-SDD_LINE_BOTH_REGEX = r'[\[]label= "<L>(&not;)?[A-Z]+[|]<R>(&not;)?[A-Z]+",'
-SDD_KEY_START_LEFT_REGEX = r'[A-Z]+[|]'
+SDD_LINE_LEFT_REGEX = r'[\[]label= "<L>(&not;)?([A-Z]+|[0-9]+)[|]<R>(&#8869;|&#8868;)?",'
+SDD_LINE_RIGHT_REGEX = r'[\[]label= "<L>[|]<R>(&not;)?([A-Z]+|[0-9]+)",'
+SDD_LINE_BOTH_REGEX = r'[\[]label= "<L>(&not;)?([A-Z]+|[0-9]+)[|]<R>(&not;)?([A-Z]+|[0-9]+)",'
+SDD_KEY_START_LEFT_REGEX = r'([A-Z]+|[0-9]+)[|]'
 SDD_KEY_END_LEFT_REGEX = r'[|]<R>'
-SDD_KEY_START_RIGHT_REGEX = r'[A-Z]+",'
+SDD_KEY_START_RIGHT_REGEX = r'([A-Z]+|[0-9]+)",'
 SDD_KEY_END_RIGHT_REGEX = r'",'
 SDD_REPLACE_LEFT_REGEX = SDD_KEY_START_LEFT_REGEX
 SDD_REPLACE_RIGHT_REGEX = SDD_KEY_START_RIGHT_REGEX

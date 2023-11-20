@@ -38,7 +38,16 @@ def main() -> None:
     models = smt_solver.get_models()
     if args.print_models:
         print(len(models), " models:")
-        print("\n".join(map(str, models)))
+        counter = 0
+        for model in models:
+            out = ""
+            for elem in model:
+                if elem.is_not():
+                    out += str(boolean_mapping[elem.args()[0]]) + ", "
+                else:
+                    out += str(boolean_mapping[elem]) + ", "
+            counter+=1
+            print(counter,": [",out[:len(out)-2],"]",sep="")
     lemmas = smt_solver.get_theory_lemmas()
     if args.print_lemmas:
         print("T-lemmas:")
@@ -54,6 +63,13 @@ def main() -> None:
         print("Theory lemmas added to phi in ",
               time.time()-start_time, " seconds")
 
+
+    # NORMALIZING PHI AND LEMMAS
+    # start_time = time.time()
+    # print("Normalizing phi & lemmas according to solver...")
+    # smt_solver = SMTSolver()
+    # phi = formula.get_normalized(phi, smt_solver.get_converter())
+    # print("Phi & lemmas was normalized in ", time.time()-start_time, " seconds")
     # print(formula.get_atoms(phi))
     # print(formula.get_atoms(phi_and_lemmas))
 
