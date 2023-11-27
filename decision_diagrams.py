@@ -10,10 +10,11 @@ from pysmt.fnode import FNode
 from pysmt.shortcuts import BOOL, REAL, Real, Times, INT
 from pysdd.sdd import SddManager, Vtree, WmcManager
 from dd.autoref import BDD, Function
-from dd.bdd import to_pydot
 from dd import cudd as cudd_bdd
 from pywmi.domain import Domain
 from pywmi import XsddEngine
+from pywmi.engines.xsdd.engine import extract_and_replace_literals
+from pywmi.engines.xsdd.smt_to_sdd import compile_to_sdd
 
 from string_generator import SequentailStringGenerator, SDDSequentailStringGenerator
 from formula import get_atoms, get_phi, get_symbols
@@ -52,9 +53,22 @@ def compute_xsdd(phi: FNode):
 
     walker = XsddParser(boolean_symbols, xsdd_boolean_symbols,
                         real_symbols, xsdd_real_symbols)
-    xsdd_support = walker.walk(phi)
+    xsdd_support : FNode= walker.walk(phi)
 
     xsdd_engine = XsddEngine(xsdd_domain, xsdd_support, weight_function)
+
+    _,xsdd_support,literals = extract_and_replace_literals(xsdd_support)
+    xsdd_sdd = xsdd_engine.get_sdd(xsdd_support,literals,xsdd_engine.get_vtree(xsdd_support,literals))
+    print(xsdd_sdd)
+
+    xsdd_other_sdd = compile_to_sdd(xsdd_support,literals,None)
+    
+    with open('sdd_00.dot','w') as out:
+        out.write(xsdd_sdd.dot())
+
+    with open('sdd_other_00.dot','w') as out:
+        out.write(xsdd_other_sdd.dot())
+
     print(xsdd_engine.compute_volume(add_bounds=False))
 
 
@@ -304,15 +318,13 @@ def compute_bdd_cudd(phi: FNode, output_file=None, dump_abstraction=False,
 
     # REPRESENT PHI IN PROMELA SYNTAX
     start_time = time.time()
-    print("Translating phi...")
+    print("Creating mapping...")
     mapping = {}
     atoms = get_atoms(phi)
     string_generator = SequentailStringGenerator()
     for atom in atoms:
         mapping[atom] = string_generator.next_string()
-    walker = BDDCUDDParser(mapping)
-    translated_phi = walker.walk(phi)
-    print("Phi translated in ", (time.time() - start_time), " seconds")
+    print("Mapping created in ", (time.time() - start_time), " seconds")
 
     # BUILDING ACTUAL BDD
     start_time = time.time()
@@ -322,7 +334,10 @@ def compute_bdd_cudd(phi: FNode, output_file=None, dump_abstraction=False,
     for value in mapping.values():
         all_values.append(value)
     bdd.declare(*all_values)
-    root = bdd.add_expr(translated_phi)
+    walker = BDDWalker(mapping,bdd)
+    root = walker.walk(phi)
+    all_values = []
+    #root = bdd.add_expr(translated_phi)
     print("BDD for phi built in ", (time.time() - start_time), " seconds")
 
     # MODEL COUNTING
