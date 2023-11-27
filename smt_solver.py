@@ -48,8 +48,9 @@ class SMTSolver:
 
         self._models = []
         mathsat.msat_all_sat(self.solver.msat_env(),
-                             #self.get_converted_atoms(atoms),
-                             self.get_converted_atoms(list(boolean_mapping.keys())),
+                             # self.get_converted_atoms(atoms),
+                             self.get_converted_atoms(
+                                 list(boolean_mapping.keys())),
                              callback=lambda model: _allsat_callback(model, self._converter, self._models))
         self._tlemmas = [self._converter.back(
             l) for l in mathsat.msat_get_theory_lemmas(self.solver.msat_env())]

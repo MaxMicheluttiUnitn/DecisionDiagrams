@@ -46,8 +46,8 @@ def main() -> None:
                     out += str(boolean_mapping[elem.args()[0]]) + ", "
                 else:
                     out += str(boolean_mapping[elem]) + ", "
-            counter+=1
-            print(counter,": [",out[:len(out)-2],"]",sep="")
+            counter += 1
+            print(counter, ": [", out[:len(out)-2], "]", sep="")
     lemmas = smt_solver.get_theory_lemmas()
     if args.print_lemmas:
         print("T-lemmas:")
@@ -62,7 +62,6 @@ def main() -> None:
         phi_and_lemmas = formula.get_phi_and_lemmas(phi, lemmas)
         print("Theory lemmas added to phi in ",
               time.time()-start_time, " seconds")
-
 
     # NORMALIZING PHI AND LEMMAS
     # start_time = time.time()

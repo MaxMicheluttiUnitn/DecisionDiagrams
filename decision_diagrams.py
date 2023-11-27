@@ -2,9 +2,8 @@
 
 import time
 import re
-import pydot
 import os
-import math
+import pydot
 
 from pysmt.fnode import FNode
 from pysmt.shortcuts import BOOL, REAL, Real, Times, INT
@@ -53,20 +52,21 @@ def compute_xsdd(phi: FNode):
 
     walker = XsddParser(boolean_symbols, xsdd_boolean_symbols,
                         real_symbols, xsdd_real_symbols)
-    xsdd_support : FNode= walker.walk(phi)
+    xsdd_support: FNode = walker.walk(phi)
 
     xsdd_engine = XsddEngine(xsdd_domain, xsdd_support, weight_function)
 
-    _,xsdd_support,literals = extract_and_replace_literals(xsdd_support)
-    xsdd_sdd = xsdd_engine.get_sdd(xsdd_support,literals,xsdd_engine.get_vtree(xsdd_support,literals))
+    _, xsdd_support, literals = extract_and_replace_literals(xsdd_support)
+    xsdd_sdd = xsdd_engine.get_sdd(
+        xsdd_support, literals, xsdd_engine.get_vtree(xsdd_support, literals))
     print(xsdd_sdd)
 
-    xsdd_other_sdd = compile_to_sdd(xsdd_support,literals,None)
-    
-    with open('sdd_00.dot','w') as out:
+    xsdd_other_sdd = compile_to_sdd(xsdd_support, literals, None)
+
+    with open('sdd_00.dot', 'w') as out:
         out.write(xsdd_sdd.dot())
 
-    with open('sdd_other_00.dot','w') as out:
+    with open('sdd_other_00.dot', 'w') as out:
         out.write(xsdd_other_sdd.dot())
 
     print(xsdd_engine.compute_volume(add_bounds=False))
@@ -334,10 +334,10 @@ def compute_bdd_cudd(phi: FNode, output_file=None, dump_abstraction=False,
     for value in mapping.values():
         all_values.append(value)
     bdd.declare(*all_values)
-    walker = BDDWalker(mapping,bdd)
+    walker = BDDWalker(mapping, bdd)
     root = walker.walk(phi)
     all_values = []
-    #root = bdd.add_expr(translated_phi)
+    # root = bdd.add_expr(translated_phi)
     print("BDD for phi built in ", (time.time() - start_time), " seconds")
 
     # MODEL COUNTING

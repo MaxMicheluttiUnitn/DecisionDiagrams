@@ -94,7 +94,7 @@ class BDDWalker(DagWalker):
         '''translate theory node'''
         # pylint: disable=unused-argument
         return self._apply_mapping(formula)
-    
+
     @handles(op.REAL_CONSTANT, op.INT_CONSTANT, op.BV_CONSTANT)
     def do_nothing(self, formula, args, **kwargs):
         '''do nothing when seeing theory constants'''

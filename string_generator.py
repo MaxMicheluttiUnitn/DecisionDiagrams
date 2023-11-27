@@ -54,7 +54,7 @@ class SDDSequentailStringGenerator:
 
     def next_string(self) -> str:
         '''generates the next string in sequential order'''
-        if self._string_serial  < 26:
+        if self._string_serial < 26:
             temp = self._string_serial
             result, remainder = divmod(temp, 26)
             str_builder = []
@@ -73,6 +73,7 @@ class SDDSequentailStringGenerator:
     def reset(self) -> None:
         '''resets the generator'''
         self._string_serial = 0
+
 
 class SequentailStringGenerator:
     '''A class that generates possibly infinitely many strings in sequential order'''
