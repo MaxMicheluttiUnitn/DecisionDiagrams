@@ -95,29 +95,35 @@ def find_qvars(phi, phi_and_lemmas, args):
           time.time()-start_time, " seconds")
     return new_theory_atoms
 
-def processSDD(phi_and_lemmas,qvars,models,args):
+
+def processSDD(phi_and_lemmas, qvars, models, args):
     """processes the SDD for phi_and_lemmas"""
     start_time = time.time()
     print("Starting SDD Procesing...")
     decision_diagrams.compute_sdd(phi_and_lemmas, output_file=args.sdd_output,
-                                    vtree_type=args.vtree, vtree_output=args.vtree_output,
-                                    print_mapping=args.print_mapping,
-                                    dump_abstraction=args.dump_abstraction,
-                                    count_models=args.count_models, all_sat_models=models)
+                                  vtree_type=args.vtree, vtree_output=args.vtree_output,
+                                  print_mapping=args.print_mapping,
+                                  dump_abstraction=args.dump_abstraction,
+                                  count_models=args.count_models,
+                                  qvars=qvars,
+                                  all_sat_models=models)
     print("SDD processed in ", time.time()-start_time, " seconds")
 
-def processBDD(phi_and_lemmas,qvars,models,args):
+
+def processBDD(phi_and_lemmas, qvars, models, args):
     """processes the BDD for phi_and_lemmas"""
     start_time = time.time()
     print("Starting BDD Procesing...")
     decision_diagrams.compute_bdd_cudd(phi_and_lemmas, output_file=args.bdd_output,
-                                        print_mapping=args.print_mapping,
-                                        dump_abstraction=args.dump_abstraction,
-                                        count_models=args.count_models,
-                                        qvars=qvars)
+                                       print_mapping=args.print_mapping,
+                                       dump_abstraction=args.dump_abstraction,
+                                       count_models=args.count_models,
+                                       qvars=qvars,
+                                       all_sat_models=models)
     print("BDD processed in ", time.time()-start_time, " seconds")
 
-def processXSDD(phi,args):
+
+def processXSDD(phi, args):
     """processes the XSDD for phi"""
     logger = logging.getLogger("pywmi.engines.xsdd.engine")
     logger.setLevel(logging.DEBUG)
@@ -125,6 +131,7 @@ def processXSDD(phi,args):
     print("Starting XSDD Procesing...")
     decision_diagrams.compute_xsdd(phi)
     print("XSDD processed in ", time.time()-start_time, " seconds")
+
 
 def main() -> None:
     '''Main function for this project'''
@@ -146,11 +153,11 @@ def main() -> None:
 
     # GENERATING DDs
     if args.sdd:
-        processSDD(phi_and_lemmas,new_theory_atoms,models,args)
+        processSDD(phi_and_lemmas, new_theory_atoms, models, args)
     if args.bdd:
-        processBDD(phi_and_lemmas,new_theory_atoms,models,args)
+        processBDD(phi_and_lemmas, new_theory_atoms, models, args)
     if args.xsdd:
-        processXSDD(phi,args)
+        processXSDD(phi, args)
 
 
 if __name__ == "__main__":

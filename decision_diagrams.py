@@ -73,7 +73,15 @@ def compute_xsdd(phi: FNode):
     print(xsdd_engine.compute_volume(add_bounds=False))
 
 
-def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtree_output: str = None, dump_abstraction=False, print_mapping=False, count_models=False, all_sat_models=None) -> None:
+def compute_sdd(phi: FNode,
+                vtree_type: str = None,
+                output_file: str = None,
+                vtree_output: str = None,
+                dump_abstraction: bool = False,
+                print_mapping: bool = False,
+                count_models: bool = False,
+                qvars: List[FNode] = [],
+                all_sat_models: List = None) -> None:
     ' ' 'Computes the SDD for the boolean formula phi and saves it on a file' ' '
     # Setting default values
     if vtree_type is None:
@@ -115,30 +123,37 @@ def compute_sdd(phi: FNode, vtree_type: str = None, output_file: str = None, vtr
     atom_literal_map = dict(zip(atoms, sdd_literals))
     walker = SDDWalker(atom_literal_map, manager)
     sdd_formula = walker.walk(phi)
+    existential_map = []
+    counter: int = 1
+    for smt_atom in atom_literal_map.keys():
+        if smt_atom in qvars:
+            existential_map.append(counter)
+        counter+=1
+    for num in existential_map:
+        sdd_formula = manager.exists(num,sdd_formula)
     print("SDD build in ", time.time()-start_time, " seconds")
 
     # MODEL COUNTING
-    '''c=0
-    if not all_sat_models is None:
-        
-        for model in all_sat_models:
-            conditioned = sdd_formula
-            for atom in model:
-                if atom.is_not():
-                    lit = atom_literal_map[atom.args()[0]]
-                    conditioned = conditioned & -lit
-                else:
-                    lit = atom_literal_map[atom]
-                    conditioned = conditioned & lit
-            wmc: WmcManager = conditioned.wmc(log_mode=False)
-            w = wmc.propagate()
-            c+=1
-            print(f"{c} : Model count: {w}")'''
+    # c=0
+    # if not all_sat_models is None:
+    #     for model in all_sat_models:
+    #         conditioned = sdd_formula
+    #         for atom in model:
+    #             if atom.is_not():
+    #                 lit = atom_literal_map[atom.args()[0]]
+    #                 conditioned = conditioned & -lit
+    #             else:
+    #                 lit = atom_literal_map[atom]
+    #                 conditioned = conditioned & lit
+    #         wmc: WmcManager = conditioned.wmc(log_mode=False)
+    #         w = wmc.propagate()
+    #         c+=1
+    #         print(f"{c} : Model count: {w}")
     if count_models:
         start_time = time.time()
         print("Counting models through the SDD...")
         wmc: WmcManager = sdd_formula.wmc(log_mode=False)
-        w = wmc.propagate()
+        w = wmc.propagate()/(2**len(qvars))
         print(f"Model count: {w}")
         print("Models counted in ", time.time()-start_time, " seconds")
 
@@ -310,8 +325,13 @@ def compute_bdd(phi: FNode, output_file=None, dump_abstraction=False, print_mapp
     # bdd.dump(output_file, filetype='svg')
 
 
-def compute_bdd_cudd(phi: FNode, output_file: str=None, dump_abstraction: bool=False,
-                     print_mapping: bool=False, count_models: bool=False, qvars:List[FNode]=[]):
+def compute_bdd_cudd(phi: FNode,
+                     output_file: str = None,
+                     dump_abstraction: bool = False,
+                     print_mapping: bool = False,
+                     count_models: bool = False,
+                     qvars: List[FNode] = [],
+                     all_sat_models: List = None):
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.cudd'''
     # setting default values
     if output_file is None:
@@ -342,7 +362,7 @@ def compute_bdd_cudd(phi: FNode, output_file: str=None, dump_abstraction: bool=F
     root = walker.walk(phi)
     all_values = []
     if len(mapped_qvars) > 0:
-        root = cudd_bdd.and_exists(root,bdd.true,mapped_qvars)
+        root = cudd_bdd.and_exists(root, bdd.true, mapped_qvars)
     # root = bdd.add_expr(translated_phi)
     print("BDD for phi built in ", (time.time() - start_time), " seconds")
 
