@@ -22,7 +22,7 @@ def get_phi(args):
 
 def normalize_phi_and_get_solver(phi, args):
     """computes normalization on phi"""
-
+    # pylint: disable=unused-argument
     start_time = time.time()
     print("Normalizing phi according to solver...")
     smt_solver = SMTSolver()
@@ -82,6 +82,7 @@ def add_theory_lemmas(phi, lemmas, args):
 
 def find_qvars(phi, phi_and_lemmas, args):
     """finds the atoms on which to existentially quantify"""
+    # pylint: disable=unused-argument
     start_time = time.time()
     print("Existentially quantifying new atoms generated in T-lemmas...")
     phi_atoms = formula.get_atoms(phi)
@@ -96,7 +97,7 @@ def find_qvars(phi, phi_and_lemmas, args):
     return new_theory_atoms
 
 
-def processSDD(phi_and_lemmas, qvars, models, args):
+def process_sdd(phi_and_lemmas, qvars, models, args):
     """processes the SDD for phi_and_lemmas"""
     start_time = time.time()
     print("Starting SDD Procesing...")
@@ -110,7 +111,7 @@ def processSDD(phi_and_lemmas, qvars, models, args):
     print("SDD processed in ", time.time()-start_time, " seconds")
 
 
-def processBDD(phi_and_lemmas, qvars, models, args):
+def process_bdd(phi_and_lemmas, qvars, models, args):
     """processes the BDD for phi_and_lemmas"""
     start_time = time.time()
     print("Starting BDD Procesing...")
@@ -123,8 +124,9 @@ def processBDD(phi_and_lemmas, qvars, models, args):
     print("BDD processed in ", time.time()-start_time, " seconds")
 
 
-def processXSDD(phi, args):
+def process_xsdd(phi, args):
     """processes the XSDD for phi"""
+    # pylint: disable=unused-argument
     logger = logging.getLogger("pywmi.engines.xsdd.engine")
     logger.setLevel(logging.DEBUG)
     start_time = time.time()
@@ -153,11 +155,11 @@ def main() -> None:
 
     # GENERATING DDs
     if args.sdd:
-        processSDD(phi_and_lemmas, new_theory_atoms, models, args)
+        process_sdd(phi_and_lemmas, new_theory_atoms, models, args)
     if args.bdd:
-        processBDD(phi_and_lemmas, new_theory_atoms, models, args)
+        process_bdd(phi_and_lemmas, new_theory_atoms, models, args)
     if args.xsdd:
-        processXSDD(phi, args)
+        process_xsdd(phi, args)
 
 
 if __name__ == "__main__":

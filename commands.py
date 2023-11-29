@@ -64,6 +64,10 @@ def get_args() -> argparse.Namespace:
         "--count_models",
         help="Print the amount of models represented by the DD",
         action="store_true")
+    parser.add_argument(
+        "--check_eq",
+        help="Check the T-equivalence of the T-agnostic DD with the T-formula phi",
+        action="store_true")
     args = parser.parse_args()
     return args
 

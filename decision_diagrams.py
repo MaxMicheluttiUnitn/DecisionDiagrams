@@ -5,6 +5,7 @@ import re
 import os
 import pydot
 
+from array import array
 from typing import List
 from pysmt.fnode import FNode
 from pysmt.shortcuts import BOOL, REAL, Real, Times, INT
@@ -108,7 +109,7 @@ def compute_sdd(phi: FNode,
     if not vtree_output is None:
         start_time = time.time()
         print("Saving V-Tree...")
-        if _save_SDD_object(vtree, vtree_output, name_to_atom_map, 'VTree'):
+        if _save_sdd_object(vtree, vtree_output, name_to_atom_map, 'VTree'):
             print("V-Tree saved as "+vtree_output+" in ",
                   time.time()-start_time, " seconds")
         else:
@@ -123,19 +124,20 @@ def compute_sdd(phi: FNode,
     atom_literal_map = dict(zip(atoms, sdd_literals))
     walker = SDDWalker(atom_literal_map, manager)
     sdd_formula = walker.walk(phi)
-    existential_map = []
-    counter: int = 1
+    existential_map = [0]
     for smt_atom in atom_literal_map.keys():
         if smt_atom in qvars:
-            existential_map.append(counter)
-        counter+=1
-    for num in existential_map:
-        sdd_formula = manager.exists(num,sdd_formula)
-    print("SDD build in ", time.time()-start_time, " seconds")
+            existential_map.append(1)
+        else:
+            existential_map.append(0)
+    sdd_formula = manager.exists_multiple(array('i',existential_map),sdd_formula)
+    # for num in existential_map:
+    #     sdd_formula = manager.exists(num,sdd_formula)
+    print("SDD built in ", time.time()-start_time, " seconds")
 
-    # MODEL COUNTING
-    # c=0
+    # EQUIVALENCE CHECKING
     # if not all_sat_models is None:
+    #     c=0
     #     for model in all_sat_models:
     #         conditioned = sdd_formula
     #         for atom in model:
@@ -149,6 +151,8 @@ def compute_sdd(phi: FNode,
     #         w = wmc.propagate()
     #         c+=1
     #         print(f"{c} : Model count: {w}")
+    
+    # MODEL COUNTING
     if count_models:
         start_time = time.time()
         print("Counting models through the SDD...")
@@ -163,7 +167,7 @@ def compute_sdd(phi: FNode,
     if print_mapping:
         print("Mapping:")
         print(name_to_atom_map)
-    if _save_SDD_object(sdd_formula, output_file, name_to_atom_map, 'SDD', dump_abstraction):
+    if _save_sdd_object(sdd_formula, output_file, name_to_atom_map, 'SDD', dump_abstraction):
         print("SDD saved as "+output_file+" in ",
               time.time()-start_time, " seconds")
     else:
@@ -171,13 +175,13 @@ def compute_sdd(phi: FNode,
               output_file, " is not supported")
 
 
-def _save_SDD_object(sdd_object, output_file: str, mapping: dict[str, FNode], kind: str, dump_abstraction=False) -> bool:
+def _save_sdd_object(sdd_object, output_file: str, mapping: dict[str, FNode], kind: str, dump_abstraction=False) -> bool:
     '''saves an SDD object on a file'''
     dot_content = sdd_object.dot()
     if kind == 'VTree':
         dot_content = _translate_vtree_vars(dot_content, mapping)
     elif kind == 'SDD' and not dump_abstraction:
-        dot_content = _translate_SDD_vars(dot_content, mapping)
+        dot_content = _translate_sdd_vars(dot_content, mapping)
     tokenized_output_file = output_file.split('.')
     if tokenized_output_file[len(tokenized_output_file)-1] == 'dot':
         with open(output_file, "w") as out:
@@ -224,7 +228,7 @@ SDD_REPLACE_LEFT_REGEX = SDD_KEY_START_LEFT_REGEX
 SDD_REPLACE_RIGHT_REGEX = SDD_KEY_START_RIGHT_REGEX
 
 
-def _translate_SDD_vars(original_dot: str, mapping: dict[str, FNode]) -> str:
+def _translate_sdd_vars(original_dot: str, mapping: dict[str, FNode]) -> str:
     '''translates variables in the dot representation of the SDD into their original names in phi'''
     result = """"""
     original_dot = original_dot.replace('fixedsize=true', 'fixedsize=false')
