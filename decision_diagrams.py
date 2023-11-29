@@ -5,6 +5,7 @@ import re
 import os
 import pydot
 
+from typing import List
 from pysmt.fnode import FNode
 from pysmt.shortcuts import BOOL, REAL, Real, Times, INT
 from pysdd.sdd import SddManager, Vtree, WmcManager
@@ -19,7 +20,7 @@ from string_generator import SequentailStringGenerator, SDDSequentailStringGener
 from formula import get_atoms, get_phi, get_symbols
 from sdd_walker import SDDWalker
 from bdd_walker import BDDWalker
-from bdd_cudd_walker import BDDCUDDParser
+# from bdd_cudd_walker import BDDCUDDParser
 from xsdd_walker import XsddParser
 
 
@@ -309,8 +310,8 @@ def compute_bdd(phi: FNode, output_file=None, dump_abstraction=False, print_mapp
     # bdd.dump(output_file, filetype='svg')
 
 
-def compute_bdd_cudd(phi: FNode, output_file=None, dump_abstraction=False,
-                     print_mapping=False, count_models=False):
+def compute_bdd_cudd(phi: FNode, output_file: str=None, dump_abstraction: bool=False,
+                     print_mapping: bool=False, count_models: bool=False, qvars:List[FNode]=[]):
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.cudd'''
     # setting default values
     if output_file is None:
@@ -333,17 +334,25 @@ def compute_bdd_cudd(phi: FNode, output_file=None, dump_abstraction=False,
     all_values = []
     for value in mapping.values():
         all_values.append(value)
+    mapped_qvars = []
+    for atom in qvars:
+        mapped_qvars.append(mapping[atom])
     bdd.declare(*all_values)
     walker = BDDWalker(mapping, bdd)
     root = walker.walk(phi)
     all_values = []
+    if len(mapped_qvars) > 0:
+        root = cudd_bdd.and_exists(root,bdd.true,mapped_qvars)
     # root = bdd.add_expr(translated_phi)
     print("BDD for phi built in ", (time.time() - start_time), " seconds")
 
     # MODEL COUNTING
     if count_models:
+        start_time = time.time()
+        print("Counting models...")
         print("Models:")
-        print(root.count(nvars=len(mapping.keys())))
+        print(root.count(nvars=len(mapping.keys())-len(qvars)))
+        print("Models counted in ", (time.time() - start_time), " seconds")
 
     # SAVING BDD
     start_time = time.time()

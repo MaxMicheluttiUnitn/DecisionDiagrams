@@ -60,8 +60,8 @@ class BDDWalker(DagWalker):
         # pylint: disable=unused-argument
         value = formula.constant_value()
         if value:
-            return self.manager.true()
-        return self.manager.false()
+            return self.manager.true
+        return self.manager.false
 
     def walk_iff(self, formula, args, **kwargs):
         '''translate IFF node'''

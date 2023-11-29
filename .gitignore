@@ -1,5 +1,8 @@
 /__pycache__
 /output
+/sinthetic_input
 
 *.dot
 *.svg
+
+mathsat

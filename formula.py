@@ -1,7 +1,7 @@
 '''this module simplifies interactions with the pysmt library for handling SMT formulas'''
 
 from typing import List, Dict
-from pysmt.shortcuts import Symbol, REAL, And, Or, Xor, BOOL, Real, LT, Minus, Plus, Not, read_smtlib
+from pysmt.shortcuts import Symbol, REAL, And, Or, Xor, BOOL, Real, LT, Minus, Plus, Not, read_smtlib, Exists
 from pysmt.fnode import FNode
 from string_generator import SequentailStringGenerator
 
@@ -68,3 +68,16 @@ def get_boolean_mapping(phi: FNode) -> Dict[FNode, FNode]:
     for atom in phi_atoms:
         res.update({Symbol(f"fresh_{gen.next_string()}", BOOL): atom})
     return res
+
+
+def atoms_difference(original: List[FNode],expanded: List[FNode]) -> List[FNode]:
+    """computes the diffrence between expanded and original"""
+    result: List[FNode] = []
+    for atom in expanded:
+        if not atom in original:
+            result.append(atom)
+    return result
+
+def existentially_quantify(phi: FNode, atoms: List[FNode]) -> FNode:
+    """existentially quantifies the formula over the given atoms"""
+    return Exists(atoms,phi)
