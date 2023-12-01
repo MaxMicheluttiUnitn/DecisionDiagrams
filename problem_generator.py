@@ -176,7 +176,7 @@ def main():
     """main function for SMT generation"""
     args = parse_args()
 
-    output_dir = f'problems_b{args.booleans}_r{args.reals}_d{args.depth}_m{args.models}_s{args.seed}'
+    output_dir = f'problems_and_solutions/synthetic_problems_b{args.booleans}_r{args.reals}_d{args.depth}_m{args.models}_s{args.seed}'
     output_dir = path.join(args.output, output_dir)
 
     check_output(args.output, output_dir)
@@ -205,7 +205,12 @@ def main():
     for i in range(args.models):
         problem = generator.generate_random_formula(
             args.depth, operators, neg_prob, args.theta)
-        file_name = path.join(output_dir, template.format(n=i + 1, d=digits))
+        if(i+1<10):
+            actual_output_folder = output_dir+'/0'+str(i+1)
+        else:
+            actual_output_folder = output_dir+'/'+str(i+1)
+        os.mkdir(actual_output_folder)
+        file_name = path.join(actual_output_folder, template.format(n=i + 1, d=digits))
         write_smtlib(problem, file_name)
         print("\r" * 100, end='')
         print(f"Problem {i+1}/{args.models}", end='')

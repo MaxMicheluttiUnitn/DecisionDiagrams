@@ -1,8 +1,10 @@
 /__pycache__
 /output
 /sinthetic_input
+/problems_and_solutions
 
 *.dot
 *.svg
+*.zip
 
 mathsat

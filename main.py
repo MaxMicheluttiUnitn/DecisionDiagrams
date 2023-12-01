@@ -1,11 +1,18 @@
 '''the main module for this project'''
-import sys
-import logging
 import time
-import decision_diagrams
-from smt_solver import UNSAT, SMTSolver
-import commands
+import logging
+import sys
+
+# ADD these lines to .local/lib/python3.10/site-packages/pysmt/smtlib/parser/__init__.py
+# to hide cython DeprecationWarning when importing module imp
+#
+# import warnings
+# warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 import formula
+import commands
+from smt_solver import UNSAT, SMTSolver
+import decision_diagrams
 
 
 def get_phi(args):

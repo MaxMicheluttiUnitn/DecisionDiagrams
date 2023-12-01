@@ -65,11 +65,11 @@ def compute_xsdd(phi: FNode):
 
     xsdd_other_sdd = compile_to_sdd(xsdd_support, literals, None)
 
-    with open('sdd_00.dot', 'w') as out:
-        out.write(xsdd_sdd.dot())
+    # with open('sdd_00.dot', 'w') as out:
+    #     out.write(xsdd_sdd.dot())
 
-    with open('sdd_other_00.dot', 'w') as out:
-        out.write(xsdd_other_sdd.dot())
+    # with open('sdd_other_00.dot', 'w') as out:
+    #     out.write(xsdd_other_sdd.dot())
 
     print(xsdd_engine.compute_volume(add_bounds=False))
 
