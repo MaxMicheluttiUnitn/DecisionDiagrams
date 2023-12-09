@@ -12,10 +12,9 @@ echo $n
 
 echo "======================================================="
 echo "Problem $n"
-timeout $5s python3 main.py -i problems_and_solutions_synth/synthetic_problems_b$2_r$3_d$4_m1_s$n/01/b$2_d$4_r$3_s${n}_1.smt2 --sdd --sdd_output sdd_remove.dot >  logs/run_b$2_r$3_d$4_m1/log_$n.txt
+timeout $5s python3 main.py -i problems_and_solutions_synth/synthetic_problems_b$2_r$3_d$4_m1_s$n/01/b$2_d$4_r$3_s${n}_1.smt2 --sdd >  logs/run_b$2_r$3_d$4_m1/log_$n.txt
 if [ $? -eq 0 ]
 then
-    rm -f sdd_remove.dot
     echo "SDD generated"
 else
     echo "SDD was not generated: timeout"

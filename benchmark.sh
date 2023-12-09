@@ -21,10 +21,9 @@ then
                     while [ $seed -le $max_seed ]; do
                         echo "Iteration: BOOL = $bool REAL = $real DEPTH = $depth SEED = $seed"
                         python3 problem_generator.py -s $seed -b $bool -r $real -d $depth -m 1 
-                        timeout ${timeout_time}s python3 main.py -i problems_and_solutions_synth/synthetic_problems_b${bool}_r${real}_d${depth}_m1_s${seed}/01/b${bool}_d${depth}_r${real}_s${seed}_1.smt2 --sdd --sdd_output sdd_remove.dot >  logs/run_b${bool}_r${real}_d${depth}_m1/log_${seed}.txt
+                        timeout ${timeout_time}s python3 main.py -i problems_and_solutions_synth/synthetic_problems_b${bool}_r${real}_d${depth}_m1_s${seed}/01/b${bool}_d${depth}_r${real}_s${seed}_1.smt2 --sdd >  logs/run_b${bool}_r${real}_d${depth}_m1/log_${seed}.txt
                         if [ $? -eq 0 ]
                         then
-                            rm -f sdd_remove.dot
                             echo "SDD generated"
                         else
                             echo "SDD was not generated: timeout"
