@@ -21,5 +21,5 @@ done
 
 echo "======================================================="
 else
-echo "2 args are required. Format: problem_solver PROBLEM_FILE_LOCATION PROBLEM_FILE_NAME"
+echo "4 args are required. Usage: ./generate_and_solve.sh SEED #BOOL #REAL DEPTH"
 fi

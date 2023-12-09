@@ -2,6 +2,8 @@
 /output
 /sinthetic_input
 /problems_and_solutions
+/problems_and_solutions_synth
+/logs
 
 *.dot
 *.svg

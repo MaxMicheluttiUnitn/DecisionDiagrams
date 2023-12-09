@@ -58,12 +58,12 @@ def compute_xsdd(phi: FNode):
 
     xsdd_engine = XsddEngine(xsdd_domain, xsdd_support, weight_function)
 
-    _, xsdd_support, literals = extract_and_replace_literals(xsdd_support)
-    xsdd_sdd = xsdd_engine.get_sdd(
-        xsdd_support, literals, xsdd_engine.get_vtree(xsdd_support, literals))
-    print(xsdd_sdd)
+    # _, xsdd_support, literals = extract_and_replace_literals(xsdd_support)
+    # xsdd_sdd = xsdd_engine.get_sdd(
+    #     xsdd_support, literals, xsdd_engine.get_vtree(xsdd_support, literals))
+    # print(xsdd_sdd)
 
-    xsdd_other_sdd = compile_to_sdd(xsdd_support, literals, None)
+    # xsdd_other_sdd = compile_to_sdd(xsdd_support, literals, None)
 
     # with open('sdd_00.dot', 'w') as out:
     #     out.write(xsdd_sdd.dot())
@@ -87,8 +87,8 @@ def compute_sdd(phi: FNode,
     # Setting default values
     if vtree_type is None:
         vtree_type = "right"
-    if output_file is None:
-        output_file = "output/sdd.dot"
+    # if output_file is None:
+    #     output_file = "output/sdd.dot"
 
     # BUILDING V-TREE
     start_time = time.time()
@@ -162,17 +162,18 @@ def compute_sdd(phi: FNode,
         print("Models counted in ", time.time()-start_time, " seconds")
 
     # SAVING SDD
-    start_time = time.time()
-    print("Saving SDD...")
-    if print_mapping:
-        print("Mapping:")
-        print(name_to_atom_map)
-    if _save_sdd_object(sdd_formula, output_file, name_to_atom_map, 'SDD', dump_abstraction):
-        print("SDD saved as "+output_file+" in ",
-              time.time()-start_time, " seconds")
-    else:
-        print("SDD could not be saved: The file format of ",
-              output_file, " is not supported")
+    if not output_file is None:
+        start_time = time.time()
+        print("Saving SDD...")
+        if print_mapping:
+            print("Mapping:")
+            print(name_to_atom_map)
+        if _save_sdd_object(sdd_formula, output_file, name_to_atom_map, 'SDD', dump_abstraction):
+            print("SDD saved as "+output_file+" in ",
+                time.time()-start_time, " seconds")
+        else:
+            print("SDD could not be saved: The file format of ",
+                output_file, " is not supported")
 
 
 def _save_sdd_object(sdd_object, output_file: str, mapping: dict[str, FNode], kind: str, dump_abstraction=False) -> bool:
@@ -338,8 +339,8 @@ def compute_bdd_cudd(phi: FNode,
                      all_sat_models: List = None):
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.cudd'''
     # setting default values
-    if output_file is None:
-        output_file = "output/bdd.svg"
+    # if output_file is None:
+    #     output_file = "output/bdd.svg"
 
     # REPRESENT PHI IN PROMELA SYNTAX
     start_time = time.time()
@@ -379,28 +380,29 @@ def compute_bdd_cudd(phi: FNode,
         print("Models counted in ", (time.time() - start_time), " seconds")
 
     # SAVING BDD
-    start_time = time.time()
-    print("Saving BDD...")
-    temporary_dot = 'bdd_temporary_dot.dot'
-    reverse_mapping = dict((v, k) for k, v in mapping.items())
-    if print_mapping:
-        print("Mapping:")
-        print(reverse_mapping)
-    if output_file.endswith('.dot'):
-        bdd.dump(output_file, filetype='dot', roots=[root])
-        if not dump_abstraction:
-            _change_bbd_dot_names(output_file, reverse_mapping)
-    elif output_file.endswith('.svg'):
-        bdd.dump(temporary_dot, filetype='dot', roots=[root])
-        if not dump_abstraction:
-            _change_bbd_dot_names(temporary_dot, reverse_mapping)
-        with open(temporary_dot, 'r') as dot_content:
-            (graph,) = pydot.graph_from_dot_data(dot_content.read())
-            graph.write_svg(output_file)
-        os.remove(temporary_dot)
-    else:
-        print('Unable to dump BDD file: format unsupported')
-    print("BDD saved as "+output_file+" in ",
+    if not output_file is None:
+        start_time = time.time()
+        print("Saving BDD...")
+        temporary_dot = 'bdd_temporary_dot.dot'
+        reverse_mapping = dict((v, k) for k, v in mapping.items())
+        if print_mapping:
+            print("Mapping:")
+            print(reverse_mapping)
+        if output_file.endswith('.dot'):
+            bdd.dump(output_file, filetype='dot', roots=[root])
+            if not dump_abstraction:
+                _change_bbd_dot_names(output_file, reverse_mapping)
+        elif output_file.endswith('.svg'):
+            bdd.dump(temporary_dot, filetype='dot', roots=[root])
+            if not dump_abstraction:
+                _change_bbd_dot_names(temporary_dot, reverse_mapping)
+            with open(temporary_dot, 'r') as dot_content:
+                (graph,) = pydot.graph_from_dot_data(dot_content.read())
+                graph.write_svg(output_file)
+            os.remove(temporary_dot)
+        else:
+            print('Unable to dump BDD file: format unsupported')
+        print("BDD saved as "+output_file+" in ",
           time.time()-start_time, " seconds")
 
 

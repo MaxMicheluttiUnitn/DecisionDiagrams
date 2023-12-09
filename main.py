@@ -144,6 +144,8 @@ def process_xsdd(phi, args):
 
 def main() -> None:
     '''Main function for this project'''
+    global_start_time = time.time()
+
     args = commands.get_args()
     # GETTING PHI
     phi = get_phi(args)
@@ -167,6 +169,8 @@ def main() -> None:
         process_bdd(phi_and_lemmas, new_theory_atoms, models, args)
     if args.xsdd:
         process_xsdd(phi, args)
+
+    print("All done in ", time.time()-global_start_time, " seconds")
 
 
 if __name__ == "__main__":
