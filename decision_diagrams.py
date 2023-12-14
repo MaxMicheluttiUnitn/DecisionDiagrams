@@ -124,6 +124,11 @@ def compute_sdd(phi: FNode,
     atom_literal_map = dict(zip(atoms, sdd_literals))
     walker = SDDWalker(atom_literal_map, manager)
     sdd_formula = walker.walk(phi)
+    print("SDD built in ", time.time()-start_time, " seconds")
+
+    # QUANTIFYING OVER FRESH T-ATOMS
+    start_time = time.time()
+    print("Quantifying over fresh T-atoms...")
     existential_map = [0]
     for smt_atom in atom_literal_map.keys():
         if smt_atom in qvars:
@@ -131,10 +136,10 @@ def compute_sdd(phi: FNode,
         else:
             existential_map.append(0)
     sdd_formula = manager.exists_multiple(array('i',existential_map),sdd_formula)
+    print("Quantified over fresh T-atoms in ", time.time()-start_time, " seconds")
     # for num in existential_map:
     #     sdd_formula = manager.exists(num,sdd_formula)
-    print("SDD built in ", time.time()-start_time, " seconds")
-
+    
     # EQUIVALENCE CHECKING
     # if not all_sat_models is None:
     #     c=0
@@ -356,20 +361,29 @@ def compute_bdd_cudd(phi: FNode,
     start_time = time.time()
     print("Building BDD...")
     bdd = cudd_bdd.BDD()
-    all_values = []
-    for value in mapping.values():
-        all_values.append(value)
-    mapped_qvars = []
+    appended_values = set()
+    mapped_qvars = [mapping[atom] for atom in qvars]
+    all_values = [mapping[atom] for atom in qvars]
     for atom in qvars:
-        mapped_qvars.append(mapping[atom])
+        appended_values.add(mapping[atom])
+    for value in mapping.values():
+        if not value in appended_values:
+            all_values.append(value)
     bdd.declare(*all_values)
+    bdd_ordering = {}
+    for i,item in enumerate(all_values):
+        bdd_ordering[item] = i
+    cudd_bdd.reorder(bdd, bdd_ordering)
     walker = BDDWalker(mapping, bdd)
     root = walker.walk(phi)
-    all_values = []
-    if len(mapped_qvars) > 0:
-        root = cudd_bdd.and_exists(root, bdd.true, mapped_qvars)
-    # root = bdd.add_expr(translated_phi)
     print("BDD for phi built in ", (time.time() - start_time), " seconds")
+    
+    # ENUMERATING OVER FRESH T-ATOMS
+    if len(mapped_qvars) > 0:
+        start_time = time.time()
+        print("Enumerating over fresh T-atoms...")
+        root = cudd_bdd.and_exists(root, bdd.true, mapped_qvars)
+        print("BDD for phi built in ", (time.time() - start_time), " seconds")
 
     # MODEL COUNTING
     if count_models:
