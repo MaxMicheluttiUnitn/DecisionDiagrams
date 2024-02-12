@@ -1,5 +1,6 @@
 dd==0.5.7
 pydot==1.4.2
 PySDD==0.2.11
-PySMT==0.9.6.dev44
-pywmi==0.7.0
+PySMT==0.9.6.dev53
+pywmi @ git+https://github.com/weighted-model-integration/pywmi@1c642518c75211d909fcfeb940085d6f12c1918f
+wmibench @ git+https://github.com/unitn-sml/wmi-benchmarks@main
