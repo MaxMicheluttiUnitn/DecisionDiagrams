@@ -82,6 +82,7 @@ def all_sat_computation(phi, smt_solver, args, computation_logger):
     if args.print_lemmas:
         print("T-lemmas:")
         print("\n".join(map(lambda x: x.serialize(), lemmas)))
+    computation_logger["T-lemmas amount"] = len(lemmas)
     return lemmas
 
 
@@ -114,10 +115,11 @@ def find_qvars(phi, phi_and_lemmas, args, computation_logger):
         new_theory_atoms = formula.atoms_difference(phi_atoms, phi_lemma_atoms)
         # quantified_phi = formula.existentially_quantify(
         #     phi_and_lemmas, new_theory_atoms)
+    computation_logger["fresh T-atoms detected"] = len(new_theory_atoms)
     elapsed_time = time.time()-start_time
     print("Fresh atoms found in ",
           elapsed_time, " seconds")
-    computation_logger["fresh atoms finding time"] = elapsed_time
+    computation_logger["fresh T-atoms detection time"] = elapsed_time
     return new_theory_atoms
 
 
