@@ -113,6 +113,7 @@ def process_sdd(phi_and_lemmas, qvars, models, args):
                                   print_mapping=args.print_mapping,
                                   dump_abstraction=args.dump_abstraction,
                                   count_models=args.count_models,
+                                  count_nodes=args.count_nodes,
                                   qvars=qvars,
                                   all_sat_models=models)
     print("SDD processed in ", time.time()-start_time, " seconds")
@@ -126,6 +127,7 @@ def process_bdd(phi_and_lemmas, qvars, models, args):
                                        print_mapping=args.print_mapping,
                                        dump_abstraction=args.dump_abstraction,
                                        count_models=args.count_models,
+                                       count_nodes=args.count_nodes,
                                        qvars=qvars,
                                        all_sat_models=models)
     print("BDD processed in ", time.time()-start_time, " seconds")

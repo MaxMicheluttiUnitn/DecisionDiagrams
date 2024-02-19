@@ -81,6 +81,7 @@ def compute_sdd(phi: FNode,
                 dump_abstraction: bool = False,
                 print_mapping: bool = False,
                 count_models: bool = False,
+                count_nodes: bool = False,
                 qvars: List[FNode] = [],
                 all_sat_models: List = None) -> None:
     ' ' 'Computes the SDD for the boolean formula phi and saves it on a file' ' '
@@ -157,6 +158,10 @@ def compute_sdd(phi: FNode,
     #         c+=1
     #         print(f"{c} : Model count: {w}")
     
+    # COUNTING NODES
+    if count_nodes:
+        print("Nodes in SDD: ",sdd_formula.count())
+
     # MODEL COUNTING
     if count_models:
         start_time = time.time()
@@ -340,6 +345,7 @@ def compute_bdd_cudd(phi: FNode,
                      dump_abstraction: bool = False,
                      print_mapping: bool = False,
                      count_models: bool = False,
+                     count_nodes: bool = False,
                      qvars: List[FNode] = [],
                      all_sat_models: List = None):
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.cudd'''
@@ -384,6 +390,11 @@ def compute_bdd_cudd(phi: FNode,
         print("Enumerating over fresh T-atoms...")
         root = cudd_bdd.and_exists(root, bdd.true, mapped_qvars)
         print("BDD for phi built in ", (time.time() - start_time), " seconds")
+
+    # COUNTING NODES
+    if count_nodes:
+        total_nodes = len(root)
+        print("Nodes in BDD: ",total_nodes)
 
     # MODEL COUNTING
     if count_models:
