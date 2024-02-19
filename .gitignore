@@ -5,6 +5,8 @@
 /problems_and_solutions_synth
 /logs
 
+*.smt
+*.smt2
 *.dot
 *.svg
 *.zip
