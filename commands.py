@@ -49,6 +49,10 @@ def get_args() -> argparse.Namespace:
         help="Specify a .svg file to output the BDD (default is bdd.svg)",
         type=str)
     parser.add_argument(
+        "-d", "--details",
+        help="Specify a .json file to save the computation details",
+        type=str)
+    parser.add_argument(
         "--pure_abstraction",
         help="Use only the boolean abstraction (without lemmas) for the DD generation",
         action="store_true")

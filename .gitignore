@@ -10,5 +10,6 @@
 *.dot
 *.svg
 *.zip
+*.json
 
 mathsat

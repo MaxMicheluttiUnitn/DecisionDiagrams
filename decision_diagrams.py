@@ -25,7 +25,7 @@ from bdd_walker import BDDWalker
 from xsdd_walker import XsddParser
 
 
-def compute_xsdd(phi: FNode):
+def compute_xsdd(phi: FNode,computation_logger: any = {}):
     '''computing xsdd'''
     symbols = get_symbols(phi)
 
@@ -82,7 +82,8 @@ def compute_sdd(phi: FNode,
                 print_mapping: bool = False,
                 count_models: bool = False,
                 count_nodes: bool = False,
-                qvars: List[FNode] = []) -> None:
+                qvars: List[FNode] = [],
+                computation_logger: any = {}) -> None:
     ' ' 'Computes the SDD for the boolean formula phi and saves it on a file' ' '
     # Setting default values
     if vtree_type is None:
@@ -103,15 +104,19 @@ def compute_sdd(phi: FNode,
     # for now just use appearance order in phi
     var_order = list(range(1, var_count + 1))
     vtree = Vtree(var_count, var_order, vtree_type)
-    print("V-Tree built in ", time.time()-start_time, " seconds")
+    elapsed_time = time.time()-start_time
+    print("V-Tree built in ", elapsed_time, " seconds")
+    computation_logger["SDD"]["V-Tree building time"] = elapsed_time
 
     # SAVING VTREE
     if not vtree_output is None:
         start_time = time.time()
         print("Saving V-Tree...")
         if _save_sdd_object(vtree, vtree_output, name_to_atom_map, 'VTree'):
+            elapsed_time = time.time()-start_time
             print("V-Tree saved as "+vtree_output+" in ",
-                  time.time()-start_time, " seconds")
+                  elapsed_time, " seconds")
+            computation_logger["SDD"]["V-Tree dumping time"] = elapsed_time
         else:
             print("V-Tree could not be saved: The file format of ",
                   vtree_output, " is not supported")
@@ -124,7 +129,9 @@ def compute_sdd(phi: FNode,
     atom_literal_map = dict(zip(atoms, sdd_literals))
     walker = SDDWalker(atom_literal_map, manager)
     sdd_formula = walker.walk(phi)
-    print("SDD built in ", time.time()-start_time, " seconds")
+    elapsed_time = time.time()-start_time
+    print("SDD built in ", elapsed_time, " seconds")
+    computation_logger["SDD"]["DD building time"] = elapsed_time
 
     # QUANTIFYING OVER FRESH T-ATOMS
     start_time = time.time()
@@ -135,12 +142,18 @@ def compute_sdd(phi: FNode,
             existential_map.append(1)
         else:
             existential_map.append(0)
-    sdd_formula = manager.exists_multiple(array('i',existential_map),sdd_formula)
-    print("Quantified over fresh T-atoms in ", time.time()-start_time, " seconds")
-    
+    sdd_formula = manager.exists_multiple(
+        array('i', existential_map), sdd_formula)
+    elapsed_time = time.time()-start_time
+    print("Quantified over fresh T-atoms in ",
+          elapsed_time, " seconds")
+    computation_logger["SDD"]["fresh T-atoms quantification time"] = elapsed_time
+
     # COUNTING NODES
     if count_nodes:
-        print("Nodes in SDD: ",sdd_formula.count())
+        total_nodes = sdd_formula.count()
+        computation_logger["SDD"]["DD nodes"] = total_nodes
+        print("Nodes in SDD: ", total_nodes)
 
     # MODEL COUNTING
     if count_models:
@@ -149,7 +162,10 @@ def compute_sdd(phi: FNode,
         wmc: WmcManager = sdd_formula.wmc(log_mode=False)
         w = wmc.propagate()/(2**len(qvars))
         print(f"Model count: {w}")
-        print("Models counted in ", time.time()-start_time, " seconds")
+        computation_logger["SDD"]["model count"] = w
+        elapsed_time = time.time()-start_time
+        print("Models counted in ", elapsed_time, " seconds")
+        computation_logger["SDD"]["model counting time"] = elapsed_time
 
     # SAVING SDD
     if not output_file is None:
@@ -159,11 +175,13 @@ def compute_sdd(phi: FNode,
             print("Mapping:")
             print(name_to_atom_map)
         if _save_sdd_object(sdd_formula, output_file, name_to_atom_map, 'SDD', dump_abstraction):
+            elapsed_time = time.time()-start_time
             print("SDD saved as "+output_file+" in ",
-                time.time()-start_time, " seconds")
+                  elapsed_time, " seconds")
+            computation_logger["SDD"]["dumping time"] = elapsed_time
         else:
             print("SDD could not be saved: The file format of ",
-                output_file, " is not supported")
+                  output_file, " is not supported")
 
 
 def _save_sdd_object(sdd_object, output_file: str, mapping: dict[str, FNode], kind: str, dump_abstraction=False) -> bool:
@@ -259,10 +277,10 @@ def _translate_sdd_vars(original_dot: str, mapping: dict[str, FNode]) -> str:
     return result
 
 
-def compute_bdd(phi: FNode, output_file=None, dump_abstraction=False, print_mapping=False) -> None:
+def compute_bdd(phi: FNode, output_file=None, dump_abstraction=False, print_mapping=False, computation_logger: any = {}) -> None:
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.autoref'''
     # For now always use compute_bdd_cudd
-    return compute_bdd_cudd(phi, output_file, dump_abstraction, print_mapping)
+    return compute_bdd_cudd(phi, output_file, dump_abstraction, print_mapping, computation_logger=computation_logger)
     if output_file is None:
         output_file = "bdd.svg"
     bdd = BDD()
@@ -288,7 +306,8 @@ def compute_bdd_cudd(phi: FNode,
                      print_mapping: bool = False,
                      count_models: bool = False,
                      count_nodes: bool = False,
-                     qvars: List[FNode] = []):
+                     qvars: List[FNode] = [],
+                     computation_logger: any = {}):
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.cudd'''
     # setting default values
     # if output_file is None:
@@ -302,7 +321,9 @@ def compute_bdd_cudd(phi: FNode,
     string_generator = SequentailStringGenerator()
     for atom in atoms:
         mapping[atom] = string_generator.next_string()
-    print("Mapping created in ", (time.time() - start_time), " seconds")
+    elapsed_time = (time.time() - start_time)
+    print("Mapping created in ", elapsed_time, " seconds")
+    computation_logger["BDD"]["variable mapping creation time"] = elapsed_time
 
     # BUILDING ACTUAL BDD
     start_time = time.time()
@@ -318,32 +339,42 @@ def compute_bdd_cudd(phi: FNode,
             all_values.append(value)
     bdd.declare(*all_values)
     bdd_ordering = {}
-    for i,item in enumerate(all_values):
+    for i, item in enumerate(all_values):
         bdd_ordering[item] = i
     cudd_bdd.reorder(bdd, bdd_ordering)
     walker = BDDWalker(mapping, bdd)
     root = walker.walk(phi)
-    print("BDD for phi built in ", (time.time() - start_time), " seconds")
-    
+    elapsed_time = (time.time() - start_time)
+    print("BDD for phi built in ", elapsed_time, " seconds")
+    computation_logger["BDD"]["DD building time"] = elapsed_time
+
     # ENUMERATING OVER FRESH T-ATOMS
     if len(mapped_qvars) > 0:
         start_time = time.time()
         print("Enumerating over fresh T-atoms...")
         root = cudd_bdd.and_exists(root, bdd.true, mapped_qvars)
-        print("BDD for phi built in ", (time.time() - start_time), " seconds")
+        elapsed_time = (time.time() - start_time)
+        print("BDD for phi built in ", elapsed_time, " seconds")
+        computation_logger["BDD"]["fresh T-atoms quantification time"] = elapsed_time
+    else:
+        computation_logger["BDD"]["fresh T-atoms quantification time"] = 0
 
     # COUNTING NODES
     if count_nodes:
         total_nodes = len(root)
-        print("Nodes in BDD: ",total_nodes)
+        print("Nodes in BDD: ", total_nodes)
+        computation_logger["BDD"]["DD nodes"] = total_nodes
 
     # MODEL COUNTING
     if count_models:
         start_time = time.time()
         print("Counting models...")
-        print("Models:")
-        print(root.count(nvars=len(mapping.keys())-len(qvars)))
-        print("Models counted in ", (time.time() - start_time), " seconds")
+        total_models = root.count(nvars=len(mapping.keys())-len(qvars))
+        print("Models: ",total_models)
+        computation_logger["BDD"]["model count"] = total_nodes 
+        elapsed_time = (time.time() - start_time)
+        print("Models counted in ", elapsed_time, " seconds")
+        computation_logger["BDD"]["model counting time"] = elapsed_time
 
     # SAVING BDD
     if not output_file is None:
@@ -368,9 +399,11 @@ def compute_bdd_cudd(phi: FNode,
             os.remove(temporary_dot)
         else:
             print('Unable to dump BDD file: format unsupported')
+            return
+        elapsed_time = time.time()-start_time
         print("BDD saved as "+output_file+" in ",
-          time.time()-start_time, " seconds")
-
+              elapsed_time, " seconds")
+        computation_logger["BDD"]["dumping time"] = elapsed_time
 
 BDD_DOT_LINE_REGEX = r'[\[]label="[a-z]*-[0-9]*"[]]'
 BDD_DOT_TRUE_LABEL = '[label="True-1"]'
@@ -431,6 +464,7 @@ def _get_string_from_atom(atom):
     if atom_str.startswith('('):
         return atom_str[1:len(atom_str)-1]
     return atom_str
+
 
 if __name__ == "__main__":
     test_phi = get_phi()
