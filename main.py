@@ -40,6 +40,8 @@ def normalize_phi_and_get_solver(phi, args):
 
 def all_sat_computation(phi, smt_solver, args):
     """computes all sat returns models and lemmas"""
+    if args.pure_abstraction:
+        return [],[]
     start_time = time.time()
     print("Starting All Sat computation...")
     boolean_mapping = formula.get_boolean_mapping(phi)
@@ -90,8 +92,10 @@ def add_theory_lemmas(phi, lemmas, args):
 def find_qvars(phi, phi_and_lemmas, args):
     """finds the atoms on which to existentially quantify"""
     # pylint: disable=unused-argument
+    if args.pure_abstraction:
+        return []
     start_time = time.time()
-    print("Existentially quantifying new atoms generated in T-lemmas...")
+    print("Finding fresh atoms from all-sat computation...")
     phi_atoms = formula.get_atoms(phi)
     phi_lemma_atoms = formula.get_atoms(phi_and_lemmas)
     new_theory_atoms = []
@@ -99,7 +103,7 @@ def find_qvars(phi, phi_and_lemmas, args):
         new_theory_atoms = formula.atoms_difference(phi_atoms, phi_lemma_atoms)
         # quantified_phi = formula.existentially_quantify(
         #     phi_and_lemmas, new_theory_atoms)
-    print("Theory lemmas existentially quantified in ",
+    print("Fresh atoms found in ",
           time.time()-start_time, " seconds")
     return new_theory_atoms
 
