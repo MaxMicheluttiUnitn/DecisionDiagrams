@@ -1,4 +1,4 @@
-dd==0.5.7
+dd @ https://github.com/masinag/dd
 pydot==1.4.2
 PySDD==0.2.11
 PySMT==0.9.6.dev53
