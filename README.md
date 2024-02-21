@@ -11,7 +11,7 @@ To try out the code just type in the project folder:
 
 ## Installation
 
-First install the dd package with cython and wheel. This is a fork of the official dd package that can be installed directly from pip, which adds bindings for generating LDDs.
+First install the dd package with cython and wheel. This is a fork of the official dd package that can be installed directly from pip, which adds bindings for generating LDDs. You can find more info at [this link](https://github.com/masinag/dd).
 
 ```
     pip install --upgrade wheel cython
