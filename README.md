@@ -1,11 +1,37 @@
 # Decision Diagrams
 
+## Running
+
 This is the implementation of the code for my project course with professor R. Sebastiani of the University of Trento and doctorands G. Spallitta and G. Masina. 
 To try out the code just type in the project folder:
 
 ```
     python3 main.py
 ```
+
+## Installation
+
+First install the dd package with cython and wheel. This is a fork of the official dd package that can be installed directly from pip, which adds bindings for generating LDDs.
+
+```
+    pip install --upgrade wheel cython
+    export DD_FETCH=1 DD_CUDD=1 DD_LDD=1
+    pip install git+https://github.com/masinag/dd@68e42d2713e074b67aec3deae4ffafb40d9b6eea -vvv --use-pep517 --no-build-isolation
+```
+
+Then install all other dependencies of the project
+
+```
+    pip install -r requirements.txt
+```
+
+Finally install the Mathsat SMT-solver from the pysmt package
+
+```
+    pysmt-install --msat
+```
+
+## Dumping XSDDs
 
 When using XSDDs be careful to install https://github.com/ML-KULeuven/psipy instead of the default psipy to use the PSI solver
 
