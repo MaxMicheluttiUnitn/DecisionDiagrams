@@ -54,7 +54,7 @@ def all_sat_computation(phi, smt_solver, args, computation_logger):
     if smt_solver.check_all_sat(phi, boolean_mapping) == UNSAT:
         print("Computed All Sat in ", time.time()-start_time, " seconds")
         print("Phi is T-UNSAT. Cannot generate any DD...")
-        sys.exit(0)
+        return UNSAT, []
     elapsed_time = time.time()-start_time
     print("Computed All Sat in ", elapsed_time, " seconds")
     computation_logger["All-SAT computation time"] = elapsed_time
