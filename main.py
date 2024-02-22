@@ -12,7 +12,7 @@ import json
 
 import formula
 import commands
-from smt_solver import UNSAT, SMTSolver
+from smt_solver import SAT, UNSAT, SMTSolver
 import decision_diagrams
 
 
@@ -46,7 +46,8 @@ def normalize_phi_and_get_solver(phi, args, computation_logger):
 def all_sat_computation(phi, smt_solver, args, computation_logger):
     """computes all sat returns models and lemmas"""
     if args.pure_abstraction:
-        return []
+        # DD generation is the same for SAT and UNSTA in pure boolean world
+        return SAT,[]
     start_time = time.time()
     print("Starting All Sat computation...")
     boolean_mapping = formula.get_boolean_mapping(phi)
@@ -83,7 +84,7 @@ def all_sat_computation(phi, smt_solver, args, computation_logger):
         print("T-lemmas:")
         print("\n".join(map(lambda x: x.serialize(), lemmas)))
     computation_logger["T-lemmas amount"] = len(lemmas)
-    return lemmas
+    return SAT,lemmas
 
 
 def add_theory_lemmas(phi, lemmas, args, computation_logger):
@@ -185,21 +186,26 @@ def main() -> None:
     phi, smt_solver = normalize_phi_and_get_solver(phi, args, computation_logger)
 
     # COMPUTING ALL-SAT
-    lemmas = all_sat_computation(phi, smt_solver, args, computation_logger)
+    satisfiablity, lemmas = all_sat_computation(phi, smt_solver, args, computation_logger)
 
-    # ADDING THEORY LEMMAS
-    phi_and_lemmas = add_theory_lemmas(phi, lemmas, args, computation_logger)
+    if satisfiablity == SAT:
+        computation_logger["all sat result"] = "SAT"
 
-    # FINDING ATOMS TO EXISTETIALLY QUANTIFY ON
-    new_theory_atoms = find_qvars(phi, phi_and_lemmas, args, computation_logger)
+        # ADDING THEORY LEMMAS
+        phi_and_lemmas = add_theory_lemmas(phi, lemmas, args, computation_logger)
 
-    # GENERATING DDs
-    if args.sdd:
-        process_sdd(phi_and_lemmas, new_theory_atoms, args, computation_logger)
-    if args.bdd:
-        process_bdd(phi_and_lemmas, new_theory_atoms, args, computation_logger)
-    if args.xsdd:
-        process_xsdd(phi, args, computation_logger)
+        # FINDING ATOMS TO EXISTETIALLY QUANTIFY ON
+        new_theory_atoms = find_qvars(phi, phi_and_lemmas, args, computation_logger)
+
+        # GENERATING DDs
+        if args.sdd:
+            process_sdd(phi_and_lemmas, new_theory_atoms, args, computation_logger)
+        if args.bdd:
+            process_bdd(phi_and_lemmas, new_theory_atoms, args, computation_logger)
+        if args.xsdd:
+            process_xsdd(phi, args, computation_logger)
+    else:
+        computation_logger["all sat result"] = "UNSAT"
 
     elapsed_time = time.time()-global_start_time
     print("All done in ",elapsed_time, " seconds")
