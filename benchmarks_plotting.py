@@ -115,6 +115,7 @@ def get_theory_bdd_from_randgen_bench_data() -> List[Point]:
         f = open(filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
+            print("Timeout")
             continue
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.THEORY_BDD,
@@ -140,6 +141,7 @@ def get_abstraction_bdd_from_randgen_bench_data() -> List[Point]:
         f = open(filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
+            print("Timeout")
             continue
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.THEORY_BDD,
@@ -188,8 +190,8 @@ def main() -> None:
     """main function"""
     t_points = get_theory_bdd_from_randgen_bench_data()
     abstr_points = get_abstraction_bdd_from_randgen_bench_data()
-    # t_points = get_theory_bdd_from_wmi_bench_data()
-    # abstr_points = get_abstraction_bdd_from_wmi_bench_data()
+    #t_points = get_theory_bdd_from_wmi_bench_data()
+    #abstr_points = get_abstraction_bdd_from_wmi_bench_data()
     time_points = get_time_points(t_points, abstr_points)
     size_points = get_nodes_points(t_points, abstr_points)
 
@@ -197,12 +199,34 @@ def main() -> None:
     plt.xlabel("T-BDD")
     plt.ylabel("Abstr. BDD")
     plt.title("Computation Time")
+    ax = plt.gca()
+    ax.set_yscale('log')
+    ax.set_xscale('log')
+    ax.set_aspect('equal', adjustable='box')
+    diag_line, = ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".3")
+    def on_change_time(axes):
+        x_lims = ax.get_xlim()
+        y_lims = ax.get_ylim()
+        diag_line.set_data(x_lims, y_lims)
+    ax.callbacks.connect('xlim_changed', on_change_time)
+    ax.callbacks.connect('ylim_changed', on_change_time)
+    plt.axis('square')
     plt.show()
 
     plt.scatter(size_points[0], size_points[1])
     plt.xlabel("T-BDD")
     plt.ylabel("Abstr. BDD")
     plt.title("DD size in nodes")
+    ax = plt.gca()
+    ax.set_aspect('equal', adjustable='box')
+    diag_line, = ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".3")
+    def on_change(axes):
+        x_lims = ax.get_xlim()
+        y_lims = ax.get_ylim()
+        diag_line.set_data(x_lims, y_lims)
+    ax.callbacks.connect('xlim_changed', on_change)
+    ax.callbacks.connect('ylim_changed', on_change)
+    plt.axis('square')
     plt.show()
 
 
