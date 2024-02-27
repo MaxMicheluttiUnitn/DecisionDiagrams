@@ -115,7 +115,7 @@ def add_theory_lemmas(phi, lemmas, args, computation_logger,global_start_time):
             print("Saving phi and lemmas on file...")
             formula.save_phi(phi_and_lemmas,args.save_lemmas)
             logger_tmp_file:str = args.save_lemmas
-            logger_tmp_file = logger_tmp_file.replace('.smt','.json')
+            logger_tmp_file = logger_tmp_file.replace('.smt2','.json').replace('.smt','.json')
             elapsed_time = time.time()-global_start_time
             computation_logger["total computation time"] = elapsed_time
             save_logger(computation_logger,logger_tmp_file)
