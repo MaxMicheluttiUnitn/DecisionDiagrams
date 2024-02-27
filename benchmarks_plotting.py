@@ -3,7 +3,7 @@ from enum import Enum
 import json
 import os
 from dataclasses import dataclass
-from pprint import pprint
+#from pprint import pprint
 from typing import List, Tuple
 import matplotlib.pyplot as plt
 
@@ -23,6 +23,7 @@ class Point:
     computation_time: float
     dd_nodes: int
     title: str
+    timeout: bool
 
 
 def get_abstraction_bdd_from_wmi_bench_data() -> List[Point]:
@@ -37,16 +38,16 @@ def get_abstraction_bdd_from_wmi_bench_data() -> List[Point]:
                  filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
-            print("Abs Timeout")
+            points.append(Point(DataSource.ABSTRACTION_BDD,0,0,"mutex/"+filename,True))
             continue
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.ABSTRACTION_BDD,
                           data["total computation time"], 1,
-                          "mutex/"+filename))
+                          "mutex/"+filename,False))
         else:
             points.append(Point(DataSource.ABSTRACTION_BDD,
                           data["total computation time"],
-                          data["BDD"]["DD nodes"], "mutex/"+filename))
+                          data["BDD"]["DD nodes"], "mutex/"+filename, False))
 
     # retrieving xor result
     files = os.listdir("benchmarks/wmi/output_abstraction/xor")
@@ -56,14 +57,14 @@ def get_abstraction_bdd_from_wmi_bench_data() -> List[Point]:
                  filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
-            print("Abs Timeout")
+            points.append(Point(DataSource.ABSTRACTION_BDD,0,0,"xor/"+filename,True))
             continue
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.ABSTRACTION_BDD,
-                          data["total computation time"], 1, "xor/"+filename))
+                          data["total computation time"], 1, "xor/"+filename,False))
         else:
             points.append(Point(DataSource.ABSTRACTION_BDD,
-                          data["total computation time"], data["BDD"]["DD nodes"], "xor/"+filename))
+                          data["total computation time"], data["BDD"]["DD nodes"], "xor/"+filename,False))
 
     return points
 
@@ -78,15 +79,15 @@ def get_theory_bdd_from_wmi_bench_data() -> List[Point]:
         f = open("benchmarks/wmi/output/mutex/"+filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
-            print("Th Timeout")
+            points.append(Point(DataSource.THEORY_BDD,0,0,"mutex/"+filename,True))
             continue
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.THEORY_BDD,
-                          data["total computation time"], 1, "mutex/"+filename))
+                          data["total computation time"], 1, "mutex/"+filename,False))
         else:
             points.append(Point(DataSource.THEORY_BDD,
                           data["total computation time"],
-                          data["BDD"]["DD nodes"], "mutex/"+filename))
+                          data["BDD"]["DD nodes"], "mutex/"+filename,False))
 
     # retrieving xor result
     files = os.listdir("benchmarks/wmi/output/xor")
@@ -94,14 +95,14 @@ def get_theory_bdd_from_wmi_bench_data() -> List[Point]:
         f = open("benchmarks/wmi/output/xor/"+filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
-            print("Th Timeout")
+            points.append(Point(DataSource.THEORY_BDD,0,0,"xor/"+filename,True))
             continue
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.THEORY_BDD,
-                          data["total computation time"], 1, "xor/"+filename))
+                          data["total computation time"], 1, "xor/"+filename,False))
         else:
             points.append(Point(DataSource.THEORY_BDD,
-                          data["total computation time"], data["BDD"]["DD nodes"], "xor/"+filename))
+                          data["total computation time"], data["BDD"]["DD nodes"], "xor/"+filename,False))
 
     return points
 
@@ -118,17 +119,17 @@ def get_theory_bdd_from_randgen_bench_data() -> List[Point]:
         f = open(filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
-            print("Th Timeout")
+            points.append(Point(DataSource.THEORY_BDD,0,0,filename.replace('benchmarks/randgen/output/', ''),True))
             continue
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.THEORY_BDD,
                           data["total computation time"], 1,
-                          filename.replace('benchmarks/randgen/output/', '')))
+                          filename.replace('benchmarks/randgen/output/', ''),False))
         else:
             points.append(Point(DataSource.THEORY_BDD,
                           data["total computation time"],
                           data["BDD"]["DD nodes"],
-                          filename.replace('benchmarks/randgen/output/', '')))
+                          filename.replace('benchmarks/randgen/output/', ''),False))
     return points
 
 
@@ -144,51 +145,87 @@ def get_abstraction_bdd_from_randgen_bench_data() -> List[Point]:
         f = open(filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
-            pprint(data)
-            print(filename)
-            print("Abs Timeout")
+            points.append(Point(DataSource.ABSTRACTION_BDD,0,0,filename.replace('benchmarks/randgen/output_abstraction/', ''),True))
             continue
         if data["all sat result"] == "UNSAT":
-            points.append(Point(DataSource.THEORY_BDD,
+            points.append(Point(DataSource.ABSTRACTION_BDD,
                           data["total computation time"],
                           1,
-                          filename.replace('benchmarks/randgen/output_abstraction/', '')))
+                          filename.replace('benchmarks/randgen/output_abstraction/', ''),False))
         else:
-            points.append(Point(DataSource.THEORY_BDD,
+            points.append(Point(DataSource.ABSTRACTION_BDD,
                           data["total computation time"],
                           data["BDD"]["DD nodes"],
-                          filename.replace('benchmarks/randgen/output_abstraction/', '')))
+                          filename.replace('benchmarks/randgen/output_abstraction/', ''),False))
     return points
 
 
 def get_time_points(
         theory_points: List[Point],
-        abstraction_points: List[Point]) -> Tuple[List[float], List[float]]:
+        abstraction_points: List[Point]) -> Tuple[List[float], List[float],int]:
     """translate data into plottable points comparing time"""
     theory_list = []
     abstraction_list = []
+    max_theory = theory_points[0].computation_time
+    max_abstraction = abstraction_points[0].computation_time
+
+    for t_p in theory_points:
+        if t_p.computation_time > max_theory:
+            max_theory = t_p.computation_time
+    for a_p in abstraction_points:
+        if a_p.computation_time > max_abstraction:
+            max_abstraction = a_p.computation_time
+
+    edge = max(max_theory,max_abstraction) * 10
+    
+    for t_p in theory_points:
+        if t_p.timeout:
+            t_p.computation_time = edge
+    for a_p in abstraction_points:
+        if a_p.timeout:
+            a_p.computation_time=edge
+    
     for t_p in theory_points:
         for a_p in abstraction_points:
             if t_p.title == a_p.title:
                 theory_list.append(t_p.computation_time)
                 abstraction_list.append(a_p.computation_time)
                 break
-    return (theory_list, abstraction_list)
+    return (theory_list, abstraction_list, edge)
 
 
 def get_nodes_points(
         theory_points: List[Point],
-        abstraction_points: List[Point]) -> Tuple[List[float], List[float]]:
+        abstraction_points: List[Point]) -> Tuple[List[float], List[float],int]:
     """translate data into plottable points comparing DD size in nodes"""
     theory_list = []
     abstraction_list = []
+    max_theory = theory_points[0].dd_nodes
+    max_abstraction = abstraction_points[0].dd_nodes
+
+    for t_p in theory_points:
+        if t_p.dd_nodes > max_theory:
+            max_theory = t_p.dd_nodes
+    for a_p in abstraction_points:
+        if a_p.dd_nodes > max_abstraction:
+            max_abstraction = a_p.dd_nodes
+
+    edge = max(max_theory,max_abstraction) *10
+    
+    for t_p in theory_points:
+        if t_p.timeout:
+            t_p.dd_nodes = edge
+    for a_p in abstraction_points:
+        if a_p.timeout:
+            a_p.dd_nodes=edge
+
     for t_p in theory_points:
         for a_p in abstraction_points:
             if t_p.title == a_p.title:
                 theory_list.append(t_p.dd_nodes)
                 abstraction_list.append(a_p.dd_nodes)
                 break
-    return (theory_list, abstraction_list)
+    return (theory_list, abstraction_list, edge)
 
 
 def main() -> None:
@@ -215,6 +252,8 @@ def main() -> None:
         diag_line.set_data(x_lims, y_lims)
     ax.callbacks.connect('xlim_changed', on_change_time)
     ax.callbacks.connect('ylim_changed', on_change_time)
+    plt.axvline(x = time_points[2],ls="--", c=".3")
+    plt.axhline(y = time_points[2],ls="--", c=".3")
     plt.axis('square')
     plt.show()
 
@@ -223,8 +262,12 @@ def main() -> None:
     plt.ylabel("Abstr. BDD")
     plt.title("DD size in nodes")
     ax = plt.gca()
+    ax.set_yscale('log')
+    ax.set_xscale('log')
     ax.set_aspect('equal', adjustable='box')
     diag_line, = ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".3")
+    plt.axvline(x = size_points[2],ls="--", c=".3")
+    plt.axhline(y = size_points[2],ls="--", c=".3")
     def on_change(_axes):
         x_lims = ax.get_xlim()
         y_lims = ax.get_ylim()
