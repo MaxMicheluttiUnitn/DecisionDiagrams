@@ -43,10 +43,12 @@ def normalize_phi_and_get_solver(phi, args, computation_logger):
     computation_logger["phi normalization time"] = elapsed_time
     return normal_phi, smt_solver
 
-def save_logger(logger: Any,filename: str):
+
+def save_logger(logger: Any, filename: str):
     """saves the logger on a file"""
     with open(filename, 'w', encoding='utf8') as f:
         json.dump(logger, f)
+
 
 def load_logger(filename: str):
     """saves the logger on a file"""
@@ -55,11 +57,12 @@ def load_logger(filename: str):
         logger = json.load(f)
     return logger
 
+
 def all_sat_computation(phi, smt_solver, args, computation_logger):
     """computes all sat returns models and lemmas"""
     if args.pure_abstraction:
         # DD generation is the same for SAT and UNSTA in pure boolean world
-        return SAT,[]
+        return SAT, []
     start_time = time.time()
     print("Starting All Sat computation...")
     boolean_mapping = formula.get_boolean_mapping(phi)
@@ -96,10 +99,10 @@ def all_sat_computation(phi, smt_solver, args, computation_logger):
         print("T-lemmas:")
         print("\n".join(map(lambda x: x.serialize(), lemmas)))
     computation_logger["T-lemmas amount"] = len(lemmas)
-    return SAT,lemmas
+    return SAT, lemmas
 
 
-def add_theory_lemmas(phi, lemmas, args, computation_logger,global_start_time):
+def add_theory_lemmas(phi, lemmas, args, computation_logger, global_start_time):
     """computes the conjunction of phi with the lemmas"""
     if args.pure_abstraction:
         phi_and_lemmas = phi
@@ -113,12 +116,13 @@ def add_theory_lemmas(phi, lemmas, args, computation_logger,global_start_time):
         computation_logger["phi and theory lemmas computation time"] = elapsed_time
         if args.save_lemmas is not None:
             print("Saving phi and lemmas on file...")
-            formula.save_phi(phi_and_lemmas,args.save_lemmas)
-            logger_tmp_file:str = args.save_lemmas
-            logger_tmp_file = logger_tmp_file.replace('.smt2','.json').replace('.smt','.json')
+            formula.save_phi(phi_and_lemmas, args.save_lemmas)
+            logger_tmp_file: str = args.save_lemmas
+            logger_tmp_file = logger_tmp_file.replace(
+                '.smt2', '.json').replace('.smt', '.json')
             elapsed_time = time.time()-global_start_time
             computation_logger["total computation time"] = elapsed_time
-            save_logger(computation_logger,logger_tmp_file)
+            save_logger(computation_logger, logger_tmp_file)
             print("Phi and lemmas saved. Exiting the process...")
             sys.exit(0)
     return phi_and_lemmas
@@ -158,7 +162,7 @@ def process_sdd(phi_and_lemmas, qvars, args, computation_logger):
                                   count_models=args.count_models,
                                   count_nodes=args.count_nodes,
                                   qvars=qvars,
-                                  computation_logger = computation_logger)
+                                  computation_logger=computation_logger)
     elapsed_time = time.time()-start_time
     print("SDD processed in ", elapsed_time, " seconds")
     computation_logger["SDD"]["total processing time"] = elapsed_time
@@ -175,7 +179,7 @@ def process_bdd(phi_and_lemmas, qvars, args, computation_logger):
                                        count_models=args.count_models,
                                        count_nodes=args.count_nodes,
                                        qvars=qvars,
-                                       computation_logger = computation_logger)
+                                       computation_logger=computation_logger)
     elapsed_time = time.time()-start_time
     print("BDD processed in ", elapsed_time, " seconds")
     computation_logger["BDD"]["total processing time"] = elapsed_time
@@ -189,9 +193,9 @@ def process_xsdd(phi, args, computation_logger):
     start_time = time.time()
     print("Starting XSDD Procesing...")
     computation_logger["XSDD"] = {}
-    decision_diagrams.compute_xsdd(phi,computation_logger = computation_logger)
+    decision_diagrams.compute_xsdd(phi, computation_logger=computation_logger)
     elapsed_time = time.time()-start_time
-    print("XSDD processed in ", elapsed_time , " seconds")
+    print("XSDD processed in ", elapsed_time, " seconds")
     computation_logger["XSDD"]["total processing time"] = elapsed_time
 
 
@@ -207,42 +211,50 @@ def main() -> None:
         phi = get_phi(args, computation_logger)
 
         # NORMALIZING PHI
-        phi, smt_solver = normalize_phi_and_get_solver(phi, args, computation_logger)
+        phi, smt_solver = normalize_phi_and_get_solver(
+            phi, args, computation_logger)
 
         # COMPUTING ALL-SAT
-        satisfiablity, lemmas = all_sat_computation(phi, smt_solver, args, computation_logger)
+        satisfiablity, lemmas = all_sat_computation(
+            phi, smt_solver, args, computation_logger)
 
     if (args.load_lemmas is not None) or satisfiablity == SAT:
         if args.load_lemmas is None:
             computation_logger["all sat result"] = "SAT"
 
             # ADDING THEORY LEMMAS
-            phi_and_lemmas = add_theory_lemmas(phi, lemmas, args, computation_logger,global_start_time)
+            phi_and_lemmas = add_theory_lemmas(
+                phi, lemmas, args, computation_logger, global_start_time)
         else:
-            computation_logger = load_logger(args.load_lemmas.replace('.smt2','.json').replace('.smt','.json'))
-            phi = get_phi(args,computation_logger)
-            global_start_time = time.time() - computation_logger['total computation time']
+            computation_logger = load_logger(args.load_lemmas.replace(
+                '.smt2', '.json').replace('.smt', '.json'))
+            phi = get_phi(args, computation_logger)
+            global_start_time = time.time(
+            ) - computation_logger['total computation time']
             phi_and_lemmas = formula.read_phi(args.load_lemmas)
 
         # FINDING ATOMS TO EXISTETIALLY QUANTIFY ON
-        new_theory_atoms = find_qvars(phi, phi_and_lemmas, args, computation_logger)
+        new_theory_atoms = find_qvars(
+            phi, phi_and_lemmas, args, computation_logger)
 
         # GENERATING DDs
         if args.sdd:
-            process_sdd(phi_and_lemmas, new_theory_atoms, args, computation_logger)
+            process_sdd(phi_and_lemmas, new_theory_atoms,
+                        args, computation_logger)
         if args.bdd:
-            process_bdd(phi_and_lemmas, new_theory_atoms, args, computation_logger)
+            process_bdd(phi_and_lemmas, new_theory_atoms,
+                        args, computation_logger)
         if args.xsdd:
             process_xsdd(phi, args, computation_logger)
     else:
         computation_logger["all sat result"] = "UNSAT"
 
     elapsed_time = time.time()-global_start_time
-    print("All done in ",elapsed_time, " seconds")
+    print("All done in ", elapsed_time, " seconds")
     computation_logger["total computation time"] = elapsed_time
-    
+
     if args.details is not None:
-        save_logger(computation_logger,args.details)
+        save_logger(computation_logger, args.details)
 
 
 if __name__ == "__main__":
