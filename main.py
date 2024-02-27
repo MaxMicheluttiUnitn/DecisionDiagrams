@@ -3,6 +3,7 @@ import time
 import logging
 import sys
 import json
+from typing import Any
 
 # ADD these lines to .local/lib/python3.10/site-packages/pysmt/smtlib/parser/__init__.py
 # to hide cython DeprecationWarning when importing module imp
@@ -42,6 +43,17 @@ def normalize_phi_and_get_solver(phi, args, computation_logger):
     computation_logger["phi normalization time"] = elapsed_time
     return normal_phi, smt_solver
 
+def save_logger(logger: Any,filename: str):
+    """saves the logger on a file"""
+    with open(filename, 'w', encoding='utf8') as f:
+        json.dump(logger, f)
+
+def load_logger(filename: str):
+    """saves the logger on a file"""
+    logger = {}
+    with open(filename, 'r', encoding='utf8') as f:
+        logger = json.load(f)
+    return logger
 
 def all_sat_computation(phi, smt_solver, args, computation_logger):
     """computes all sat returns models and lemmas"""
@@ -87,7 +99,7 @@ def all_sat_computation(phi, smt_solver, args, computation_logger):
     return SAT,lemmas
 
 
-def add_theory_lemmas(phi, lemmas, args, computation_logger):
+def add_theory_lemmas(phi, lemmas, args, computation_logger,global_start_time):
     """computes the conjunction of phi with the lemmas"""
     if args.pure_abstraction:
         phi_and_lemmas = phi
@@ -99,6 +111,16 @@ def add_theory_lemmas(phi, lemmas, args, computation_logger):
         print("Theory lemmas added to phi in ",
               elapsed_time, " seconds")
         computation_logger["phi and theory lemmas computation time"] = elapsed_time
+        if args.save_lemmas is not None:
+            print("Saving phi and lemmas on file...")
+            formula.save_phi(phi_and_lemmas,args.save_lemmas)
+            logger_tmp_file:str = args.save_lemmas
+            logger_tmp_file = logger_tmp_file.replace('.smt','.json')
+            elapsed_time = time.time()-global_start_time
+            computation_logger["total computation time"] = elapsed_time
+            save_logger(computation_logger,logger_tmp_file)
+            print("Phi and lemmas saved. Exiting the process...")
+            sys.exit(0)
     return phi_and_lemmas
 
 
@@ -178,21 +200,29 @@ def main() -> None:
     global_start_time = time.time()
 
     args = commands.get_args()
-    computation_logger = {}
-    # GETTING PHI
-    phi = get_phi(args, computation_logger)
 
-    # NORMALIZING PHI
-    phi, smt_solver = normalize_phi_and_get_solver(phi, args, computation_logger)
+    if args.load_lemmas is None:
+        computation_logger = {}
+        # GETTING PHI
+        phi = get_phi(args, computation_logger)
 
-    # COMPUTING ALL-SAT
-    satisfiablity, lemmas = all_sat_computation(phi, smt_solver, args, computation_logger)
+        # NORMALIZING PHI
+        phi, smt_solver = normalize_phi_and_get_solver(phi, args, computation_logger)
 
-    if satisfiablity == SAT:
-        computation_logger["all sat result"] = "SAT"
+        # COMPUTING ALL-SAT
+        satisfiablity, lemmas = all_sat_computation(phi, smt_solver, args, computation_logger)
 
-        # ADDING THEORY LEMMAS
-        phi_and_lemmas = add_theory_lemmas(phi, lemmas, args, computation_logger)
+    if (args.load_lemmas is not None) or satisfiablity == SAT:
+        if args.load_lemmas is None:
+            computation_logger["all sat result"] = "SAT"
+
+            # ADDING THEORY LEMMAS
+            phi_and_lemmas = add_theory_lemmas(phi, lemmas, args, computation_logger,global_start_time)
+        else:
+            computation_logger = load_logger(args.load_lemmas.replace('.smt','.json'))
+            phi = get_phi(args,computation_logger)
+            global_start_time = time.time() - computation_logger['total computation time']
+            phi_and_lemmas = formula.read_phi(args.load_lemmas)
 
         # FINDING ATOMS TO EXISTETIALLY QUANTIFY ON
         new_theory_atoms = find_qvars(phi, phi_and_lemmas, args, computation_logger)
@@ -212,8 +242,7 @@ def main() -> None:
     computation_logger["total computation time"] = elapsed_time
     
     if args.details is not None:
-        with open(args.details, 'w', encoding='utf8') as f:
-            json.dump(computation_logger, f)
+        save_logger(computation_logger,args.details)
 
 
 if __name__ == "__main__":

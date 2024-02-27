@@ -1,3 +1,4 @@
+"""module to handle the options for the main process"""
 import argparse
 
 VALID_VTREE = ["left", "right", "balanced", "vertical", "random"]
@@ -42,11 +43,11 @@ def get_args() -> argparse.Namespace:
         type=str)
     parser.add_argument(
         "--sdd_output",
-        help="Specify a .dot or .svg file to output the SDD (default is sdd.dot)",
+        help="Specify a .dot or .svg file to output the SDD",
         type=str)
     parser.add_argument(
         "--bdd_output",
-        help="Specify a .svg file to output the BDD (default is bdd.svg)",
+        help="Specify a .dot or .svg file to output the BDD",
         type=str)
     parser.add_argument(
         "-d", "--details",
@@ -72,6 +73,14 @@ def get_args() -> argparse.Namespace:
         "--count_nodes",
         help="Print the amount of nodes in the generated DDs",
         action="store_true")
+    parser.add_argument(
+        "--save_lemmas",
+        help="Specify a .smt file to save the lemmas obtained from All-SMT",
+        type=str)
+    parser.add_argument(
+        "--load_lemmas",
+        help="Specify a .smt file to load lemmas from instead of performing All-SMT",
+        type=str)
     # parser.add_argument(
     #     "--check_eq",
     #     help="Check the T-equivalence of the T-agnostic DD with the T-formula phi",

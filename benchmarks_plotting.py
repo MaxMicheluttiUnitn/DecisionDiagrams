@@ -3,6 +3,7 @@ from enum import Enum
 import json
 import os
 from dataclasses import dataclass
+from pprint import pprint
 from typing import List, Tuple
 import matplotlib.pyplot as plt
 
@@ -36,7 +37,7 @@ def get_abstraction_bdd_from_wmi_bench_data() -> List[Point]:
                  filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
-            print("Timeout")
+            print("Abs Timeout")
             continue
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.ABSTRACTION_BDD,
@@ -55,7 +56,7 @@ def get_abstraction_bdd_from_wmi_bench_data() -> List[Point]:
                  filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
-            print("Timeout")
+            print("Abs Timeout")
             continue
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.ABSTRACTION_BDD,
@@ -77,6 +78,7 @@ def get_theory_bdd_from_wmi_bench_data() -> List[Point]:
         f = open("benchmarks/wmi/output/mutex/"+filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
+            print("Th Timeout")
             continue
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.THEORY_BDD,
@@ -92,6 +94,7 @@ def get_theory_bdd_from_wmi_bench_data() -> List[Point]:
         f = open("benchmarks/wmi/output/xor/"+filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
+            print("Th Timeout")
             continue
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.THEORY_BDD,
@@ -115,7 +118,7 @@ def get_theory_bdd_from_randgen_bench_data() -> List[Point]:
         f = open(filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
-            print("Timeout")
+            print("Th Timeout")
             continue
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.THEORY_BDD,
@@ -141,7 +144,9 @@ def get_abstraction_bdd_from_randgen_bench_data() -> List[Point]:
         f = open(filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0:
-            print("Timeout")
+            pprint(data)
+            print(filename)
+            print("Abs Timeout")
             continue
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.THEORY_BDD,
@@ -204,7 +209,7 @@ def main() -> None:
     ax.set_xscale('log')
     ax.set_aspect('equal', adjustable='box')
     diag_line, = ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".3")
-    def on_change_time(axes):
+    def on_change_time(_axes):
         x_lims = ax.get_xlim()
         y_lims = ax.get_ylim()
         diag_line.set_data(x_lims, y_lims)
@@ -220,7 +225,7 @@ def main() -> None:
     ax = plt.gca()
     ax.set_aspect('equal', adjustable='box')
     diag_line, = ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".3")
-    def on_change(axes):
+    def on_change(_axes):
         x_lims = ax.get_xlim()
         y_lims = ax.get_ylim()
         diag_line.set_data(x_lims, y_lims)

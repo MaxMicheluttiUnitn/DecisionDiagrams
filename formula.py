@@ -1,7 +1,7 @@
 '''this module simplifies interactions with the pysmt library for handling SMT formulas'''
 
 from typing import List, Dict
-from pysmt.shortcuts import Symbol, REAL, And, Or, Xor, BOOL, Real, LT, Minus, Plus, Not, read_smtlib, Exists
+from pysmt.shortcuts import Symbol, REAL, And, Or, Xor, BOOL, Real, LT, Minus, Plus, Not, read_smtlib, Exists, write_smtlib, TRUE
 from pysmt.fnode import FNode
 from string_generator import SequentailStringGenerator
 
@@ -38,6 +38,17 @@ def read_phi(filename: str) -> FNode:
     other_phi = read_smtlib(filename)
     return other_phi
 
+def save_truth(filename: str) -> None:
+    ' ' 'Save the valid formula with only a TRUE on a SMT file' ' '
+    # pylint: disable=unused-argument
+    truth = TRUE()
+    write_smtlib(truth,filename)
+
+def save_phi(phi: FNode, filename: str) -> None:
+    ' ' 'Save the formula phi on a SMT file' ' '
+    # pylint: disable=unused-argument
+    write_smtlib(phi,filename)
+
 
 def get_atoms(phi: FNode) -> List[FNode]:
     ' ' 'returns a list of all the atoms in the SMT formula' ' '
@@ -70,7 +81,7 @@ def get_boolean_mapping(phi: FNode) -> Dict[FNode, FNode]:
     return res
 
 
-def atoms_difference(original: List[FNode],expanded: List[FNode]) -> List[FNode]:
+def atoms_difference(original: List[FNode], expanded: List[FNode]) -> List[FNode]:
     """computes the diffrence between expanded and original"""
     result: List[FNode] = []
     for atom in expanded:
@@ -78,6 +89,12 @@ def atoms_difference(original: List[FNode],expanded: List[FNode]) -> List[FNode]
             result.append(atom)
     return result
 
+
 def existentially_quantify(phi: FNode, atoms: List[FNode]) -> FNode:
     """existentially quantifies the formula over the given atoms"""
-    return Exists(atoms,phi)
+    return Exists(atoms, phi)
+
+
+def big_and(nodes: List[FNode]) -> FNode:
+    """returns the big and of all the arguments"""
+    return And(*nodes)
