@@ -237,7 +237,7 @@ def main() -> None:
     time_points = get_time_points(t_points, abstr_points)
     size_points = get_nodes_points(t_points, abstr_points)
 
-    plt.scatter(time_points[0], time_points[1])
+    plt.scatter(time_points[0], time_points[1], marker='s')
     plt.xlabel("T-BDD")
     plt.ylabel("Abstr. BDD")
     plt.title("Computation Time")
@@ -257,7 +257,7 @@ def main() -> None:
     plt.axis('square')
     plt.show()
 
-    plt.scatter(size_points[0], size_points[1])
+    plt.scatter(size_points[0], size_points[1], marker='s')
     plt.xlabel("T-BDD")
     plt.ylabel("Abstr. BDD")
     plt.title("DD size in nodes")
