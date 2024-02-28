@@ -8,7 +8,7 @@ from custom_exceptions import UnsupportedNodeException
 
 
 class XsddParser(DagWalker):
-    '''A walker to translate the DAG formula quickly with memoization into the Promela syntax representation of the formula'''
+    '''A walker to translate the DAG formula quickly with memoization into an XSDD compatible formula'''
 
     def __init__(self, bool_source: list, bool_dest: list, real_source: list, real_dest: list, env=None, invalidate_memoization=False):
         DagWalker.__init__(self, env, invalidate_memoization)
