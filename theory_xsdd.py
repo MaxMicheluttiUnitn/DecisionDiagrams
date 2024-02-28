@@ -6,8 +6,6 @@ from pywmi import XsddEngine
 
 from formula import get_symbols
 from xsdd_walker import XsddParser
-from theory_sdd import compute_sdd as _compute_sdd
-
 
 def compute_xsdd(phi: FNode,computation_logger: any = {}):
     '''computing xsdd'''

@@ -20,6 +20,10 @@ def get_args() -> argparse.Namespace:
         help="Generate the BDD of the formula",
         action="store_true")
     parser.add_argument(
+        "--ldd",
+        help="Generate the LDD of the formula",
+        action="store_true")
+    parser.add_argument(
         "--print_models",
         help="Print the models obtained from All-SAT computation",
         action="store_true")
@@ -48,6 +52,10 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         "--bdd_output",
         help="Specify a .dot or .svg file to output the BDD",
+        type=str)
+    parser.add_argument(
+        "--ldd_output",
+        help="Specify a .dot or .svg file to output the LDD",
         type=str)
     parser.add_argument(
         "-d", "--details",

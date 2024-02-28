@@ -4,7 +4,8 @@ from pysmt.fnode import FNode
 from formula import get_phi
 from theory_bdd import compute_bdd_cudd
 from theory_sdd import compute_sdd as _compute_sdd
-from xsdd import compute_xsdd as _compute_xsdd
+from theory_xsdd import compute_xsdd as _compute_xsdd
+from theory_ldd import compute_ldd as _compute_ldd
 
 
 def compute_xsdd(phi: FNode, computation_logger: any = {}):
@@ -32,6 +33,11 @@ def compute_bdd(phi: FNode, output_file=None, dump_abstraction=False, print_mapp
     # For now always use compute_bdd_cudd
     return compute_bdd_cudd(phi, output_file, dump_abstraction, print_mapping, computation_logger=computation_logger)
 
+def compute_ldd(phi: FNode,
+                     output_file: str | None = None,
+                     computation_logger: any = {}):
+    '''Computes the LDD for the boolean formula phi and saves it on a file'''
+    _compute_ldd(phi,output_file,computation_logger)
 
 if __name__ == "__main__":
     test_phi = get_phi()

@@ -198,6 +198,17 @@ def process_xsdd(phi, args, computation_logger):
     print("XSDD processed in ", elapsed_time, " seconds")
     computation_logger["XSDD"]["total processing time"] = elapsed_time
 
+def process_ldd(phi, args, computation_logger):
+    """processes the XSDD for phi"""
+    # pylint: disable=unused-argument
+    start_time = time.time()
+    print("Starting LDD Procesing...")
+    computation_logger["LDD"] = {}
+    decision_diagrams.compute_ldd(phi,output_file=args.ldd_output, computation_logger=computation_logger)
+    elapsed_time = time.time()-start_time
+    print("LDD processed in ", elapsed_time, " seconds")
+    computation_logger["LDD"]["total processing time"] = elapsed_time
+
 
 def main() -> None:
     '''Main function for this project'''
@@ -246,6 +257,9 @@ def main() -> None:
                         args, computation_logger)
         if args.xsdd:
             process_xsdd(phi, args, computation_logger)
+        
+        if args.ldd:
+            process_ldd(phi, args, computation_logger)
     else:
         computation_logger["all sat result"] = "UNSAT"
 
