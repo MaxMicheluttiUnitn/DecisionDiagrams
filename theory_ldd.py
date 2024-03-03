@@ -34,7 +34,7 @@ def compute_ldd(phi: FNode,
         else:
             raise UnsupportedSymbolException(str(s))
     # LDD(Id teoria,#var intere,#var booleane)
-    ldd = _ldd.LDD(0,len(integer_symbols.keys()),len(boolean_symbols.keys()))
+    ldd = _ldd.LDD(_ldd.TVPI,len(integer_symbols.keys()),len(boolean_symbols.keys()))
     walker = LDDWalker(boolean_symbols,integer_symbols,ldd)
     func = walker.walk(phi)
     n_nodes = len(func)

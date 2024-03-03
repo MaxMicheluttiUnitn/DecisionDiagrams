@@ -69,7 +69,6 @@ class LDDWalker(DagWalker):
     def walk_symbol(self, formula: FNode, args, **kwargs):
         '''translate SYMBOL node'''
         # pylint: disable=unused-argument
-        print(formula)
         if formula.get_type() == BOOL:
             return self._apply_mapping(formula, True)
         return [ConstraintObject(self._apply_mapping(formula, False),1)]
@@ -111,7 +110,6 @@ class LDDWalker(DagWalker):
     def walk_times(self, formula, args, **kwargs):
         '''translate * node'''
         # pylint: disable=unused-argument
-        print("Times",args)
         c_obj_1 : ConstraintObject= args[0][0]
         c_obj_2 :ConstraintObject= args[1][0]
         if c_obj_1.is_const() and c_obj_2.is_const():
@@ -126,7 +124,6 @@ class LDDWalker(DagWalker):
     def walk_minus(self, formula, args, **kwargs):
         '''translate - node'''
         # pylint: disable=unused-argument
-        print("MINUS")
         if len(args)==1:
             c_obj: ConstraintObject = args[0]
             return [ConstraintObject(c_obj.constr_index,-c_obj.constr_mult)]
@@ -139,10 +136,8 @@ class LDDWalker(DagWalker):
     def walk_plus(self, formula, args, **kwargs):
         '''translate + node'''
         # pylint: disable=unused-argument
-        print("PLUS")
         res : List[ConstraintObject] = []
         for arg in args:
-            print(arg)
             for c_obj in arg:
                 res.append(c_obj)
         return res
@@ -153,7 +148,6 @@ class LDDWalker(DagWalker):
         # pylint: disable=unused-argument
         # args[0] is the tuple describing the constraint [tuple[int]]
         # args[1] is the constant on the right [int]
-        print("LE ",args)
         left_c_objs : List[ConstraintObject] = args[0]
         right_c_objs : List[ConstraintObject] = args[1]
         const_c_obj = ConstraintObject(0,0)
@@ -171,14 +165,12 @@ class LDDWalker(DagWalker):
             else:
                 var_list[c_obj.constr_index-1] = var_list[c_obj.constr_index-1] - c_obj.constr_mult
         res = tuple([tuple(var_list),False,const_c_obj.constr_mult])
-        print(res)
         return self.manager.constraint(res)
 
     @handles(op.LT)
     def walk_lt(self, formula, args, **kwargs):
         '''translate < node'''
         # pylint: disable=unused-argument
-        print("LT ",args)
         left_c_objs : List[ConstraintObject] = args[0]
         right_c_objs : List[ConstraintObject] = args[1]
         const_c_obj = ConstraintObject(0,0)
@@ -196,14 +188,12 @@ class LDDWalker(DagWalker):
             else:
                 var_list[c_obj.constr_index-1] = var_list[c_obj.constr_index-1] - c_obj.constr_mult
         res = tuple([tuple(var_list),True,const_c_obj.constr_mult])
-        print(res)
         return self.manager.constraint(res)
 
     @handles(op.INT_CONSTANT)
     def walk_int_constant(self, formula, args, **kwargs):
         '''translate int const node'''
         # pylint: disable=unused-argument
-        print("Real const ",formula)
         return formula.constant_value()
 
     @handles(op.EQUALS)
@@ -215,11 +205,5 @@ class LDDWalker(DagWalker):
     @handles(op.REAL_CONSTANT,*op.BV_OPERATORS, *op.STR_OPERATORS, *op.BV_RELATIONS, *op.STR_RELATIONS, op.STR_CONSTANT, op.BV_CONSTANT)
     def walk_theory(self, formula, args, **kwargs):
         '''translate theory node'''
-        # pylint: disable=unused-argument
-        raise UnsupportedNodeException(formula)
-
-    @handles(op.REAL_CONSTANT, op.BV_CONSTANT)
-    def do_nothing(self, formula, args, **kwargs):
-        '''do nothing when seeing theory constants'''
         # pylint: disable=unused-argument
         raise UnsupportedNodeException(formula)
