@@ -75,7 +75,7 @@ class SDDSequentailStringGenerator:
         self._string_serial = 0
 
 
-class SequentailStringGenerator:
+class SequentialStringGenerator:
     '''A class that generates possibly infinitely many strings in sequential order'''
 
     def __init__(self) -> None:
@@ -101,6 +101,6 @@ class SequentailStringGenerator:
 
 
 if __name__ == "__main__":
-    s = SequentailStringGenerator()
+    s = SequentialStringGenerator()
     for i in range(0, 100):
         print(s.next_string())

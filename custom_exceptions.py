@@ -6,3 +6,10 @@ class UnsupportedNodeException(Exception):
 
     def __init__(self, message):
         super().__init__(message)
+
+
+class UnsupportedSymbolException(Exception):
+    '''An exception for unsupported symbols'''
+
+    def __init__(self, message):
+        super().__init__(message)

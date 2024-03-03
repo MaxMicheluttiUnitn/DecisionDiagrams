@@ -3,7 +3,7 @@
 from typing import List, Dict
 from pysmt.shortcuts import Symbol, REAL, And, Or, Xor, BOOL, Real, LT, Minus, Plus, Not, read_smtlib, Exists, write_smtlib, TRUE
 from pysmt.fnode import FNode
-from string_generator import SequentailStringGenerator
+from string_generator import SequentialStringGenerator
 
 from normalizer import NormalizerWalker
 
@@ -75,7 +75,7 @@ def get_boolean_mapping(phi: FNode) -> Dict[FNode, FNode]:
     """generates a new fresh atom for each T-atom in phi"""
     phi_atoms = get_atoms(phi)
     res: Dict[FNode, FNode] = {}
-    gen = SequentailStringGenerator()
+    gen = SequentialStringGenerator()
     for atom in phi_atoms:
         res.update({Symbol(f"fresh_{gen.next_string()}", BOOL): atom})
     return res
