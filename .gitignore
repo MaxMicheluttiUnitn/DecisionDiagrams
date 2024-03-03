@@ -12,4 +12,6 @@
 *.zip
 *.json
 
+tmp.txt
+
 mathsat
