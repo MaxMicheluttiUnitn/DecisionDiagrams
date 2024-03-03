@@ -1,5 +1,5 @@
 Cython==3.0.8
-dd @ git+https://github.com/masinag/dd@68e42d2713e074b67aec3deae4ffafb40d9b6eea
+dd @ git+https://github.com/masinag/dd.git@main
 pydot==1.4.2
 PySDD==0.2.11
 PySMT==0.9.6.dev53

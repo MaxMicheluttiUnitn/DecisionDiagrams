@@ -18,7 +18,6 @@ def compute_ldd(phi: FNode,
     # BUILDING LDD
     start_time = time.time()
     print("Building LDD...")
-    print(phi)
     symbols = formula.get_symbols(phi)
     boolean_symbols:dict[FNode,str]={}
     integer_symbols:dict[FNode,int]={}

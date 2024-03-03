@@ -16,7 +16,7 @@ First install the dd package with cython and wheel. This is a fork of the offici
 ```
     pip install --upgrade wheel cython
     export DD_FETCH=1 DD_CUDD=1 DD_LDD=1
-    pip install git+https://github.com/masinag/dd@68e42d2713e074b67aec3deae4ffafb40d9b6eea -vvv --use-pep517 --no-build-isolation
+    pip install git+https://github.com/masinag/dd.git@main -vvv --use-pep517 --no-build-isolation
 ```
 
 To check that this step completed successfully, the following command should not yield any errors
