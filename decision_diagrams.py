@@ -35,9 +35,10 @@ def compute_bdd(phi: FNode, output_file=None, dump_abstraction=False, print_mapp
 
 def compute_ldd(phi: FNode,
                      output_file: str | None = None,
+                     count_nodes:bool = False,
                      computation_logger: any = {}):
     '''Computes the LDD for the boolean formula phi and saves it on a file'''
-    _compute_ldd(phi,output_file,computation_logger)
+    _compute_ldd(phi,output_file,count_nodes,computation_logger)
 
 if __name__ == "__main__":
     test_phi = get_phi()

@@ -11,10 +11,9 @@ from string_generator import SequentialStringGenerator
 
 def compute_ldd(phi: FNode,
                      output_file: str | None = None,
+                     count_nodes: bool = False,
                      computation_logger: any = {}):
     '''Computes the LDD for the boolean formula phi and saves it on a file'''
-    print("LDD generation")
-    #raise NotImplementedError()
 
     # BUILDING LDD
     start_time = time.time()
@@ -33,12 +32,14 @@ def compute_ldd(phi: FNode,
             int_ctr+=1
         else:
             raise UnsupportedSymbolException(str(s))
-    # LDD(Id teoria,#var intere,#var booleane)
+    # LDD(Id theory,#int vars,#bool vars)
     ldd = _ldd.LDD(_ldd.TVPI,len(integer_symbols.keys()),len(boolean_symbols.keys()))
     walker = LDDWalker(boolean_symbols,integer_symbols,ldd)
     func = walker.walk(phi)
-    n_nodes = len(func)
-    print("Nodes: ",n_nodes)
+    if count_nodes:
+        n_nodes = len(func)
+        print("Nodes: ",n_nodes)
+        computation_logger["LDD"]["DD nodes"] = n_nodes
     ldd.dump("ldd_out.svg",[func])
     elapsed_time = (time.time() - start_time)
     print("LDD for phi built in ", elapsed_time, " seconds")

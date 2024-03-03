@@ -204,7 +204,7 @@ def process_ldd(phi, args, computation_logger):
     start_time = time.time()
     print("Starting LDD Procesing...")
     computation_logger["LDD"] = {}
-    decision_diagrams.compute_ldd(phi,output_file=args.ldd_output, computation_logger=computation_logger)
+    decision_diagrams.compute_ldd(phi,output_file=args.ldd_output, count_nodes=args.count_nodes,computation_logger=computation_logger)
     elapsed_time = time.time()-start_time
     print("LDD processed in ", elapsed_time, " seconds")
     computation_logger["LDD"]["total processing time"] = elapsed_time
