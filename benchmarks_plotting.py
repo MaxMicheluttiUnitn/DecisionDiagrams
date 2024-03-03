@@ -25,6 +25,47 @@ class Point:
     title: str
     timeout: bool
 
+def get_abstraction_sdd_from_wmi_bench_data() -> List[Point]:
+    """gets the computation data from a run generating T-SDDs from the WMI benchmark problems"""
+    points = []
+
+    # retrieving mutex result
+    files = os.listdir("benchmarks/wmi/output_abstraction_sdd/mutex")
+    files.sort()
+    for filename in files:
+        f = open("benchmarks/wmi/output_abstraction_sdd/mutex/" +
+                 filename, encoding="utf8")
+        data = json.load(f)
+        if len(data) == 0 or data.get("timeout") is not None:
+            points.append(Point(DataSource.ABSTRACTION_BDD,0,0,"mutex/"+filename,True))
+            continue
+        if data["all sat result"] == "UNSAT":
+            points.append(Point(DataSource.ABSTRACTION_BDD,
+                          data["total computation time"], 1,
+                          "mutex/"+filename,False))
+        else:
+            points.append(Point(DataSource.ABSTRACTION_BDD,
+                          data["total computation time"],
+                          data["SDD"]["DD nodes"], "mutex/"+filename, False))
+
+    # retrieving xor result
+    files = os.listdir("benchmarks/wmi/output_abstraction_sdd/xor")
+    files.sort()
+    for filename in files:
+        f = open("benchmarks/wmi/output_abstraction_sdd/xor/" +
+                 filename, encoding="utf8")
+        data = json.load(f)
+        if len(data) == 0 or data.get("timeout") is not None:
+            points.append(Point(DataSource.ABSTRACTION_BDD,0,0,"xor/"+filename,True))
+            continue
+        if data["all sat result"] == "UNSAT":
+            points.append(Point(DataSource.ABSTRACTION_BDD,
+                          data["total computation time"], 1, "xor/"+filename,False))
+        else:
+            points.append(Point(DataSource.ABSTRACTION_BDD,
+                          data["total computation time"], data["SDD"]["DD nodes"], "xor/"+filename,False))
+
+    return points
 
 def get_abstraction_bdd_from_wmi_bench_data() -> List[Point]:
     """gets the computation data from a run generating T-BDDs from the WMI benchmark problems"""
@@ -37,7 +78,7 @@ def get_abstraction_bdd_from_wmi_bench_data() -> List[Point]:
         f = open("benchmarks/wmi/output_abstraction/mutex/" +
                  filename, encoding="utf8")
         data = json.load(f)
-        if len(data) == 0:
+        if len(data) == 0 or data.get("timeout") is not None:
             points.append(Point(DataSource.ABSTRACTION_BDD,0,0,"mutex/"+filename,True))
             continue
         if data["all sat result"] == "UNSAT":
@@ -56,7 +97,7 @@ def get_abstraction_bdd_from_wmi_bench_data() -> List[Point]:
         f = open("benchmarks/wmi/output_abstraction/xor/" +
                  filename, encoding="utf8")
         data = json.load(f)
-        if len(data) == 0:
+        if len(data) == 0 or data.get("timeout") is not None:
             points.append(Point(DataSource.ABSTRACTION_BDD,0,0,"xor/"+filename,True))
             continue
         if data["all sat result"] == "UNSAT":
@@ -68,6 +109,42 @@ def get_abstraction_bdd_from_wmi_bench_data() -> List[Point]:
 
     return points
 
+def get_theory_sdd_from_wmi_bench_data() -> List[Point]:
+    """gets the computation data from a run generating T-SDDs from the WMI benchmark problems"""
+    points = []
+
+    # retrieving mutex result
+    files = os.listdir("benchmarks/wmi/output_sdd/mutex")
+    for filename in files:
+        f = open("benchmarks/wmi/output_sdd/mutex/"+filename, encoding="utf8")
+        data = json.load(f)
+        if len(data) == 0 or data.get("timeout") is not None:
+            points.append(Point(DataSource.THEORY_SDD,0,0,"mutex/"+filename,True))
+            continue
+        if data["all sat result"] == "UNSAT":
+            points.append(Point(DataSource.THEORY_SDD,
+                          data["total computation time"], 1, "mutex/"+filename,False))
+        else:
+            points.append(Point(DataSource.THEORY_SDD,
+                          data["total computation time"],
+                          data["SDD"]["DD nodes"], "mutex/"+filename,False))
+
+    # retrieving xor result
+    files = os.listdir("benchmarks/wmi/output_sdd/xor")
+    for filename in files:
+        f = open("benchmarks/wmi/output_sdd/xor/"+filename, encoding="utf8")
+        data = json.load(f)
+        if len(data) == 0 or data.get("timeout") is not None:
+            points.append(Point(DataSource.THEORY_SDD,0,0,"xor/"+filename,True))
+            continue
+        if data["all sat result"] == "UNSAT":
+            points.append(Point(DataSource.THEORY_SDD,
+                          data["total computation time"], 1, "xor/"+filename,False))
+        else:
+            points.append(Point(DataSource.THEORY_SDD,
+                          data["total computation time"], data["SDD"]["DD nodes"], "xor/"+filename,False))
+
+    return points
 
 def get_theory_bdd_from_wmi_bench_data() -> List[Point]:
     """gets the computation data from a run generating T-BDDs from the WMI benchmark problems"""
@@ -78,7 +155,7 @@ def get_theory_bdd_from_wmi_bench_data() -> List[Point]:
     for filename in files:
         f = open("benchmarks/wmi/output/mutex/"+filename, encoding="utf8")
         data = json.load(f)
-        if len(data) == 0:
+        if len(data) == 0 or data.get("timeout") is not None:
             points.append(Point(DataSource.THEORY_BDD,0,0,"mutex/"+filename,True))
             continue
         if data["all sat result"] == "UNSAT":
@@ -94,7 +171,7 @@ def get_theory_bdd_from_wmi_bench_data() -> List[Point]:
     for filename in files:
         f = open("benchmarks/wmi/output/xor/"+filename, encoding="utf8")
         data = json.load(f)
-        if len(data) == 0:
+        if len(data) == 0 or data.get("timeout") is not None:
             points.append(Point(DataSource.THEORY_BDD,0,0,"xor/"+filename,True))
             continue
         if data["all sat result"] == "UNSAT":
@@ -118,7 +195,7 @@ def get_theory_bdd_from_randgen_bench_data() -> List[Point]:
     for filename in files_list:
         f = open(filename, encoding="utf8")
         data = json.load(f)
-        if len(data) == 0:
+        if len(data) == 0 or data.get("timeout") is not None:
             points.append(Point(DataSource.THEORY_BDD,0,0,filename.replace('benchmarks/randgen/output/', ''),True))
             continue
         if data["all sat result"] == "UNSAT":
@@ -129,6 +206,32 @@ def get_theory_bdd_from_randgen_bench_data() -> List[Point]:
             points.append(Point(DataSource.THEORY_BDD,
                           data["total computation time"],
                           data["BDD"]["DD nodes"],
+                          filename.replace('benchmarks/randgen/output/', ''),False))
+    return points
+
+
+def get_theory_sdd_from_randgen_bench_data() -> List[Point]:
+    """gets the computation data from a run generating T-SDDs 
+    from the randomly generated benchmark problems"""
+    points = []
+    files_list: List[str] = []
+    for path, _subdirs, files in os.walk("benchmarks/randgen/output_sdd"):
+        for name in files:
+            files_list.append(os.path.join(path, name))
+    for filename in files_list:
+        f = open(filename, encoding="utf8")
+        data = json.load(f)
+        if len(data) == 0 or data.get("timeout") is not None:
+            points.append(Point(DataSource.THEORY_BDD,0,0,filename.replace('benchmarks/randgen/output_sdd/', ''),True))
+            continue
+        if data["all sat result"] == "UNSAT":
+            points.append(Point(DataSource.THEORY_BDD,
+                          data["total computation time"], 1,
+                          filename.replace('benchmarks/randgen/output/', ''),False))
+        else:
+            points.append(Point(DataSource.THEORY_BDD,
+                          data["total computation time"],
+                          data["SDD"]["DD nodes"],
                           filename.replace('benchmarks/randgen/output/', ''),False))
     return points
 
@@ -144,7 +247,7 @@ def get_abstraction_bdd_from_randgen_bench_data() -> List[Point]:
     for filename in files_list:
         f = open(filename, encoding="utf8")
         data = json.load(f)
-        if len(data) == 0:
+        if len(data) == 0 or data.get("timeout") is not None:
             points.append(Point(DataSource.ABSTRACTION_BDD,0,0,filename.replace('benchmarks/randgen/output_abstraction/', ''),True))
             continue
         if data["all sat result"] == "UNSAT":
@@ -157,6 +260,32 @@ def get_abstraction_bdd_from_randgen_bench_data() -> List[Point]:
                           data["total computation time"],
                           data["BDD"]["DD nodes"],
                           filename.replace('benchmarks/randgen/output_abstraction/', ''),False))
+    return points
+
+def get_abstraction_sdd_from_randgen_bench_data() -> List[Point]:
+    """gets the computation data from a run generating SDDs of 
+    boolean abstractions from the randomly generated benchmark problems"""
+    points = []
+    files_list: List[str] = []
+    for path, _subdirs, files in os.walk("benchmarks/randgen/output_abstraction_sdd"):
+        for name in files:
+            files_list.append(os.path.join(path, name))
+    for filename in files_list:
+        f = open(filename, encoding="utf8")
+        data = json.load(f)
+        if len(data) == 0 or data.get("timeout") is not None:
+            points.append(Point(DataSource.ABSTRACTION_BDD,0,0,filename.replace('benchmarks/randgen/output_abstraction_sdd/', ''),True))
+            continue
+        if data["all sat result"] == "UNSAT":
+            points.append(Point(DataSource.ABSTRACTION_BDD,
+                          data["total computation time"],
+                          1,
+                          filename.replace('benchmarks/randgen/output_abstraction_sdd/', ''),False))
+        else:
+            points.append(Point(DataSource.ABSTRACTION_BDD,
+                          data["total computation time"],
+                          data["SDD"]["DD nodes"],
+                          filename.replace('benchmarks/randgen/output_abstraction_sdd/', ''),False))
     return points
 
 
@@ -230,16 +359,25 @@ def get_nodes_points(
 
 def main() -> None:
     """main function"""
-    t_points = get_theory_bdd_from_randgen_bench_data()
-    abstr_points = get_abstraction_bdd_from_randgen_bench_data()
+    # randgen BDD (DATA NOT READY)
+    # t_points = get_theory_bdd_from_randgen_bench_data()
+    # abstr_points = get_abstraction_bdd_from_randgen_bench_data()
+    # randgen SDD (DATA NOT READY)
+    # t_points = get_theory_sdd_from_randgen_bench_data()
+    # abstr_points = get_abstraction_sdd_from_randgen_bench_data()
+    # WMI BDD
     #t_points = get_theory_bdd_from_wmi_bench_data()
     #abstr_points = get_abstraction_bdd_from_wmi_bench_data()
+    # WMI SDD
+    t_points = get_theory_sdd_from_wmi_bench_data()
+    abstr_points = get_abstraction_sdd_from_wmi_bench_data()
+
     time_points = get_time_points(t_points, abstr_points)
     size_points = get_nodes_points(t_points, abstr_points)
 
     plt.scatter(time_points[0], time_points[1], marker='s')
-    plt.xlabel("T-BDD")
-    plt.ylabel("Abstr. BDD")
+    plt.xlabel("T-DD")
+    plt.ylabel("Abstr. DD")
     plt.title("Computation Time")
     ax = plt.gca()
     ax.set_yscale('log')
@@ -258,8 +396,8 @@ def main() -> None:
     plt.show()
 
     plt.scatter(size_points[0], size_points[1], marker='s')
-    plt.xlabel("T-BDD")
-    plt.ylabel("Abstr. BDD")
+    plt.xlabel("T-DD")
+    plt.ylabel("Abstr. DD")
     plt.title("DD size in nodes")
     ax = plt.gca()
     ax.set_yscale('log')
