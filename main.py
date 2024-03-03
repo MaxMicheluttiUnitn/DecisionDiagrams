@@ -60,7 +60,7 @@ def load_logger(filename: str):
 
 def all_sat_computation(phi, smt_solver, args, computation_logger):
     """computes all sat returns models and lemmas"""
-    if args.pure_abstraction:
+    if args.pure_abstraction or ((not args.bdd) and (not args.sdd)):
         # DD generation is the same for SAT and UNSTA in pure boolean world
         return SAT, []
     start_time = time.time()
@@ -227,7 +227,8 @@ def main() -> None:
 
         # COMPUTING ALL-SAT
         satisfiablity, lemmas = all_sat_computation(
-            phi, smt_solver, args, computation_logger)
+                phi, smt_solver, args, computation_logger)
+        
 
     if (args.load_lemmas is not None) or satisfiablity == SAT:
         if args.load_lemmas is None:

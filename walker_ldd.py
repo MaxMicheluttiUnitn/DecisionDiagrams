@@ -111,7 +111,7 @@ class LDDWalker(DagWalker):
         '''translate * node'''
         # pylint: disable=unused-argument
         c_obj_1 : ConstraintObject= args[0][0]
-        c_obj_2 :ConstraintObject= args[1][0]
+        c_obj_2 : ConstraintObject= args[1][0]
         if c_obj_1.is_const() and c_obj_2.is_const():
             return [ConstraintObject(0,c_obj_1.constr_mult*c_obj_2.constr_mult)]
         if c_obj_1.is_const():
@@ -194,7 +194,7 @@ class LDDWalker(DagWalker):
     def walk_int_constant(self, formula, args, **kwargs):
         '''translate int const node'''
         # pylint: disable=unused-argument
-        return formula.constant_value()
+        return [ConstraintObject(0,formula.constant_value())]
 
     @handles(op.EQUALS)
     def walk_equals(self, formula, args, **kwargs):
