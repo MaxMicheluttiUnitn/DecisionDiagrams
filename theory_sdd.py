@@ -9,7 +9,7 @@ from pysmt.fnode import FNode
 from pysdd.sdd import SddManager, Vtree, WmcManager
 from string_generator import SDDSequentailStringGenerator
 from formula import get_atoms
-from sdd_walker import SDDWalker
+from walker_sdd import SDDWalker
 from utils import get_string_from_atom as _get_string_from_atom
 
 def compute_sdd(phi: FNode,

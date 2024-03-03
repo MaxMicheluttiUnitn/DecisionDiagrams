@@ -5,7 +5,7 @@ from pywmi.domain import Domain
 from pywmi import XsddEngine
 
 from formula import get_symbols
-from xsdd_walker import XsddParser
+from walker_xsdd import XsddParser
 
 def compute_xsdd(phi: FNode,computation_logger: any = {}):
     '''computing xsdd'''

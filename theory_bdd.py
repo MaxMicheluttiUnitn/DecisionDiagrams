@@ -8,7 +8,7 @@ import pydot
 from dd import cudd as cudd_bdd
 from string_generator import SequentialStringGenerator
 from formula import get_atoms
-from bdd_walker import BDDWalker
+from walker_bdd import BDDWalker
 from utils import get_string_from_atom as _get_string_from_atom
 
 
