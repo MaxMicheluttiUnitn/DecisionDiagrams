@@ -36,11 +36,16 @@ def compute_ldd(phi: FNode,
     ldd = _ldd.LDD(_ldd.TVPI,len(integer_symbols.keys()),len(boolean_symbols.keys()))
     walker = LDDWalker(boolean_symbols,integer_symbols,ldd)
     func = walker.walk(phi)
+
+    # COUNTING NODES
     if count_nodes:
         n_nodes = len(func)
         print("Nodes: ",n_nodes)
         computation_logger["LDD"]["DD nodes"] = n_nodes
-    ldd.dump("ldd_out.svg",[func])
-    elapsed_time = (time.time() - start_time)
-    print("LDD for phi built in ", elapsed_time, " seconds")
-    computation_logger["LDD"]["DD building time"] = elapsed_time
+
+    # DUMPING FILE
+    if output_file is not None:
+        ldd.dump(output_file,[func])
+        elapsed_time = (time.time() - start_time)
+        print("LDD for phi built in ", elapsed_time, " seconds")
+        computation_logger["LDD"]["DD building time"] = elapsed_time
