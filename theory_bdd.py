@@ -6,7 +6,7 @@ from typing import List
 from pysmt.fnode import FNode
 import pydot
 from dd import cudd as cudd_bdd
-from string_generator import SequentailStringGenerator
+from string_generator import SequentialStringGenerator
 from formula import get_atoms
 from bdd_walker import BDDWalker
 from utils import get_string_from_atom as _get_string_from_atom
@@ -30,7 +30,7 @@ def compute_bdd_cudd(phi: FNode,
     print("Creating mapping...")
     mapping = {}
     atoms = get_atoms(phi)
-    string_generator = SequentailStringGenerator()
+    string_generator = SequentialStringGenerator()
     for atom in atoms:
         mapping[atom] = string_generator.next_string()
     elapsed_time = (time.time() - start_time)
