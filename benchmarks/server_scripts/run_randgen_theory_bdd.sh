@@ -23,8 +23,8 @@ do
 			tmpfile="${item/data/tmp}"
 			#echo $smtfilename
 			#echo $jsonfilename
-			echo $tmpfile
-			if [ -f "$outputprobs"/"jsonfilename" ]; then
+			#echo $tmpfile
+			if [ -f "$outputprobs"/"$jsonfilename" ]; then
 				echo "Skipping task on $smtfilename"
 			else
 				echo "Performing task on $smtfilename"

@@ -16,7 +16,7 @@ do
             jsonfilename="${smtfilename/.smt2/.json}"
             #echo $smtfilename
             #echo $jsonfilename
-            if [ -f "$outputprobs"/"jsonfilename" ]; then
+            if [ -f "$outputprobs"/"$jsonfilename" ]; then
                 echo "Skipping task on $smtfilename"
             else
                 echo "Performing task on $smtfilename"
