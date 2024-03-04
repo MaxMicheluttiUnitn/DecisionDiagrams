@@ -82,6 +82,10 @@ def get_args() -> argparse.Namespace:
         help="Print the amount of nodes in the generated DDs",
         action="store_true")
     parser.add_argument(
+        "--count_vertices",
+        help="Print the amount of vertices in the generated DDs",
+        action="store_true")
+    parser.add_argument(
         "--save_lemmas",
         help="Specify a .smt file to save the lemmas obtained from All-SMT",
         type=str)

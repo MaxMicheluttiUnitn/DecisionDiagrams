@@ -10,7 +10,6 @@ for file in "$lddbenchfolder"*
 do
 	smtfilename="${file#"$lddbenchfolder"}"
 	jsonfilename="${smtfilename/.smt/.json}"
-	tmpfile="${file/LDD_bench_no_exists/tmp}"
     if [ -f "$outputfolder""$jsonfilename" ]; then
 		echo "Skipping task on $smtfilename"
 	else

@@ -18,6 +18,7 @@ def compute_bdd_cudd(phi: FNode,
                      print_mapping: bool = False,
                      count_models: bool = False,
                      count_nodes: bool = False,
+                     count_vertices: bool = False,
                      qvars: List[FNode] = [],
                      computation_logger: any = {}):
     '''Computes the BDD for the boolean formula phi and saves it on a file using dd.cudd'''
@@ -71,11 +72,19 @@ def compute_bdd_cudd(phi: FNode,
     else:
         computation_logger["BDD"]["fresh T-atoms quantification time"] = 0
 
+    total_nodes_dd:int = -1
     # COUNTING NODES
     if count_nodes:
-        total_nodes = len(root)
-        print("Nodes in BDD: ", total_nodes)
-        computation_logger["BDD"]["DD nodes"] = total_nodes
+        total_nodes_dd = len(root)
+        print("Nodes in BDD: ", total_nodes_dd)
+        computation_logger["BDD"]["DD nodes"] = total_nodes_dd
+
+    # COUNTING VERTICES
+    if count_vertices:
+        if total_nodes_dd == -1:
+            total_nodes_dd = len(root)
+        print("Vertices in BDD: ", total_nodes_dd*2)
+        computation_logger["BDD"]["DD vertices"] = total_nodes_dd*2
 
     # MODEL COUNTING
     if count_models:
@@ -83,7 +92,7 @@ def compute_bdd_cudd(phi: FNode,
         print("Counting models...")
         total_models = root.count(nvars=len(mapping.keys())-len(qvars))
         print("Models: ", total_models)
-        computation_logger["BDD"]["model count"] = total_nodes
+        computation_logger["BDD"]["model count"] = total_models
         elapsed_time = (time.time() - start_time)
         print("Models counted in ", elapsed_time, " seconds")
         computation_logger["BDD"]["model counting time"] = elapsed_time

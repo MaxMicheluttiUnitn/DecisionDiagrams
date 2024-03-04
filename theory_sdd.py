@@ -3,10 +3,10 @@
 import time
 import re
 from array import array
-from typing import List
+from typing import List, Set
 import pydot
 from pysmt.fnode import FNode
-from pysdd.sdd import SddManager, Vtree, WmcManager
+from pysdd.sdd import SddManager, Vtree, WmcManager, SddNode
 from string_generator import SDDSequentailStringGenerator
 from formula import get_atoms
 from walker_sdd import SDDWalker
@@ -20,6 +20,7 @@ def compute_sdd(phi: FNode,
                 print_mapping: bool = False,
                 count_models: bool = False,
                 count_nodes: bool = False,
+                count_vertices: bool = False,
                 qvars: List[FNode] = [],
                 computation_logger: any = {}) -> None:
     ' ' 'Computes the SDD for the boolean formula phi and saves it on a file' ' '
@@ -92,6 +93,32 @@ def compute_sdd(phi: FNode,
         total_nodes = sdd_formula.count()
         computation_logger["SDD"]["DD nodes"] = total_nodes
         print("Nodes in SDD: ", total_nodes)
+
+    # COUNTING VERTICES
+    if count_vertices:
+        if sdd_formula.is_true() or not sdd_formula.is_decision():
+            computation_logger["SDD"]["DD vertices"] = 0
+            print("Vertices in SDD: ", 0)
+        else:
+            elems = sdd_formula.elements()
+            queue: List[SddNode] = []
+            for elem in elems:
+                queue.extend([elem[0],elem[1]])
+            total_edges = len(elems)
+            visited: Set[SddNode] = set()
+            visited.add(sdd_formula)
+            while len(queue) > 0:
+                first = queue.pop(0)
+                if first.is_decision():
+                    total_edges += 1
+                    if not first in visited:
+                        elems = first.elements()
+                        for elem in elems:
+                            queue.extend([elem[0],elem[1]])
+                            total_edges+=1
+                    visited.add(first)
+            computation_logger["SDD"]["DD vertices"] = total_edges
+            print("Vertices in SDD: ", total_edges)
 
     # MODEL COUNTING
     if count_models:

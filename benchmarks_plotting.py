@@ -14,6 +14,7 @@ class DataSource(Enum):
     ABSTRACTION_BDD = 2
     THEORY_SDD = 3
     ABSTRACTION_SDD = 4
+    LDD = 5
 
 
 @dataclass
@@ -227,12 +228,12 @@ def get_theory_sdd_from_randgen_bench_data() -> List[Point]:
         if data["all sat result"] == "UNSAT":
             points.append(Point(DataSource.THEORY_BDD,
                           data["total computation time"], 1,
-                          filename.replace('benchmarks/randgen/output/', ''),False))
+                          filename.replace('benchmarks/randgen/output_sdd/', ''),False))
         else:
             points.append(Point(DataSource.THEORY_BDD,
                           data["total computation time"],
                           data["SDD"]["DD nodes"],
-                          filename.replace('benchmarks/randgen/output/', ''),False))
+                          filename.replace('benchmarks/randgen/output_sdd/', ''),False))
     return points
 
 
@@ -356,24 +357,8 @@ def get_nodes_points(
                 break
     return (theory_list, abstraction_list, edge)
 
-
-def main() -> None:
-    """main function"""
-    # randgen BDD (DATA NOT READY)
-    # t_points = get_theory_bdd_from_randgen_bench_data()
-    # abstr_points = get_abstraction_bdd_from_randgen_bench_data()
-    # randgen SDD (DATA NOT READY)
-    # t_points = get_theory_sdd_from_randgen_bench_data()
-    # abstr_points = get_abstraction_sdd_from_randgen_bench_data()
-    # WMI BDD
-    #t_points = get_theory_bdd_from_wmi_bench_data()
-    #abstr_points = get_abstraction_bdd_from_wmi_bench_data()
-    # WMI SDD
-    t_points = get_theory_sdd_from_wmi_bench_data()
-    abstr_points = get_abstraction_sdd_from_wmi_bench_data()
-
-    time_points = get_time_points(t_points, abstr_points)
-    size_points = get_nodes_points(t_points, abstr_points)
+def build_graphs(time_points,size_points) -> None:
+    """builds and displays graphs"""
 
     plt.scatter(time_points[0], time_points[1], marker='s')
     plt.xlabel("T-DD")
@@ -414,6 +399,24 @@ def main() -> None:
     ax.callbacks.connect('ylim_changed', on_change)
     plt.axis('square')
     plt.show()
+
+def main() -> None:
+    """main function"""
+    # randgen BDD (DATA NOT READY)
+    # t_points = get_theory_bdd_from_randgen_bench_data()
+    # abstr_points = get_abstraction_bdd_from_randgen_bench_data()
+    # randgen SDD (DATA NOT READY)
+    # t_points = get_theory_sdd_from_randgen_bench_data()
+    # abstr_points = get_abstraction_sdd_from_randgen_bench_data()
+    # WMI BDD
+    # t_points = get_theory_bdd_from_wmi_bench_data()
+    # abstr_points = get_abstraction_bdd_from_wmi_bench_data()
+    # WMI SDD
+    t_points = get_theory_sdd_from_wmi_bench_data()
+    abstr_points = get_abstraction_sdd_from_wmi_bench_data()
+    time_points = get_time_points(t_points, abstr_points)
+    size_points = get_nodes_points(t_points, abstr_points)
+    build_graphs(time_points,size_points)    
 
 
 def test_plotting_lib() -> None:
