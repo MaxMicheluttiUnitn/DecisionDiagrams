@@ -99,4 +99,5 @@ class BDDWalker(DagWalker):
     def do_nothing(self, formula, args, **kwargs):
         '''do nothing when seeing theory constants'''
         # pylint: disable=unused-argument
-        raise UnsupportedNodeException("Pure Theory Constant Found: "+str(formula))
+        return
+        # raise UnsupportedNodeException("Pure Theory Constant Found: "+str(formula))
