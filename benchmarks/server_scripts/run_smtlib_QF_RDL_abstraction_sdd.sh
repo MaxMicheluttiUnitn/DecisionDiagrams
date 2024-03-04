@@ -6,7 +6,7 @@ mkdir ./benchmarks/smtlib/output_abstraction_sdd/non-incremental/QF_RDL
 
 for folder in ./benchmarks/smtlib/data/non-incremental/QF_RDL/*
 do
-    outputfolder="${gen/data/output_abstraction_sdd}"
+    outputfolder="${folder/data/output_abstraction_sdd}"
     mkdir $outputfolder
     for item in $folder/*
     do

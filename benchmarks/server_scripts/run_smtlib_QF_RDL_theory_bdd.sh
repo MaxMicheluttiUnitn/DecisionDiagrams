@@ -10,8 +10,8 @@ mkdir ./benchmarks/smtlib/tmp/non-incremental/QF_RDL
 
 for folder in ./benchmarks/smtlib/data/non-incremental/QF_RDL/*
 do
-	outputfolder="${gen/data/output_bdd}"
-	tmpfolder="${gen/data/tmp}"
+	outputfolder="${folder/data/output_bdd}"
+	tmpfolder="${folder/data/tmp}"
 	mkdir $outputfolder
 	mkdir $tmpfolder
 	for item in $folder/*
