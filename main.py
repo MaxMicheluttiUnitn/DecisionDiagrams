@@ -60,7 +60,7 @@ def load_logger(filename: str):
 
 def all_sat_computation(phi, smt_solver, args, computation_logger):
     """computes all sat returns models and lemmas"""
-    if args.pure_abstraction or ((not args.bdd) and (not args.sdd)):
+    if args.pure_abstraction or ((not args.bdd) and (not args.sdd) and (not args.save_lemmas)):
         # DD generation is the same for SAT and UNSTA in pure boolean world
         return SAT, []
     start_time = time.time()
