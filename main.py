@@ -251,7 +251,8 @@ def main() -> None:
                 global_start_time = time.time(
                 ) - computation_logger['total computation time']
                 phi_and_lemmas = formula.read_phi(args.load_lemmas)
-            except FileNotFoundError():
+            except:
+                computation_logger = {}
                 computation_logger["all sat result"] = "UNSAT"
                 phi = formula.bottom()
                 global_start_time = time.time()
