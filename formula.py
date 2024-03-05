@@ -1,7 +1,7 @@
 '''this module simplifies interactions with the pysmt library for handling SMT formulas'''
 
 from typing import List, Dict
-from pysmt.shortcuts import Symbol, REAL, And, Or, Xor, BOOL, Real, LT, Minus, Plus, Not, read_smtlib, Exists, write_smtlib, TRUE
+from pysmt.shortcuts import Symbol, REAL, And, Or, Xor, BOOL, Real, LT, Minus, Plus, Not, read_smtlib, Exists, write_smtlib, TRUE, FALSE
 from pysmt.fnode import FNode
 from string_generator import SequentialStringGenerator
 
@@ -31,6 +31,10 @@ def get_phi() -> FNode:
     # phi = Or(LT(x1,Real(0)),LT(Real(1),x1))
     return phi
 
+
+def bottom() -> FNode:
+    """return a FNode representing False"""
+    return FALSE()
 
 def read_phi(filename: str) -> FNode:
     ' ' 'Reads the SMT formula from a file and returns the corresponding root FNode' ' '

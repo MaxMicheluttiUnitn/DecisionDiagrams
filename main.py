@@ -244,12 +244,18 @@ def main() -> None:
             phi_and_lemmas = add_theory_lemmas(
                 phi, lemmas, args, computation_logger, global_start_time)
         else:
-            computation_logger = load_logger(args.load_lemmas.replace(
-                '.smt2', '.json').replace('.smt', '.json'))
-            phi = get_phi(args, computation_logger)
-            global_start_time = time.time(
-            ) - computation_logger['total computation time']
-            phi_and_lemmas = formula.read_phi(args.load_lemmas)
+            try:
+                computation_logger = load_logger(args.load_lemmas.replace(
+                    '.smt2', '.json').replace('.smt', '.json'))
+                phi = get_phi(args, computation_logger)
+                global_start_time = time.time(
+                ) - computation_logger['total computation time']
+                phi_and_lemmas = formula.read_phi(args.load_lemmas)
+            except FileNotFoundError():
+                computation_logger["all sat result"] = "UNSAT"
+                phi = formula.bottom()
+                global_start_time = time.time()
+                phi_and_lemmas = phi
 
         # FINDING ATOMS TO EXISTETIALLY QUANTIFY ON
         new_theory_atoms = find_qvars(
