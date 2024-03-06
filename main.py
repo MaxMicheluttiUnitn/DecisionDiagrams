@@ -65,7 +65,10 @@ def all_sat_computation(phi, smt_solver, args, computation_logger):
         return SAT, []
     start_time = time.time()
     print("Starting All Sat computation...")
-    boolean_mapping = formula.get_boolean_mapping(phi)
+    if args.no_boolean_mapping:
+        boolean_mapping = None
+    else:
+        boolean_mapping = formula.get_boolean_mapping(phi)
     if smt_solver.check_all_sat(phi, boolean_mapping) == UNSAT:
         print("Computed All Sat in ", time.time()-start_time, " seconds")
         print("Phi is T-UNSAT. Cannot generate any DD...")
