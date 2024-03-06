@@ -206,7 +206,27 @@ class LDDWalker(DagWalker):
     def walk_equals(self, formula, args, **kwargs):
         '''translate * node'''
         # pylint: disable=unused-argument
-        raise UnsupportedNodeException(formula)
+        left_c_objs: List[ConstraintObject] = args[0]
+        right_c_objs: List[ConstraintObject] = args[1]
+        const_c_obj = ConstraintObject(0,0)
+        var_list = [0] * self.theory_amount
+        # LEFT PART OF THE INEQ
+        for c_obj in left_c_objs:
+            if c_obj.is_const():
+                const_c_obj = ConstraintObject(0,const_c_obj.constr_mult-c_obj.constr_mult)
+            else:
+                var_list[c_obj.constr_index-1] = var_list[c_obj.constr_index-1] + c_obj.constr_mult
+        # RIGHT PART OF THE INEQ
+        for c_obj in right_c_objs:
+            if c_obj.is_const():
+                const_c_obj = ConstraintObject(0,const_c_obj.constr_mult+c_obj.constr_mult)
+            else:
+                var_list[c_obj.constr_index-1] = var_list[c_obj.constr_index-1] - c_obj.constr_mult
+        res1 = tuple([tuple(var_list),False,const_c_obj.constr_mult])
+        minus_const_c_obj = ConstraintObject(const_c_obj.constr_index,-const_c_obj.constr_mult)
+        minus_var_list = [-x for x in var_list]
+        res2 = tuple([tuple(minus_var_list),False,minus_const_c_obj.constr_mult])
+        return self.manager.constraint(res1) & self.manager.constraint(res2)
 
     @handles(*op.BV_OPERATORS, *op.STR_OPERATORS, *op.BV_RELATIONS, *op.STR_RELATIONS, op.STR_CONSTANT, op.BV_CONSTANT)
     def walk_theory(self, formula, args, **kwargs):
