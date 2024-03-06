@@ -195,6 +195,12 @@ class LDDWalker(DagWalker):
         '''translate int const node'''
         # pylint: disable=unused-argument
         return [ConstraintObject(0,formula.constant_value())]
+    
+    @handles(op.REAL_CONSTANT)
+    def walk_real_constant(self, formula, args, **kwargs):
+        '''translate int const node'''
+        # pylint: disable=unused-argument
+        return [ConstraintObject(0,int(formula.constant_value()))]
 
     @handles(op.EQUALS)
     def walk_equals(self, formula, args, **kwargs):
@@ -202,7 +208,7 @@ class LDDWalker(DagWalker):
         # pylint: disable=unused-argument
         raise UnsupportedNodeException(formula)
 
-    @handles(op.REAL_CONSTANT,*op.BV_OPERATORS, *op.STR_OPERATORS, *op.BV_RELATIONS, *op.STR_RELATIONS, op.STR_CONSTANT, op.BV_CONSTANT)
+    @handles(*op.BV_OPERATORS, *op.STR_OPERATORS, *op.BV_RELATIONS, *op.STR_RELATIONS, op.STR_CONSTANT, op.BV_CONSTANT)
     def walk_theory(self, formula, args, **kwargs):
         '''translate theory node'''
         # pylint: disable=unused-argument

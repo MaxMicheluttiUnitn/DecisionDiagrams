@@ -1,7 +1,7 @@
 """LDD handling module"""
 import time
 
-from pysmt.shortcuts import BOOL, INT
+from pysmt.shortcuts import BOOL, INT, REAL
 from pysmt.fnode import FNode
 from dd import ldd as _ldd
 
@@ -29,6 +29,9 @@ def compute_ldd(phi: FNode,
         if s.get_type() == BOOL:
             boolean_symbols.update({s:str_gen.next_string()})
         elif s.get_type() == INT:
+            integer_symbols.update({s:int_ctr})
+            int_ctr+=1
+        elif s.get_type() == REAL:
             integer_symbols.update({s:int_ctr})
             int_ctr+=1
         else:
