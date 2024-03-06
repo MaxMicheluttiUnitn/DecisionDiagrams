@@ -76,6 +76,10 @@ class SMTSolver:
         self._tlemmas = [self._converter.back(
             l) for l in mathsat.msat_get_theory_lemmas(self.solver.msat_env())]
             
+
+        if len(self._models) == 0:
+            return UNSAT
+        
         for m in self.models:
             self.solver_total.push()
             self.solver_total.add_assertion(And(m))
@@ -86,9 +90,6 @@ class SMTSolver:
             tlemmas_total = [self._converter_total.back(l) for l in mathsat.msat_get_theory_lemmas(self.solver_total.msat_env())]
             self._tlemmas += tlemmas_total
             self.solver_total.pop()
-
-        if len(self._models) == 0:
-            return UNSAT
         return SAT
 
     def get_theory_lemmas(self) -> List[FNode]:
