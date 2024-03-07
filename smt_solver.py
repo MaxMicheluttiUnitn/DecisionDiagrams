@@ -55,7 +55,7 @@ class SMTSolver:
         
         phi = PolarityCNFizer(nnf=True, mutex_nnf_labels=True).convert_as_formula(phi)
         self.solver.add_assertion(phi)
-        self.solver_total.add_assertion(phi)
+        
 
         if not boolean_mapping is None:
             for k, v in boolean_mapping.items():
@@ -78,6 +78,8 @@ class SMTSolver:
         self._tlemmas = [self._converter.back(
             l) for l in mathsat.msat_get_theory_lemmas(self.solver.msat_env())]
             
+        phi_plus_lemmas = And(phi, *self._tlemmas)
+        self.solver_total.add_assertion(phi_plus_lemmas)
 
         if len(self._models) == 0:
             return UNSAT
