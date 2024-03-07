@@ -44,6 +44,7 @@ class SMTSolver:
         self._models = []
         self._converter = self.solver.converter
         self._converter_total = self.solver_total.converter
+        self._atoms = []
 
     def check_all_sat(self, phi: FNode, boolean_mapping: Dict[FNode, FNode] = None) -> bool:
         '''computes All-SAT for the SMT-formula phi'''
@@ -59,35 +60,40 @@ class SMTSolver:
                 self.solver.add_assertion(Iff(k, v))
 
         self._models = []
-        if not boolean_mapping is None:
+        if boolean_mapping is not None:
             mathsat.msat_all_sat(self.solver.msat_env(),
                              # self.get_converted_atoms(atoms),
                              self.get_converted_atoms(
                                  list(boolean_mapping.keys())),
                              callback=lambda model: _allsat_callback(model, self._converter, self._models))
         else:
-            atoms = phi.get_atoms()
+            self._atoms = phi.get_atoms()
             mathsat.msat_all_sat(self.solver.msat_env(),
-                             self.get_converted_atoms(atoms),
+                             self.get_converted_atoms(self._atoms),
                              # self.get_converted_atoms(
                              #    list(boolean_mapping.keys())),
                              callback=lambda model: _allsat_callback(model, self._converter, self._models))
             
         self._tlemmas = [self._converter.back(
             l) for l in mathsat.msat_get_theory_lemmas(self.solver.msat_env())]
+        
+        # print("models", self._models)
+        # print("tlemmas", self._tlemmas)
             
 
         if len(self._models) == 0:
             return UNSAT
         
-        for m in self.models:
+        for m in self._models:
             self.solver_total.push()
             self.solver_total.add_assertion(And(m))
             models_total = []
             mathsat.msat_all_sat(self.solver_total.msat_env(),
-                                    [self.converter_total.convert(a) for a in atoms],
+                                    [self._converter_total.convert(a) for a in self._atoms],
                                     callback=lambda model: _allsat_callback(model, self._converter_total, models_total))
             tlemmas_total = [self._converter_total.back(l) for l in mathsat.msat_get_theory_lemmas(self.solver_total.msat_env())]
+            # print("models_total", models_total)
+            # print("tlemmas_total", tlemmas_total)
             self._tlemmas += tlemmas_total
             self.solver_total.pop()
         return SAT

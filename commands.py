@@ -66,6 +66,10 @@ def get_args() -> argparse.Namespace:
         help="Use only the boolean abstraction (without lemmas) for the DD generation",
         action="store_true")
     parser.add_argument(
+        "--no_boolean_mapping",
+        help="Do not use a boolean mapping to enumerate when computing All SMT",
+        action="store_true")
+    parser.add_argument(
         "--dump_abstraction",
         help="Dump the boolean abstraction of the SMT formula instead of the actual formula",
         action="store_true")
