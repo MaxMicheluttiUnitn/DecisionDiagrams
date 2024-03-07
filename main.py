@@ -15,6 +15,7 @@ import formula
 import commands
 from smt_solver import SAT, UNSAT, SMTSolver
 import decision_diagrams
+from smt_solver_partial import PartialSMTSolver
 
 
 def get_phi(args, computation_logger):
@@ -36,7 +37,10 @@ def normalize_phi_and_get_solver(phi, args, computation_logger):
     # pylint: disable=unused-argument
     start_time = time.time()
     print("Normalizing phi according to solver...")
-    smt_solver = SMTSolver()
+    if args.solver == "total":
+        smt_solver = SMTSolver()
+    else:
+        smt_solver = PartialSMTSolver()
     normal_phi = formula.get_normalized(phi, smt_solver.get_converter())
     elapsed_time = time.time()-start_time
     print("Phi was normalized in ", elapsed_time, " seconds")
@@ -65,14 +69,20 @@ def all_sat_computation(phi, smt_solver, args, computation_logger):
         return SAT, []
     start_time = time.time()
     print("Starting All Sat computation...")
-    if args.no_boolean_mapping:
-        boolean_mapping = None
+    if args.solver == "total":
+        if args.no_boolean_mapping:
+            boolean_mapping = None
+        else:
+            boolean_mapping = formula.get_boolean_mapping(phi)
+        if smt_solver.check_all_sat(phi, boolean_mapping) == UNSAT:
+            print("Computed All Sat in ", time.time()-start_time, " seconds")
+            print("Phi is T-UNSAT. Cannot generate any DD...")
+            return UNSAT, []
     else:
-        boolean_mapping = formula.get_boolean_mapping(phi)
-    if smt_solver.check_all_sat(phi, boolean_mapping) == UNSAT:
-        print("Computed All Sat in ", time.time()-start_time, " seconds")
-        print("Phi is T-UNSAT. Cannot generate any DD...")
-        return UNSAT, []
+        if smt_solver.check_all_sat(phi) == UNSAT:
+            print("Computed All Sat in ", time.time()-start_time, " seconds")
+            print("Phi is T-UNSAT. Cannot generate any DD...")
+            return UNSAT, []
     elapsed_time = time.time()-start_time
     print("Computed All Sat in ", elapsed_time, " seconds")
     computation_logger["All-SAT computation time"] = elapsed_time
@@ -254,7 +264,7 @@ def main() -> None:
                 global_start_time = time.time(
                 ) - computation_logger['total computation time']
                 phi_and_lemmas = formula.read_phi(args.load_lemmas)
-            except:
+            except FileNotFoundError:
                 computation_logger = {}
                 computation_logger["all sat result"] = "UNSAT"
                 phi = formula.bottom()

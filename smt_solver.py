@@ -1,10 +1,9 @@
 '''this module handles interactions with the mathsat solver'''
 
 from typing import List, Dict
-from pysmt.shortcuts import Solver, Iff, And
+from pysmt.shortcuts import Solver, Iff
 from pysmt.fnode import FNode
 import mathsat
-from allsat_cnf.polarity_cnfizer import PolarityCNFizer
 
 SAT = True
 UNSAT = False
@@ -21,15 +20,6 @@ class SMTSolver:
 
     def __init__(self) -> None:
         solver_options_dict = {
-            "dpll.allsat_minimize_model": "true",  # - truth assignment totali
-            # "dpll.allsat_allow_duplicates": "false", # - per produrre truth assignment non necessariamente disjoint.
-            #                                          # ha senso metterla a true solo se minimize_model=true.
-            # - necessari per disabilitare step di preprocessing fatti
-            "preprocessor.toplevel_propagation": "false",
-            "preprocessor.simplification": "0",  # da mathsat
-            "dpll.store_tlemmas": "true",  # - necessario per ottenere t-lemmi
-        }
-        solver_options_dict_total = {
             "dpll.allsat_minimize_model": "false",  # - truth assignment totali
             # "dpll.allsat_allow_duplicates": "false", # - per produrre truth assignment non necessariamente disjoint.
             #                                          # ha senso metterla a true solo se minimize_model=true.
@@ -39,12 +29,10 @@ class SMTSolver:
             "dpll.store_tlemmas": "true",  # - necessario per ottenere t-lemmi
         }
         self.solver = Solver("msat", solver_options=solver_options_dict)
-        self.solver_total = Solver("msat", solver_options=solver_options_dict_total)
         self._last_phi = None
         self._tlemmas = []
         self._models = []
         self._converter = self.solver.converter
-        self._converter_total = self.solver_total.converter
         self._atoms = []
 
     def check_all_sat(self, phi: FNode, boolean_mapping: Dict[FNode, FNode] = None) -> bool:
@@ -52,12 +40,9 @@ class SMTSolver:
         self._last_phi = phi
 
         self._atoms = phi.get_atoms()
-        
-        phi = PolarityCNFizer(nnf=True, mutex_nnf_labels=True).convert_as_formula(phi)
         self.solver.add_assertion(phi)
-        
 
-        if not boolean_mapping is None:
+        if boolean_mapping is not None:
             for k, v in boolean_mapping.items():
                 self.solver.add_assertion(Iff(k, v))
 
@@ -77,24 +62,9 @@ class SMTSolver:
             
         self._tlemmas = [self._converter.back(
             l) for l in mathsat.msat_get_theory_lemmas(self.solver.msat_env())]
-            
-        phi_plus_lemmas = And(phi, *self._tlemmas)
-        self.solver_total.add_assertion(phi_plus_lemmas)
 
         if len(self._models) == 0:
             return UNSAT
-        
-        for m in self._models:
-            self.solver_total.push()
-            self.solver_total.add_assertion(And(m))
-            models_total = []
-            mathsat.msat_all_sat(self.solver_total.msat_env(),
-                                    [self._converter_total.convert(a) for a in self._atoms],
-                                    callback=lambda model: _allsat_callback(model, self._converter_total, models_total))
-            tlemmas_total = [self._converter_total.back(l) for l in mathsat.msat_get_theory_lemmas(self.solver_total.msat_env())]
-            self._tlemmas += tlemmas_total
-            self.solver_total.pop()
-
         return SAT
 
     def get_theory_lemmas(self) -> List[FNode]:

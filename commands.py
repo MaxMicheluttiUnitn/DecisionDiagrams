@@ -3,6 +3,9 @@ import argparse
 
 VALID_VTREE = ["left", "right", "balanced", "vertical", "random"]
 
+VALID_LDD_THEORY = []
+
+VALID_SOLVER = ["partial","total"]
 
 def get_args() -> argparse.Namespace:
     ' ' 'Reads the args from the command line' ' '
@@ -25,18 +28,33 @@ def get_args() -> argparse.Namespace:
         action="store_true")
     parser.add_argument(
         "--print_models",
-        help="Print the models obtained from All-SAT computation",
+        help="Print the models obtained from All-SMT computation",
         action="store_true")
     parser.add_argument(
         "--print_lemmas",
-        help="Print the lemmas generated during the All-SAT compiutation",
+        help="Print the lemmas generated during the All-SMT compiutation",
         action="store_true")
     parser.add_argument(
         "--vtree",
         help="Specify V-Tree kind for SDD generation (default is right). Available values: "+str(
             VALID_VTREE),
         type=str,
-        choices=VALID_VTREE)
+        choices=VALID_VTREE,
+        default="right")
+    parser.add_argument(
+        "--ldd_theory",
+        help="Specify the theory to use with LDDs. Available values: "+str(
+            VALID_LDD_THEORY),
+        type=str,
+        choices=VALID_LDD_THEORY,
+        default="TVPI")
+    parser.add_argument(
+        "--solver",
+        help="Specify the solver you want to use to perform All-SMT. Available values: "+str(
+            VALID_SOLVER),
+        type=str,
+        choices=VALID_SOLVER,
+        default="partial")
     parser.add_argument(
         "--vtree_output",
         help="Specify a .dot or .svg file to save the vtree (by default the vtree is not saved)",
