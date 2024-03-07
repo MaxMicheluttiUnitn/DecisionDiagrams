@@ -4,6 +4,7 @@ from typing import List, Dict
 from pysmt.shortcuts import Solver, Iff, And
 from pysmt.fnode import FNode
 import mathsat
+from allsat_cnf.polarity_cnfizer import PolarityCNFizer
 
 SAT = True
 UNSAT = False
@@ -50,10 +51,11 @@ class SMTSolver:
         '''computes All-SAT for the SMT-formula phi'''
         self._last_phi = phi
 
+        self._atoms = phi.get_atoms()
         
-
+        phi = PolarityCNFizer(nnf=True, mutex_nnf_labels=True).convert_as_formula(phi)
         self.solver.add_assertion(phi)
-        self.solver_total.add_assertion(phi)
+        
 
         if not boolean_mapping is None:
             for k, v in boolean_mapping.items():
@@ -67,7 +69,6 @@ class SMTSolver:
                                  list(boolean_mapping.keys())),
                              callback=lambda model: _allsat_callback(model, self._converter, self._models))
         else:
-            self._atoms = phi.get_atoms()
             mathsat.msat_all_sat(self.solver.msat_env(),
                              self.get_converted_atoms(self._atoms),
                              # self.get_converted_atoms(
@@ -76,10 +77,9 @@ class SMTSolver:
             
         self._tlemmas = [self._converter.back(
             l) for l in mathsat.msat_get_theory_lemmas(self.solver.msat_env())]
-        
-        # print("models", self._models)
-        # print("tlemmas", self._tlemmas)
             
+        phi_plus_lemmas = And(phi, *self._tlemmas)
+        self.solver_total.add_assertion(phi_plus_lemmas)
 
         if len(self._models) == 0:
             return UNSAT
@@ -92,10 +92,9 @@ class SMTSolver:
                                     [self._converter_total.convert(a) for a in self._atoms],
                                     callback=lambda model: _allsat_callback(model, self._converter_total, models_total))
             tlemmas_total = [self._converter_total.back(l) for l in mathsat.msat_get_theory_lemmas(self.solver_total.msat_env())]
-            # print("models_total", models_total)
-            # print("tlemmas_total", tlemmas_total)
             self._tlemmas += tlemmas_total
             self.solver_total.pop()
+
         return SAT
 
     def get_theory_lemmas(self) -> List[FNode]:
