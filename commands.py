@@ -3,7 +3,7 @@ import argparse
 
 VALID_VTREE = ["left", "right", "balanced", "vertical", "random"]
 
-VALID_LDD_THEORY = []
+VALID_LDD_THEORY = ["TVPI","TVPIZ","UTVPIZ","BOX","BOXZ"]
 
 VALID_SOLVER = ["partial","total"]
 

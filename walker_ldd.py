@@ -200,7 +200,7 @@ class LDDWalker(DagWalker):
     def walk_real_constant(self, formula, args, **kwargs):
         '''translate int const node'''
         # pylint: disable=unused-argument
-        return [ConstraintObject(0,int(formula.constant_value()))]
+        return [ConstraintObject(0,formula.constant_value())]
 
     @handles(op.EQUALS)
     def walk_equals(self, formula, args, **kwargs):

@@ -220,6 +220,7 @@ def process_ldd(phi, args, computation_logger):
     print("Starting LDD Procesing...")
     computation_logger["LDD"] = {}
     decision_diagrams.compute_ldd(phi,
+                                  args.ldd_theory,
                                   output_file=args.ldd_output, 
                                   count_nodes=args.count_nodes,
                                   count_vertices=args.count_vertices,
