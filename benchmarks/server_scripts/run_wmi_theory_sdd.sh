@@ -30,7 +30,7 @@ timeout 3600s python main.py -i "$wmi_data_folder_mutex""$smtfilename" --load_le
 				echo "{\"timeout\":\"DD\"}" > "$output_folder_mutex""$jsonfilename"
 			fi
 		else
-timeout 3600s python main.py -i "$wmi_data_folder_mutex""$smtfilename" --save_lemmas "$tmpsmtfilename"
+timeout 3600s python main.py -i "$wmi_data_folder_mutex""$smtfilename" --save_lemmas "$tmpsmtfilename" --solver partial 
 			if [ $? -eq 0 ]; then
 timeout 3600s python main.py -i "$wmi_data_folder_mutex""$smtfilename" --load_lemmas "$tmpsmtfilename" --sdd --count_models --count_nodes -d "$output_folder_mutex""$jsonfilename"
 				if [ $? -eq 0 ]; then

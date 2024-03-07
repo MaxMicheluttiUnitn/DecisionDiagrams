@@ -25,7 +25,7 @@ do
 			if [ -f "$outputprobs"/"$jsonfilename" ]; then
 				echo "Skipping task on $smtfilename"
 			else
-				echo "Performing task on $smtfilename"
+				echo "Performing task on $smtfilename" 
 				if [ -f "$tmpfile" ]; then
 					timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile"  --sdd --count_nodes --count_models -d "$outputprobs"/"$jsonfilename" --vtree balanced
 					if [ $? -eq 0 ]; then
@@ -39,7 +39,7 @@ do
 					echo "Timeout on $smtfilename"
 					echo "{\"timeout\":\"ALL SMT\"}" > "$outputprobs"/"$jsonfilename"
 					# ASSUMING ALL SMT NOT ALREADY DONE
-					#timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile"
+					#timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver partial 
 					#if [ $? -eq 0 ]; then
 					#	timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile"  --sdd --count_nodes --count_models -d "$outputprobs"/"$jsonfilename"
 					#	if [ $? -eq 0 ]; then

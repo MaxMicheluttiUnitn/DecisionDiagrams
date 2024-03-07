@@ -20,7 +20,7 @@ do
             echo "Skipping task on $smtfilename"
         else
             echo "Performing task on $smtfilename"
-timeout 3600s python main.py -i "$item" --ldd --count_nodes --count_models -d "$outputfolder"/"$jsonfilename"
+timeout 3600s python main.py -i "$item" --ldd --count_nodes --count_models -d "$outputfolder"/"$jsonfilename" --ldd_theory TVPI
             if [ $? -eq 0 ]; then
                 echo "Task completed on $smtfilename"
             else

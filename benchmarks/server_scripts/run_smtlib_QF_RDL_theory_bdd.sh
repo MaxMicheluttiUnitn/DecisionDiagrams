@@ -35,7 +35,7 @@ do
                     echo "{\"timeout\":\"DD\"}" > "$outputfolder"/"$jsonfilename"
                 fi
             else
-                timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile"
+                timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver partial 
                 if [ $? -eq 0 ]; then
                     timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile"  --bdd --count_nodes --count_models -d "$outputfolder"/"$jsonfilename"
                     if [ $? -eq 0 ]; then

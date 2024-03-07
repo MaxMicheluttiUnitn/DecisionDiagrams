@@ -32,7 +32,7 @@ timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_lemmas "$
             echo "Timeout for $smtfilename"
 			echo "{\"timeout\":\"ALL SMT\"}" > "$outputfolder""$jsonfilename"
             # ASSUMING ALL SMT HAS NOT BEEN COMPUTED YET
-timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --save_lemmas "$tmpfile"
+timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --save_lemmas "$tmpfile" --solver partial 
 			if [ $? -eq 0 ]; then
 timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_lemmas "$tmpfile" --sdd --count_models --count_nodes -d "$outputfolder""$jsonfilename" --vtree balanced
 				if [ $? -eq 0 ]; then
