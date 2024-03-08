@@ -78,8 +78,7 @@ class SMTSolver:
         self._tlemmas = [self._converter.back(
             l) for l in mathsat.msat_get_theory_lemmas(self.solver.msat_env())]
             
-        phi_plus_lemmas = And(phi, *self._tlemmas)
-        self.solver_total.add_assertion(phi_plus_lemmas)
+        self.solver_total.add_assertion(phi)
 
         if len(self._models) == 0:
             return UNSAT
@@ -87,6 +86,8 @@ class SMTSolver:
         for m in self._models:
             self.solver_total.push()
             self.solver_total.add_assertion(And(m))
+            # Theorylemmas added to solver total
+            self.solver_total.add_assertion(And(self._tlemmas))
             models_total = []
             mathsat.msat_all_sat(self.solver_total.msat_env(),
                                     [self._converter_total.convert(a) for a in self._atoms],
