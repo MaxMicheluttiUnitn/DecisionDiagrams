@@ -1,4 +1,4 @@
-"""module to handle the decision diagrams that only need the abstraction"""
+"""module to handle the decision diagrams that need theory lemmas"""
 import time
 from typing import Dict, List
 
@@ -45,7 +45,9 @@ def theory_bdd(phi,
             print("Models: ", models)
         logger["T-BDD"]["DD models"] = models
     if args.tbdd_output is not None:
-        tbdd.dump(args.tbdd_output)
+        tbdd.dump(args.tbdd_output, dump_abstraction=args.dump_abstraction)
+    if args.print_mapping:
+        print(tbdd.get_mapping())
     del tbdd
 
     elapsed_time = time.time() - start_time
@@ -89,10 +91,12 @@ def theory_sdd(phi,
         if args.verbose:
             print("Models: ", models)
         logger["T-SDD"]["DD models"] = models
-    if args.abstraction_sdd_output is not None:
-        tsdd.dump(args.tsdd_output)
+    if args.tsdd_output is not None:
+        tsdd.dump(args.tsdd_output,dump_abstraction=args.dump_abstraction)
     if args.tvtree_output is not None:
         tsdd.dump(args.tvtree_output)
+    if args.print_mapping:
+        print(tsdd.get_mapping())
     del tsdd
 
     elapsed_time = time.time() - start_time

@@ -108,12 +108,44 @@ def main() -> None:
         tlemmas: List[FNode] | None = None
         if args.load_lemmas is None:
             # COMPUTE LEMMAS IF NECESSARY
-            _sat, tlemmas = extract(
+            _sat, tlemmas, boolean_mapping = extract(
                 phi,
                 smt_solver,
                 verbose=args.verbose,
                 use_boolean_mapping=(~ args.no_boolean_mapping),
                 computation_logger=logger)
+
+            if args.count_models:
+                models_total = len(smt_solver.get_models())
+                logger["All-SMT models"] = models_total
+                if args.verbose:
+                    print("All-SMT total models ",models_total)
+
+            if args.print_models:
+                print("All-SMT models:")
+                models = smt_solver.get_models()
+                if boolean_mapping is not None:
+                    counter = 0
+                    for model in models:
+                        out = ""
+                        for elem in model:
+                            if elem.is_not():
+                                out += str(boolean_mapping[elem.args()[0]]) + ", "
+                            else:
+                                out += str(boolean_mapping[elem]) + ", "
+                        counter += 1
+                        print(counter, ": [", out[:len(out)-2], "]", sep="")
+                else:
+                    print("\n".join(map(str, models)))
+
+            logger["total lemmas"] = len(tlemmas)
+            if args.verbose:
+                print("All-SMT found ",len(tlemmas)," theory lemmas")
+
+            if args.print_lemmas:
+                print("All-SMT lemmas:")
+                print("\n".join(map(lambda x: x.serialize(), tlemmas)))
+
 
             # SAVE THE LEMMAS IF NECESSARY
             phi_and_lemmas = formula.get_phi_and_lemmas(phi, tlemmas)
