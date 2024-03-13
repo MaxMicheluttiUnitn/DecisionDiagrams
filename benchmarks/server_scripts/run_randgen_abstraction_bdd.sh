@@ -20,7 +20,7 @@ do
                 echo "Skipping task on $smtfilename"
             else
                 echo "Performing task on $smtfilename"
-                timeout 3600s python main.py -i "$item" --bdd --count_nodes --count_models --pure_abstraction -d "$outputprobs"/"$jsonfilename"
+                timeout 3600s python main.py -i "$item" --count_nodes --count_models --abstraction_bdd -d "$outputprobs"/"$jsonfilename"
                 if [ $? -eq 0 ]; then
                     echo "Task completed on $smtfilename"
                 else

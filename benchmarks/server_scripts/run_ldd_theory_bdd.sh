@@ -18,7 +18,7 @@ do
 	else
 		echo "Performing task on $smtfilename"
 		if [ -f "$tmpfile" ]; then
-timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_lemmas "$tmpfile" --bdd --count_models --count_nodes -d "$outputfolder""$jsonfilename"
+timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_details "$outputfolder""$jsonfilename" --load_lemmas "$tmpfile" --tbdd --count_models --count_nodes -d "$outputfolder""$jsonfilename"
 			if [ $? -eq 0 ]; then
 				echo "Task completed for $smtfilename"
 			else
@@ -26,9 +26,9 @@ timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_lemmas "$
 				echo "{\"timeout\":\"DD\"}" > "$outputfolder""$jsonfilename"
 			fi
 		else
-timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --save_lemmas "$tmpfile" --solver partial 
+timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --save_lemmas "$tmpfile" --solver partial -d "$outputfolder""$jsonfilename"
 			if [ $? -eq 0 ]; then
-timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_lemmas "$tmpfile" --bdd --count_models --count_nodes -d "$outputfolder""$jsonfilename"
+timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_details "$outputfolder""$jsonfilename" --load_lemmas "$tmpfile" --tbdd --count_models --count_nodes -d "$outputfolder""$jsonfilename"
 				if [ $? -eq 0 ]; then
 					echo "Task completed for $smtfilename"
 				else

@@ -20,7 +20,7 @@ do
 	else
 		echo "Performing task on $smtfilename"
 		if [ -f "$tmpfile" ]; then
-timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_lemmas "$tmpfile" --sdd --count_models --count_nodes -d "$outputfolder""$jsonfilename" --vtree balanced
+timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_details "$outputfolder""$jsonfilename" --load_lemmas "$tmpfile" --tsdd --count_models --count_nodes -d "$outputfolder""$jsonfilename" --tvtree balanced
 			if [ $? -eq 0 ]; then
 				echo "Task completed for $smtfilename"
 			else
@@ -32,9 +32,9 @@ timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_lemmas "$
             echo "Timeout for $smtfilename"
 			echo "{\"timeout\":\"ALL SMT\"}" > "$outputfolder""$jsonfilename"
             # ASSUMING ALL SMT HAS NOT BEEN COMPUTED YET
-timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --save_lemmas "$tmpfile" --solver partial 
+timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --save_lemmas "$tmpfile" --solver partial -d "$outputfolder""$jsonfilename"
 			if [ $? -eq 0 ]; then
-timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_lemmas "$tmpfile" --sdd --count_models --count_nodes -d "$outputfolder""$jsonfilename" --vtree balanced
+timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_details "$outputfolder""$jsonfilename" --load_lemmas "$tmpfile" --tsdd --count_models --count_nodes -d "$outputfolder""$jsonfilename" --tvtree balanced
 				if [ $? -eq 0 ]; then
 					echo "Task completed for $smtfilename"
 				else

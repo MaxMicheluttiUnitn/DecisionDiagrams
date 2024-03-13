@@ -15,7 +15,7 @@ do
 		echo "Skipping task on $smtfilename"
 	else
         echo "Performing task on $smtfilename"
-timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --pure_abstraction --sdd --count_models --count_nodes -d "$outputfolder""$jsonfilename" --vtree balanced
+timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --abstraction_sdd --count_models --count_nodes -d "$outputfolder""$jsonfilename" --abstraction_vtree balanced
         if [ $? -eq 0 ]; then
             echo "task completed on $smtfilename"
         else

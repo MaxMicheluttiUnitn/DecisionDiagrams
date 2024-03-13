@@ -27,7 +27,7 @@ do
 			else
 				echo "Performing task on $smtfilename" 
 				if [ -f "$tmpfile" ]; then
-					timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile"  --sdd --count_nodes --count_models -d "$outputprobs"/"$jsonfilename" --vtree balanced
+					timeout 3600s python main.py -i "$item" --load_details "$outputprobs"/"$jsonfilename" --load_lemmas "$tmpfile"  --tsdd --count_nodes --count_models -d "$outputprobs"/"$jsonfilename" --tvtree balanced
 					if [ $? -eq 0 ]; then
 						echo "Task completed on $smtfilename"
 					else
@@ -39,9 +39,9 @@ do
 					echo "Timeout on $smtfilename"
 					echo "{\"timeout\":\"ALL SMT\"}" > "$outputprobs"/"$jsonfilename"
 					# ASSUMING ALL SMT NOT ALREADY DONE
-					#timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver partial 
+					#timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver partial -d "$outputprobs"/"$jsonfilename"
 					#if [ $? -eq 0 ]; then
-					#	timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile"  --sdd --count_nodes --count_models -d "$outputprobs"/"$jsonfilename"
+					#	timeout 3600s python main.py -i "$item" --load_details "$outputprobs"/"$jsonfilename" --load_lemmas "$tmpfile"  --tsdd --count_nodes --count_models -d "$outputprobs"/"$jsonfilename" --tvtree balanced
 					#	if [ $? -eq 0 ]; then
 					#		echo "Task completed on $smtfilename"
 					#	else

@@ -12,7 +12,7 @@ do
         echo "Skipping task on $smtfilename"
     else
         echo "Performing task on $smtfilename"
-timeout 3600s python main.py -i "$wmi_data_folder_mutex""$smtfilename" --sdd --count_models --count_nodes --pure_abstraction -d "$output_folder_mutex""$jsonfilename"
+timeout 3600s python main.py -i "$wmi_data_folder_mutex""$smtfilename" --abstraction_sdd --count_models --count_nodes -d "$output_folder_mutex""$jsonfilename" --abstraction_vtree balanced
         if [ $? -eq 0 ]; then
             echo "Task completed on $smtfilename"
         else
@@ -30,7 +30,7 @@ do
         echo "Skipping task on $smtfilename"
     else
         echo "Performing task on $smtfilename"
-timeout 3600s python main.py -i "$wmi_data_folder_xor""$smtfilename" --sdd --pure_abstraction --count_models --count_nodes -d "$output_folder_xor""$jsonfilename"
+timeout 3600s python main.py -i "$wmi_data_folder_xor""$smtfilename" --abstraction_sdd --count_models --count_nodes -d "$output_folder_xor""$jsonfilename" --abstraction_vtree balanced
         if [ $? -eq 0 ]; then
             echo "Task completed on $smtfilename"
         else
