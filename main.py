@@ -15,6 +15,7 @@ from theorydd.smt_solver_partial import PartialSMTSolver
 from theorydd.lemma_extractor import extract
 
 import abstraction_decision_diagrams as add
+import theory_decision_diagrams as tdd
 from commands import Options, get_args
 
 
@@ -73,9 +74,11 @@ def get_solver(args: Options) -> SMTSolver | PartialSMTSolver:
     else:
         return PartialSMTSolver()
 
+
 def is_smt_phase_necessary(args: Options):
     """checks if the user necessitates to do the all-SMT phase"""
     return args.save_lemmas or args.tsdd or args.tbdd or args.print_lemmas or args.print_models
+
 
 def main() -> None:
     '''Main function for this project'''
@@ -103,7 +106,7 @@ def main() -> None:
         smt_solver = get_solver(args)
 
         tlemmas: List[FNode] | None = None
-        if args.load_lemmas is None: 
+        if args.load_lemmas is None:
             # COMPUTE LEMMAS IF NECESSARY
             _sat, tlemmas = extract(
                 phi,
@@ -113,15 +116,17 @@ def main() -> None:
                 computation_logger=logger)
 
             # SAVE THE LEMMAS IF NECESSARY
-            phi_and_lemmas = formula.get_phi_and_lemmas(phi,tlemmas)
+            phi_and_lemmas = formula.get_phi_and_lemmas(phi, tlemmas)
             if args.save_lemmas is not None:
-                formula.save_phi(phi_and_lemmas,args.save_lemmas)
+                formula.save_phi(phi_and_lemmas, args.save_lemmas)
 
-        
+        # T-BDD
+        if args.tbdd:
+            tdd.theory_bdd(phi, args, logger, smt_solver, tlemmas)
 
-
-
-        # T-DD PHASE
+        # T-SDD
+        if args.tsdd:
+            tdd.theory_sdd(phi, args, logger, smt_solver, tlemmas)
 
     global_elapsed_time = time.time() - global_start_time
     if args.verbose:

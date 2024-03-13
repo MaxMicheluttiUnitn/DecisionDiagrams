@@ -1,16 +1,21 @@
 """module to handle the decision diagrams that only need the abstraction"""
 import time
-from typing import Dict
+from typing import Dict, List
 
-from theorydd.theory_ldd import TheoryLDD
-from theorydd.theory_xsdd import TheoryXSDD
+from pysmt.fnode import FNode
 from theorydd.theory_bdd import TheoryBDD
 from theorydd.theory_sdd import TheorySDD
+from theorydd.smt_solver import SMTSolver
+from theorydd.smt_solver_partial import PartialSMTSolver
 
 from commands import Options
 
 
-def theory_bdd(phi, args: Options, logger: Dict):
+def theory_bdd(phi,
+               args: Options,
+               logger: Dict,
+               solver: SMTSolver | PartialSMTSolver,
+               tlemmas: None | List[FNode]):
     """theory bdd"""
     # THEORY BDD
     start_time = time.time()
@@ -18,7 +23,12 @@ def theory_bdd(phi, args: Options, logger: Dict):
     if args.verbose:
         print("T- BDD computation starting...")
 
-    tbdd = TheoryBDD(phi, computation_logger=logger, verbose=args.verbose)
+    tbdd = TheoryBDD(phi,
+                     solver=solver,
+                     computation_logger=logger,
+                     verbose=args.verbose,
+                     tlemmas=tlemmas,
+                     load_lemmas=args.load_lemmas)
     if args.count_nodes:
         nodes = tbdd.count_nodes()
         if args.verbose:
@@ -34,8 +44,8 @@ def theory_bdd(phi, args: Options, logger: Dict):
         if args.verbose:
             print("Models: ", models)
         logger["T-BDD"]["DD models"] = models
-    if args.abstraction_bdd_output is not None:
-        tbdd.dump(args.abstraction_bdd_output)
+    if args.tbdd_output is not None:
+        tbdd.dump(args.tbdd_output)
     del tbdd
 
     elapsed_time = time.time() - start_time
@@ -45,7 +55,11 @@ def theory_bdd(phi, args: Options, logger: Dict):
               elapsed_time, " seconds")
 
 
-def theory_sdd(phi, args: Options, logger: Dict):
+def theory_sdd(phi,
+               args: Options,
+               logger: Dict,
+               solver: SMTSolver | PartialSMTSolver,
+               tlemmas: None | List[FNode]):
     """theory sdd"""
     # THEORY SDD
     start_time = time.time()
@@ -53,8 +67,13 @@ def theory_sdd(phi, args: Options, logger: Dict):
     if args.verbose:
         print("T-SDD computation starting...")
 
-    tsdd = TheorySDD(phi, computation_logger=logger,
-                     verbose=args.verbose, vtree_type=args.abstraction_vtree)
+    tsdd = TheorySDD(phi,
+                     solver=solver,
+                     computation_logger=logger,
+                     verbose=args.verbose,
+                     vtree_type=args.tvtree,
+                     tlemmas=tlemmas,
+                     load_lemmas=args.load_lemmas)
     if args.count_nodes:
         nodes = tsdd.count_nodes()
         if args.verbose:
@@ -71,9 +90,9 @@ def theory_sdd(phi, args: Options, logger: Dict):
             print("Models: ", models)
         logger["T-SDD"]["DD models"] = models
     if args.abstraction_sdd_output is not None:
-        tsdd.dump(args.abstraction_sdd_output)
-    if args.abstraction_vtree_output is not None:
-        tsdd.dump(args.abstraction_vtree_output)
+        tsdd.dump(args.tsdd_output)
+    if args.tvtree_output is not None:
+        tsdd.dump(args.tvtree_output)
     del tsdd
 
     elapsed_time = time.time() - start_time

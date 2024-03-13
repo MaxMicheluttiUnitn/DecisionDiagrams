@@ -74,7 +74,7 @@ class Options:
         self.save_lemmas = args.save_lemmas
         self.load_lemmas = args.load_lemmas
         self.verbose = args.verbose
-        self.load_details = args.load_deatils
+        self.load_details = args.load_details
 
 def get_args() -> Options:
     """Reads the args from the command line"""
