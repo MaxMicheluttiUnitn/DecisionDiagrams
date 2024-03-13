@@ -1,5 +1,6 @@
 """module to handle the options for the main process"""
 import argparse
+from dataclasses import dataclass
 
 VALID_VTREE = ["left", "right", "balanced", "vertical", "random"]
 
@@ -7,20 +8,93 @@ VALID_LDD_THEORY = ["TVPI","TVPIZ","UTVPIZ","BOX","BOXZ"]
 
 VALID_SOLVER = ["partial","total"]
 
-def get_args() -> argparse.Namespace:
-    ' ' 'Reads the args from the command line' ' '
+@dataclass
+class Options:
+    """dataclass that holds options for the tool"""
+    tsdd: bool
+    xsdd: bool
+    tbdd: bool
+    ldd: bool
+    print_models: bool
+    print_lemmas: bool
+    tvtree: str
+    abstraction_vtree: str
+    ldd_theory: str
+    solver: str
+    tvtree_output: str | None
+    abstraction_vtree_output: str | None
+    input: str | None
+    tsdd_output: str | None
+    tbdd_output: str | None
+    abstraction_sdd_output: str | None
+    abstraction_bdd_output: str | None
+    ldd_output: str | None
+    details_file: str | None
+    load_details: str | None
+    abstraction_bdd: bool
+    abstraction_sdd: bool
+    no_boolean_mapping: bool
+    dump_abstraction: bool
+    print_mapping: bool
+    count_models: bool
+    count_nodes: bool
+    count_vertices: bool
+    save_lemmas: str | None
+    load_lemmas: str | None
+    verbose: bool
+
+    def __init__(self,args: argparse.Namespace):
+        self.tsdd = args.tsdd
+        self.xsdd = args.xsdd
+        self.tbdd = args.tbdd
+        self.ldd = args.ldd
+        self.print_models = args.print_models
+        self.print_lemmas = args.print_lemmas
+        self.tvtree = args.tvtree
+        self.abstraction_vtree = args.abstraction_vtree
+        self.ldd_theory = args.ldd_theory
+        self.solver = args.solver
+        self.tvtree_output = args.tvtree_output
+        self.abstraction_vtree_output = args.abstraction_vtree_output
+        self.input = args.input
+        self.tbdd_output = args.tbdd_output
+        self.tsdd_output = args.tsdd_output
+        self.abstraction_bdd_output = args.abstraction_bdd_output
+        self.abstraction_sdd_output = args.abstraction_sdd_output
+        self.ldd_output = args.ldd_output
+        self.details_file = args.details_file
+        self.abstraction_bdd = args.abstraction_bdd
+        self.abstraction_sdd = args.abstraction_sdd
+        self.no_boolean_mapping = args.no_boolean_mapping
+        self.dump_abstraction = args.dump_abstraction
+        self.print_mapping = args.print_mapping
+        self.count_models = args.count_models
+        self.count_vertices = args.count_vertices
+        self.count_nodes = args.count_nodes
+        self.save_lemmas = args.save_lemmas
+        self.load_lemmas = args.load_lemmas
+        self.verbose = args.verbose
+        self.load_details = args.load_deatils
+
+def get_args() -> Options:
+    """Reads the args from the command line"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--sdd",
-        help="Generate the SDD of the formula",
+        "--tsdd",
+        help="Generate the T-SDD of the formula",
         action="store_true")
+    parser.add_argument(
+        "-v","--verbose",
+        help="Get output on stdout during computation",
+        action="store_true"
+    )
     parser.add_argument(
         "--xsdd",
         help="Generate the XSDD of the formula",
         action="store_true")
     parser.add_argument(
-        "--bdd",
-        help="Generate the BDD of the formula",
+        "--tbdd",
+        help="Generate the T-BDD of the formula",
         action="store_true")
     parser.add_argument(
         "--ldd",
@@ -35,8 +109,15 @@ def get_args() -> argparse.Namespace:
         help="Print the lemmas generated during the All-SMT compiutation",
         action="store_true")
     parser.add_argument(
-        "--vtree",
-        help="Specify V-Tree kind for SDD generation (default is right). Available values: "+str(
+        "--tvtree",
+        help="Specify V-Tree kind for T-SDD generation (default is right). Available values: "+str(
+            VALID_VTREE),
+        type=str,
+        choices=VALID_VTREE,
+        default="right")
+    parser.add_argument(
+        "--abstraction_vtree",
+        help="Specify V-Tree kind for Abstraction-SDD generation (default is right). Available values: "+str(
             VALID_VTREE),
         type=str,
         choices=VALID_VTREE,
@@ -56,40 +137,60 @@ def get_args() -> argparse.Namespace:
         choices=VALID_SOLVER,
         default="partial")
     parser.add_argument(
-        "--vtree_output",
-        help="Specify a .dot or .svg file to save the vtree (by default the vtree is not saved)",
+        "--tvtree_output",
+        help="Specify a .dot or .svg file to save the vtree of the T-SDD (by default the vtree is not saved)",
+        type=str)
+    parser.add_argument(
+        "--abstraction_vtree_output",
+        help="Specify a .dot or .svg file to save the vtree of the Abstraction SDD (by default the vtree is not saved)",
         type=str)
     parser.add_argument(
         "-i", "--input",
         help="Specify a file from witch to read the formula",
         type=str)
     parser.add_argument(
-        "--sdd_output",
-        help="Specify a .dot or .svg file to output the SDD",
+        "--tsdd_output",
+        help="Specify a .dot or .svg file to output the T-SDD",
         type=str)
     parser.add_argument(
-        "--bdd_output",
-        help="Specify a .dot or .svg file to output the BDD",
+        "--tbdd_output",
+        help="Specify a .dot or .svg file to output the T-BDD",
+        type=str)
+    parser.add_argument(
+        "--abstraction_sdd_output",
+        help="Specify a .dot or .svg file to output the Abstraction-SDD",
+        type=str)
+    parser.add_argument(
+        "--abstraction_bdd_output",
+        help="Specify a .dot or .svg file to output the Abstraction-BDD",
         type=str)
     parser.add_argument(
         "--ldd_output",
         help="Specify a .dot or .svg file to output the LDD",
         type=str)
     parser.add_argument(
-        "-d", "--details",
+        "-d", "--details_file",
         help="Specify a .json file to save the computation details",
         type=str)
     parser.add_argument(
-        "--pure_abstraction",
-        help="Use only the boolean abstraction (without lemmas) for the DD generation",
+        "--load_details",
+        help="Specify a .json file to load the computation details from",
+        type=str)
+    parser.add_argument(
+        "--abstraction_bdd",
+        help="Build an Abstraction BDD",
+        action="store_true")
+    parser.add_argument(
+        "--abstraction_sdd",
+        help="Build an Abstraction SDD",
         action="store_true")
     parser.add_argument(
         "--no_boolean_mapping",
-        help="Do not use a boolean mapping to enumerate when computing All SMT",
+        help="Do not use a boolean mapping to enumerate when computing All SMT with total solver",
         action="store_true")
     parser.add_argument(
         "--dump_abstraction",
-        help="Dump the boolean abstraction of the SMT formula instead of the actual formula",
+        help="Dump the DD or SDD with abstraction labels",
         action="store_true")
     parser.add_argument(
         "--print_mapping",
@@ -109,7 +210,7 @@ def get_args() -> argparse.Namespace:
         action="store_true")
     parser.add_argument(
         "--save_lemmas",
-        help="Specify a .smt file to save the lemmas obtained from All-SMT",
+        help="Specify a .smt file to save the lemmas obtained from All-SMT. Lemmas can be saved only if not previously loaded",
         type=str)
     parser.add_argument(
         "--load_lemmas",
@@ -120,7 +221,7 @@ def get_args() -> argparse.Namespace:
     #     help="Check the T-equivalence of the T-agnostic DD with the T-formula phi",
     #     action="store_true")
     args = parser.parse_args()
-    return args
+    return Options(args)
 
 
 # def help() -> None:
