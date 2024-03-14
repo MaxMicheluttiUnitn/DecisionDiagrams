@@ -148,9 +148,13 @@ def main() -> None:
 
 
             # SAVE THE LEMMAS IF NECESSARY
-            phi_and_lemmas = formula.get_phi_and_lemmas(phi, tlemmas)
             if args.save_lemmas is not None:
-                formula.save_phi(phi_and_lemmas, args.save_lemmas)
+                if len(tlemmas) > 1:
+                    formula.save_phi(formula.big_and(tlemmas),args.save_lemmas)
+                elif len(tlemmas) == 1:
+                    formula.save_phi(tlemmas[0],args.save_lemmas)
+                else:
+                    formula.save_phi(formula.top(),args.save_lemmas)
 
         # T-BDD
         if args.tbdd:

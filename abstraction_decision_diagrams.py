@@ -93,6 +93,10 @@ def ldd(phi, args: Options, logger: Dict):
 
     ldd_obj = TheoryLDD(phi, args.ldd_theory,
                         verbose=args.verbose, computation_logger=logger)
+    
+    if args.ldd_output is not None:
+        ldd_obj.dump(args.ldd_output)
+
     if args.count_nodes:
         nodes = ldd_obj.count_nodes()
         if args.verbose:
@@ -108,8 +112,7 @@ def ldd(phi, args: Options, logger: Dict):
         if args.verbose:
             print("Models: ", models)
         logger["LDD"]["DD models"] = models
-    if args.ldd_output is not None:
-        ldd_obj.dump(args.ldd_output)
+    
     del ldd_obj
 
     elapsed_time = time.time() - start_time
