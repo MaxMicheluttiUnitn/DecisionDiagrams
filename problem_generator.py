@@ -176,7 +176,7 @@ def main():
     """main function for SMT generation"""
     args = parse_args()
 
-    output_dir = f'problems_and_solutions_synth/synthetic_problems_b{args.booleans}_r{args.reals}_d{args.depth}_m{args.models}_s{args.seed}'
+    output_dir = f'problems_b{args.booleans}_r{args.reals}_d{args.depth}_m{args.models}_s{args.seed}'
     output_dir = path.join(args.output, output_dir)
 
     check_output(args.output, output_dir)
