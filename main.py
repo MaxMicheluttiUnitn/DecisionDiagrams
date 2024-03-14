@@ -1,4 +1,4 @@
-'''the main module for this project'''
+'''Main module for the TheoryDD Tool'''
 # ADD these lines to .local/lib/python3.10/site-packages/pysmt/smtlib/parser/__init__.py
 # to hide cython DeprecationWarning when importing module imp
 #
