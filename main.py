@@ -108,10 +108,13 @@ def smt_phase(phi: FNode, args: Options, logger: Dict):
                 for model in models:
                     out = ""
                     for elem in model:
-                        if elem.is_not():
-                            out += str(boolean_mapping[elem.args()[0]]) + ", "
+                        if elem in boolean_mapping.keys():
+                            if elem.is_not():
+                                out += str(boolean_mapping[elem.args()[0]]) + ", "
+                            else:
+                                out += str(boolean_mapping[elem]) + ", "
                         else:
-                            out += str(boolean_mapping[elem]) + ", "
+                            out += str(elem) + ", "
                     counter += 1
                     print(counter, ": [", out[:len(out)-2], "]", sep="")
             else:
@@ -153,8 +156,7 @@ def main() -> None:
         logger = load_details(args)
         # in case of computation restarting, adjust start time accordingly
         if logger["total computation time"] is not None:
-            global_start_time = global_start_time - \
-                logger["total computation time"]
+            global_start_time -= logger["total computation time"]
     else:
         logger = {}
 

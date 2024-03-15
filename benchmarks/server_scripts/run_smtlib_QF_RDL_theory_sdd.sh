@@ -39,7 +39,7 @@ do
                 echo "Timeout on $smtfilename"
                 echo "{\"timeout\":\"ALL SMT\"}" > "$outputfolder"/"$jsonfilename"
                 # ASSUMING ALL SMT NOT ALREDY PERFORMED ON SOME FILE
-                # timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver partial -d "$outputfolder"/"$jsonfilename"
+                # timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver partial -d "$outputfolder"/"$jsonfilename" --count_models
                 # if [ $? -eq 0 ]; then
                 #     timeout 3600s python main.py -i "$item" --load_details "$outputfolder"/"$jsonfilename" --load_lemmas "$tmpfile"  --tsdd --count_nodes --count_models -d "$outputfolder"/"$jsonfilename" --tvtree balanced
                 #     if [ $? -eq 0 ]; then

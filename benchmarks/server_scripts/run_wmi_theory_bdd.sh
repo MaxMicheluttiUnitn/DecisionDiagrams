@@ -29,7 +29,7 @@ timeout 3600s python main.py -i "$wmi_data_folder_mutex""$smtfilename"  --load_d
 				echo "{\"timeout\":\"DD\"}" > "$output_folder_mutex""$jsonfilename"
 			fi
 		else
-timeout 3600s python main.py -i "$wmi_data_folder_mutex""$smtfilename" --save_lemmas "$tmpsmtfilename" --solver partial -d "$output_folder_mutex""$jsonfilename"
+timeout 3600s python main.py -i "$wmi_data_folder_mutex""$smtfilename" --save_lemmas "$tmpsmtfilename" --solver partial -d "$output_folder_mutex""$jsonfilename" --count_models
 			if [ $? -eq 0 ]; then
 timeout 3600s python main.py -i "$wmi_data_folder_mutex""$smtfilename" --load_details "$output_folder_mutex""$jsonfilename" --load_lemmas "$tmpsmtfilename" --tbdd --count_models --count_nodes -d "$output_folder_mutex""$jsonfilename"
 				if [ $?-eq 0 ]; then
@@ -64,7 +64,7 @@ timeout 3600s python main.py -i "$wmi_data_folder_xor""$smtfilename" --load_deta
 				echo "{\"timeout\":\"DD\"}" > "$output_folder_xor""$jsonfilename"
 			fi
 		else
-timeout 3600s python main.py -i "$wmi_data_folder_xor""$smtfilename" --save_lemmas "$tmpsmtfilename" -d "$output_folder_xor""$jsonfilename"
+timeout 3600s python main.py -i "$wmi_data_folder_xor""$smtfilename" --save_lemmas "$tmpsmtfilename" -d "$output_folder_xor""$jsonfilename" --count_models
 			if [ $? -eq 0 ]; then
 timeout 3600s python main.py -i "$wmi_data_folder_xor""$smtfilename" --load_details "$output_folder_xor""$jsonfilename" --load_lemmas "$tmpsmtfilename" --tbdd --count_models --count_nodes -d "$output_folder_xor""$jsonfilename"
 				if [ $?-eq 0 ]; then

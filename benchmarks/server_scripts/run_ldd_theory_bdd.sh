@@ -26,7 +26,7 @@ timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_details "
 				echo "{\"timeout\":\"DD\"}" > "$outputfolder""$jsonfilename"
 			fi
 		else
-timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --save_lemmas "$tmpfile" --solver partial -d "$outputfolder""$jsonfilename"
+timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --save_lemmas "$tmpfile" --solver partial -d "$outputfolder""$jsonfilename" --count_models
 			if [ $? -eq 0 ]; then
 timeout 3600s python main.py -i "$lddbenchfolder""$smtfilename" --load_details "$outputfolder""$jsonfilename" --load_lemmas "$tmpfile" --tbdd --count_models --count_nodes -d "$outputfolder""$jsonfilename"
 				if [ $? -eq 0 ]; then
