@@ -19,6 +19,7 @@ do
         smtfilename="${item#"$folder"/}"
         jsonfilename="${smtfilename/.smt2/.json}"
         tmpfile="${item/data/tmp}"
+        tmpjsonfilename="${tmpfile/.smt2/.json}" 
         # echo $smtfilename
         # echo $jsonfilename
         # echo $tmpfile
@@ -27,7 +28,7 @@ do
         else
             echo "Performing task on $smtfilename"
             if [ -f "$tmpfile" ]; then
-                timeout 3600s python main.py -i "$item" --load_details "$outputfolder"/"$jsonfilename" --load_lemmas "$tmpfile"  --tsdd --count_nodes --count_models -d "$outputfolder"/"$jsonfilename" --tvtree balanced
+                timeout 3600s python main.py -i "$item" --load_details "$tmpjsonfilename" --load_lemmas "$tmpfile"  --tsdd --count_nodes --count_models -d "$outputfolder"/"$jsonfilename" --tvtree balanced
                 if [ $? -eq 0 ]; then
                     echo "Task completed on $smtfilename"
                 else
@@ -41,7 +42,7 @@ do
                 # ASSUMING ALL SMT NOT ALREDY PERFORMED ON SOME FILE
                 # timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver partial -d "$outputfolder"/"$jsonfilename" --count_models
                 # if [ $? -eq 0 ]; then
-                #     timeout 3600s python main.py -i "$item" --load_details "$outputfolder"/"$jsonfilename" --load_lemmas "$tmpfile"  --tsdd --count_nodes --count_models -d "$outputfolder"/"$jsonfilename" --tvtree balanced
+                #     timeout 3600s python main.py -i "$item" --load_details "$tmpjsonfilename" --load_lemmas "$tmpfile"  --tsdd --count_nodes --count_models -d "$outputfolder"/"$jsonfilename" --tvtree balanced
                 #     if [ $? -eq 0 ]; then
                 #         echo "Task completed on $smtfilename"
                 #     else
