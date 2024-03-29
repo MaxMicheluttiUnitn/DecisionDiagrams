@@ -8,6 +8,11 @@ def main():
     phi = formula.read_phi(input_file)
     tlemmas = formula.read_phi(lemma_file)
 
+    solver = PartialSMTSolver()
+
+    phi = formula.get_normalized(phi, solver.get_converter())
+    tlemmas = formula.get_normalized(tlemmas, solver.get_converter())
+
     phi_and_lemmas = formula.get_phi_and_lemmas(phi,[tlemmas])
 
     qvars = find_qvars(phi,phi_and_lemmas,{},False)
