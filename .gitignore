@@ -13,6 +13,8 @@
 *.json
 *.pdf
 
+fix_tsetsin.py
+
 tmp.txt
 
 mathsat

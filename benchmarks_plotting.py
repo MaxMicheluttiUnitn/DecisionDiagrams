@@ -147,7 +147,7 @@ def get_theory_sdd_from_wmi_bench_data() -> List[Point]:
 
     return points
 
-def get_wmi_bench_data(source: str) -> List[Point]:
+def get_wmi_bench_data(kind: str, source: str) -> List[Point]:
     """gets the computation data from wmi bench"""
     points = []
 
@@ -163,7 +163,7 @@ def get_wmi_bench_data(source: str) -> List[Point]:
         points.append(Point(DataSource.THEORY_SDD,
                           data["total computation time"],
                           data["All-SMT computation time"],
-                          data["T-SDD"]["DD nodes"], "mutex/"+filename, False))
+                          data[kind]["DD nodes"], "mutex/"+filename, False))
 
     # retrieving xor result
     files = os.listdir(source+"/xor")
@@ -177,7 +177,7 @@ def get_wmi_bench_data(source: str) -> List[Point]:
         points.append(Point(DataSource.THEORY_SDD,
                           data["total computation time"],
                           data["All-SMT computation time"],
-                          data["T-SDD"]["DD nodes"], "xor/"+filename,
+                          data[kind]["DD nodes"], "xor/"+filename,
                           False))
 
     return points
@@ -241,7 +241,7 @@ def get_theory_bdd_from_randgen_bench_data() -> List[Point]:
                           filename.replace('benchmarks/randgen/output/', ''), False))
     return points
 
-def get_randgen_bench_data(source: str) -> List[Point]:
+def get_randgen_bench_data(kind: str, source: str) -> List[Point]:
     """gets the computation data from a run on randomly generated benchmark problems"""
     points = []
     files_list: List[str] = []
@@ -255,10 +255,15 @@ def get_randgen_bench_data(source: str) -> List[Point]:
             points.append(Point(DataSource.THEORY_BDD, 0, 0, 0, filename.replace(
                 source+"/", ''), True))
             continue
+        if data.get("All-SMT computation time") is not None:
+            allsmttime = data["All-SMT computation time"]
+        else:
+            allsmttime = 0.1
+
         points.append(Point(DataSource.THEORY_BDD,
                           data["total computation time"],
-                          data["All-SMT computation time"],
-                          data["T-BDD"]["DD nodes"],
+                          allsmttime,
+                          data[kind]["DD nodes"],
                           filename.replace(source+"/", ''), False))
     return points
 
@@ -456,7 +461,9 @@ def build_graphs(time_points, size_points, x_label: str, y_label:str) -> None:
     ax.callbacks.connect('ylim_changed', on_change_time)
     plt.axvline(x=time_points[2], ls="--", c=".3")
     plt.axhline(y=time_points[2], ls="--", c=".3")
-    plt.axis('square')
+    plt.xlim((0.0001,1000000))
+    plt.ylim((0.0001,1000000))
+    #plt.axis('square')
     plt.show()
 
     plt.scatter(size_points[0], size_points[1], marker='s')
@@ -477,7 +484,9 @@ def build_graphs(time_points, size_points, x_label: str, y_label:str) -> None:
         diag_line.set_data(x_lims, y_lims)
     ax.callbacks.connect('xlim_changed', on_change)
     ax.callbacks.connect('ylim_changed', on_change)
-    plt.axis('square')
+    #plt.axis('square')
+    plt.xlim((0.0001,1000000))
+    plt.ylim((0.0001,1000000))
     plt.show()
 
 
@@ -496,11 +505,13 @@ def main() -> None:
     # t_points = get_theory_sdd_from_wmi_bench_data()
     # abstr_points = get_abstraction_sdd_from_wmi_bench_data()
     # PARTIAL
-    a_points = get_randgen_bench_data('benchmarks/randgen/output')
+    a_points = get_randgen_bench_data('T-BDD','benchmarks/randgen/output')
     # TOTAL
-    b_points = get_randgen_bench_data('benchmarks/randgen/output_total')
+    b_points = get_randgen_bench_data('T-BDD','benchmarks/randgen/output_total')
     # PARTIAL PLF
-    c_points = get_randgen_bench_data('benchmarks/randgen/output_plf')
+    c_points = get_randgen_bench_data('T-BDD','benchmarks/randgen/output_plf')
+    # TSETSIN
+    d_points = get_randgen_bench_data("T-BDD","benchmarks/randgen/output_tsetsin")
 
     smt_points = get_allsmt_time_points(a_points,b_points)
     size_points = get_nodes_points(a_points, b_points)
@@ -509,6 +520,10 @@ def main() -> None:
     smt_points = get_allsmt_time_points(a_points,c_points)
     size_points = get_nodes_points(a_points, c_points)
     build_graphs(smt_points, size_points,"NO PLF","PLF")
+
+    smt_points = get_allsmt_time_points(a_points,d_points)
+    size_points = get_nodes_points(a_points, d_points)
+    build_graphs(smt_points, size_points,"OLD PARTIAL","TSETSI PARTIAL")
 
 
 def test_plotting_lib() -> None:
