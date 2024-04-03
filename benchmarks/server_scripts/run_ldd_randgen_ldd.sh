@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir ./benchmarks/ldd_randgen/output_abstraction
+mkdir ./benchmarks/ldd_randgen/output_ldd
 
 for gen in ./benchmarks/ldd_randgen/data/*
 do
