@@ -4,11 +4,11 @@ mkdir ./benchmarks/ldd_randgen/output_ldd
 
 for gen in ./benchmarks/ldd_randgen/data/*
 do
-    outputgen="${gen/data/output_abstraction}"
+    outputgen="${gen/data/output_ldd}"
     mkdir $outputgen
     for probs in $gen/*
     do
-        outputprobs="${probs/data/output_abstraction}"
+        outputprobs="${probs/data/output_ldd}"
         mkdir $outputprobs
         for item in $probs/*
         do
@@ -20,7 +20,7 @@ do
                 echo "Skipping task on $smtfilename"
             else
                 echo "Performing task on $smtfilename"
-                timeout 3600s python main.py -i "$item" --count_nodes --count_models --ldd -d "$outputprobs"/"$jsonfilename"
+                timeout 3600s python main.py -i "$item" --count_nodes --count_models --ldd -d "$outputprobs"/"$jsonfilename" --ldd_theory TVPI
                 if [ $? -eq 0 ]; then
                     echo "Task completed on $smtfilename"
                 else
