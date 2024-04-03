@@ -267,6 +267,32 @@ def get_randgen_bench_data(kind: str, source: str) -> List[Point]:
                           filename.replace(source+"/", ''), False))
     return points
 
+def get_smtlib_QF_RDL_bench_data(kind: str, source: str) -> List[Point]:
+    """gets the computation data from a run on smtlib QF RDL benchmark problems"""
+    points = []
+    files_list: List[str] = []
+    for path, _subdirs, files in os.walk(source):
+        for name in files:
+            files_list.append(os.path.join(path, name))
+    for filename in files_list:
+        f = open(filename, encoding="utf8")
+        data = json.load(f)
+        if len(data) == 0 or data.get("timeout") is not None:
+            points.append(Point(DataSource.THEORY_BDD, 0, 0, 0, filename.replace(
+                source+"/", ''), True))
+            continue
+        if data.get("All-SMT computation time") is not None:
+            allsmttime = data["All-SMT computation time"]
+        else:
+            allsmttime = 1000
+
+        points.append(Point(DataSource.THEORY_BDD,
+                          data["total computation time"],
+                          allsmttime,
+                          data[kind]["DD nodes"],
+                          filename.replace(source+"/", ''), False))
+    return points
+
 
 def get_theory_sdd_from_randgen_bench_data() -> List[Point]:
     """gets the computation data from a run generating T-SDDs 
@@ -431,12 +457,16 @@ def get_nodes_points(
         if a_p.timeout:
             a_p.dd_nodes = edge
 
+    #count11 = 0
     for t_p in theory_points:
         for a_p in abstraction_points:
             if t_p.title == a_p.title:
+                # if t_p.dd_nodes == 1 and a_p.dd_nodes == 1:
+                #     count11 += 1
                 theory_list.append(t_p.dd_nodes)
                 abstraction_list.append(a_p.dd_nodes)
                 break
+    #print("Count 1 1", count11)
     return (theory_list, abstraction_list, edge)
 
 
@@ -505,25 +535,51 @@ def main() -> None:
     # t_points = get_theory_sdd_from_wmi_bench_data()
     # abstr_points = get_abstraction_sdd_from_wmi_bench_data()
     # PARTIAL
-    a_points = get_randgen_bench_data('T-BDD','benchmarks/randgen/output')
-    # TOTAL
-    b_points = get_randgen_bench_data('T-BDD','benchmarks/randgen/output_total')
-    # PARTIAL PLF
-    c_points = get_randgen_bench_data('T-BDD','benchmarks/randgen/output_plf')
-    # TSETSIN
-    d_points = get_randgen_bench_data("T-BDD","benchmarks/randgen/output_tsetsin")
+    # a_points = get_randgen_bench_data('T-BDD','benchmarks/randgen/output')
+    # # TOTAL
+    # b_points = get_randgen_bench_data('T-BDD','benchmarks/randgen/output_total')
+    # # PARTIAL PLF
+    # c_points = get_randgen_bench_data('T-BDD','benchmarks/randgen/output_plf')
+    # # TSETSIN
+    # d_points = get_randgen_bench_data("T-BDD","benchmarks/randgen/output_tsetsin")
 
-    smt_points = get_allsmt_time_points(a_points,b_points)
-    size_points = get_nodes_points(a_points, b_points)
-    build_graphs(smt_points, size_points,"Partial","Total")
+    smtlib_tbdd = get_smtlib_QF_RDL_bench_data("T-BDD","benchmarks/smtlib/output_bdd")
 
-    smt_points = get_allsmt_time_points(a_points,c_points)
-    size_points = get_nodes_points(a_points, c_points)
-    build_graphs(smt_points, size_points,"NO PLF","PLF")
+    smtlib_tsdd = get_smtlib_QF_RDL_bench_data("T-SDD","benchmarks/smtlib/output_sdd")
 
-    smt_points = get_allsmt_time_points(a_points,d_points)
-    size_points = get_nodes_points(a_points, d_points)
-    build_graphs(smt_points, size_points,"OLD PARTIAL","TSETSI PARTIAL")
+
+
+    smt_points = get_allsmt_time_points(smtlib_tbdd,smtlib_tsdd)
+    size_points = get_nodes_points(smtlib_tbdd, smtlib_tsdd)
+    build_graphs(smt_points, size_points,"BDD","SDD")
+
+    smtlib_tbdd = get_smtlib_QF_RDL_bench_data("T-BDD","benchmarks/smtlib/output_bdd")
+
+    smtlib_ldd = get_smtlib_QF_RDL_bench_data("LDD","benchmarks/smtlib/output_ldd")
+
+
+
+    smt_points = get_time_points(smtlib_tbdd,smtlib_ldd)
+    size_points = get_nodes_points(smtlib_tbdd, smtlib_ldd)
+    build_graphs(smt_points, size_points,"BDD","LDD")
+
+    rgen_tbdd = get_smtlib_QF_RDL_bench_data("T-BDD","benchmarks/randgen/output")
+
+    rgen_tsdd = get_smtlib_QF_RDL_bench_data("T-SDD","benchmarks/randgen/output_sdd")
+
+
+
+    smt_points = get_allsmt_time_points(rgen_tbdd,rgen_tsdd)
+    size_points = get_nodes_points(rgen_tbdd, rgen_tsdd)
+    build_graphs(smt_points, size_points,"BDD","SDD")
+
+    # smt_points = get_allsmt_time_points(a_points,c_points)
+    # size_points = get_nodes_points(a_points, c_points)
+    # build_graphs(smt_points, size_points,"NO PLF","PLF")
+
+    # smt_points = get_allsmt_time_points(a_points,d_points)
+    # size_points = get_nodes_points(a_points, d_points)
+    # build_graphs(smt_points, size_points,"OLD PARTIAL","TSETSI PARTIAL")
 
 
 def test_plotting_lib() -> None:
