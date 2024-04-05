@@ -12,6 +12,7 @@
 *.zip
 *.json
 *.pdf
+*.png
 
 fix_tsetsin.py
 

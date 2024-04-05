@@ -241,6 +241,32 @@ def get_theory_bdd_from_randgen_bench_data() -> List[Point]:
                           filename.replace('benchmarks/randgen/output/', ''), False))
     return points
 
+def get_ldd_randgen_bench_data(kind: str, source: str) -> List[Point]:
+    """gets the computation data from a run on randomly generated LDD benchmark problems"""
+    points = []
+    files_list: List[str] = []
+    for path, _subdirs, files in os.walk(source):
+        for name in files:
+            files_list.append(os.path.join(path, name))
+    for filename in files_list:
+        f = open(filename, encoding="utf8")
+        data = json.load(f)
+        if len(data) == 0 or data.get("timeout") is not None:
+            points.append(Point(DataSource.THEORY_BDD, 0, 0, 0, filename.replace(
+                source+"/", ''), True))
+            continue
+        if data.get("All-SMT computation time") is not None:
+            allsmttime = data["All-SMT computation time"]
+        else:
+            allsmttime = 0.1
+
+        points.append(Point(DataSource.THEORY_BDD,
+                          data["total computation time"],
+                          allsmttime,
+                          data[kind]["DD nodes"],
+                          filename.replace(source+"/", ''), False))
+    return points
+
 def get_randgen_bench_data(kind: str, source: str) -> List[Point]:
     """gets the computation data from a run on randomly generated benchmark problems"""
     points = []
@@ -469,9 +495,13 @@ def get_nodes_points(
     #print("Count 1 1", count11)
     return (theory_list, abstraction_list, edge)
 
-
 def build_graphs(time_points, size_points, x_label: str, y_label:str) -> None:
     """builds and displays graphs"""
+    build_time_graph(time_points,x_label,y_label)
+    build_size_graph(size_points,x_label,y_label)
+
+def build_time_graph(time_points, x_label: str, y_label:str, file: str | None = None) -> None:
+    """builds and displays the time graph"""
 
     plt.scatter(time_points[0], time_points[1], marker='s')
     plt.xlabel(x_label)
@@ -494,8 +524,13 @@ def build_graphs(time_points, size_points, x_label: str, y_label:str) -> None:
     plt.xlim((0.0001,1000000))
     plt.ylim((0.0001,1000000))
     #plt.axis('square')
+
+    if file is not None:
+        plt.savefig(file, bbox_inches='tight')
     plt.show()
 
+def build_size_graph(size_points, x_label: str, y_label:str, file: str | None = None) -> None:
+    """builds and shows the size graph"""
     plt.scatter(size_points[0], size_points[1], marker='s')
     plt.xlabel(x_label)
     plt.ylabel(y_label)
@@ -505,8 +540,7 @@ def build_graphs(time_points, size_points, x_label: str, y_label:str) -> None:
     ax.set_xscale('log')
     ax.set_aspect('equal', adjustable='box')
     diag_line, = ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".3")
-    plt.axvline(x=size_points[2], ls="--", c=".3")
-    plt.axhline(y=size_points[2], ls="--", c=".3")
+    
 
     def on_change(_axes):
         x_lims = ax.get_xlim()
@@ -515,8 +549,13 @@ def build_graphs(time_points, size_points, x_label: str, y_label:str) -> None:
     ax.callbacks.connect('xlim_changed', on_change)
     ax.callbacks.connect('ylim_changed', on_change)
     #plt.axis('square')
+    plt.axvline(x=size_points[2], ls="--", c=".3")
+    plt.axhline(y=size_points[2], ls="--", c=".3")
     plt.xlim((0.0001,1000000))
     plt.ylim((0.0001,1000000))
+
+    if file is not None:
+        plt.savefig(file, bbox_inches='tight')
     plt.show()
 
 
@@ -543,35 +582,31 @@ def main() -> None:
     # # TSETSIN
     # d_points = get_randgen_bench_data("T-BDD","benchmarks/randgen/output_tsetsin")
 
-    smtlib_tbdd = get_smtlib_QF_RDL_bench_data("T-BDD","benchmarks/smtlib/output_bdd")
+    # smtlib_tbdd = get_smtlib_QF_RDL_bench_data("T-BDD","benchmarks/smtlib/output_bdd")
 
-    smtlib_tsdd = get_smtlib_QF_RDL_bench_data("T-SDD","benchmarks/smtlib/output_sdd")
+    # smtlib_tsdd = get_smtlib_QF_RDL_bench_data("T-SDD","benchmarks/smtlib/output_sdd")
 
+    # smt_points = get_allsmt_time_points(smtlib_tbdd,smtlib_tsdd)
+    # size_points = get_nodes_points(smtlib_tbdd, smtlib_tsdd)
+    # build_graphs(smt_points, size_points,"BDD","SDD")
 
+    # smtlib_tbdd = get_smtlib_QF_RDL_bench_data("T-BDD","benchmarks/smtlib/output_bdd")
 
-    smt_points = get_allsmt_time_points(smtlib_tbdd,smtlib_tsdd)
-    size_points = get_nodes_points(smtlib_tbdd, smtlib_tsdd)
-    build_graphs(smt_points, size_points,"BDD","SDD")
+    # smtlib_ldd = get_smtlib_QF_RDL_bench_data("LDD","benchmarks/smtlib/output_ldd")
 
-    smtlib_tbdd = get_smtlib_QF_RDL_bench_data("T-BDD","benchmarks/smtlib/output_bdd")
+    # smt_points = get_time_points(smtlib_tbdd,smtlib_ldd)
+    # size_points = get_nodes_points(smtlib_tbdd, smtlib_ldd)
+    # build_graphs(smt_points, size_points,"BDD","LDD")
 
-    smtlib_ldd = get_smtlib_QF_RDL_bench_data("LDD","benchmarks/smtlib/output_ldd")
+    # rgen_tbdd = get_smtlib_QF_RDL_bench_data("T-BDD","benchmarks/randgen/output")
 
-
-
-    smt_points = get_time_points(smtlib_tbdd,smtlib_ldd)
-    size_points = get_nodes_points(smtlib_tbdd, smtlib_ldd)
-    build_graphs(smt_points, size_points,"BDD","LDD")
-
-    rgen_tbdd = get_smtlib_QF_RDL_bench_data("T-BDD","benchmarks/randgen/output")
-
-    rgen_tsdd = get_smtlib_QF_RDL_bench_data("T-SDD","benchmarks/randgen/output_sdd")
+    # rgen_tsdd = get_smtlib_QF_RDL_bench_data("T-SDD","benchmarks/randgen/output_sdd")
 
 
 
-    smt_points = get_allsmt_time_points(rgen_tbdd,rgen_tsdd)
-    size_points = get_nodes_points(rgen_tbdd, rgen_tsdd)
-    build_graphs(smt_points, size_points,"BDD","SDD")
+    # smt_points = get_allsmt_time_points(rgen_tbdd,rgen_tsdd)
+    # size_points = get_nodes_points(rgen_tbdd, rgen_tsdd)
+    # build_graphs(smt_points, size_points,"BDD","SDD")
 
     # smt_points = get_allsmt_time_points(a_points,c_points)
     # size_points = get_nodes_points(a_points, c_points)
@@ -580,6 +615,14 @@ def main() -> None:
     # smt_points = get_allsmt_time_points(a_points,d_points)
     # size_points = get_nodes_points(a_points, d_points)
     # build_graphs(smt_points, size_points,"OLD PARTIAL","TSETSI PARTIAL")
+
+    ldd_randgen_ldds_points = get_ldd_randgen_bench_data("LDD","benchmarks/ldd_randgen/output_ldd")
+    ldd_randgen_bdds_points = get_ldd_randgen_bench_data("T-BDD","benchmarks/ldd_randgen/output")
+
+    time_points = get_time_points(ldd_randgen_bdds_points,ldd_randgen_ldds_points)
+    size_points = get_nodes_points(ldd_randgen_bdds_points,ldd_randgen_ldds_points)
+    build_size_graph(time_points,"T-BDD","LDD","plots/ldd_randgen/ldd_vs_tbdd_time.png")
+    build_time_graph(size_points,"T-BDD","LDD","plots/ldd_randgen/ldd_vs_tbdd_size.png")
 
 
 def test_plotting_lib() -> None:
