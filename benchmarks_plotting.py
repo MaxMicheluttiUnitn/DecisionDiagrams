@@ -44,11 +44,11 @@ def get_abstraction_sdd_from_wmi_bench_data() -> List[Point]:
                           0, 0, 0, "mutex/"+filename, True))
             continue
         points.append(Point(DataSource.ABSTRACTION_BDD,
-                          data["total computation time"],
-                          data["All-SMT computation time"],
-                          data["T-SDD"]["DD nodes"], 
-                          "mutex/"+filename, 
-                          False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data["T-SDD"]["DD nodes"],
+                            "mutex/"+filename,
+                            False))
 
     # retrieving xor result
     files = os.listdir("benchmarks/wmi/output_abstraction_sdd/xor")
@@ -62,11 +62,11 @@ def get_abstraction_sdd_from_wmi_bench_data() -> List[Point]:
                           0, 0, 0, "xor/"+filename, True))
             continue
         points.append(Point(DataSource.ABSTRACTION_BDD,
-                          data["total computation time"], 
-                          data["All-SMT computation time"],
-                          data["T-SDD"]["DD nodes"], 
-                          "xor/"+filename, 
-                          False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data["T-SDD"]["DD nodes"],
+                            "xor/"+filename,
+                            False))
 
     return points
 
@@ -87,9 +87,9 @@ def get_abstraction_bdd_from_wmi_bench_data() -> List[Point]:
                           0, 0, 0, "mutex/"+filename, True))
             continue
         points.append(Point(DataSource.ABSTRACTION_BDD,
-                          data["total computation time"],
-                          data["All-SMT computation time"],
-                          data["T-BDD"]["DD nodes"], "mutex/"+filename, False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data["T-BDD"]["DD nodes"], "mutex/"+filename, False))
 
     # retrieving xor result
     files = os.listdir("benchmarks/wmi/output_abstraction/xor")
@@ -103,11 +103,11 @@ def get_abstraction_bdd_from_wmi_bench_data() -> List[Point]:
                           0, 0, 0, "xor/"+filename, True))
             continue
         points.append(Point(DataSource.ABSTRACTION_BDD,
-                          data["total computation time"],
-                          data["All-SMT computation time"],
-                          data["T-BDD"]["DD nodes"],
-                          "xor/"+filename,
-                          False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data["T-BDD"]["DD nodes"],
+                            "xor/"+filename,
+                            False))
 
     return points
 
@@ -126,9 +126,9 @@ def get_theory_sdd_from_wmi_bench_data() -> List[Point]:
                           0, 0, 0, "mutex/"+filename, True))
             continue
         points.append(Point(DataSource.THEORY_SDD,
-                          data["total computation time"],
-                          data["All-SMT computation time"],
-                          data["T-SDD"]["DD nodes"], "mutex/"+filename, False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data["T-SDD"]["DD nodes"], "mutex/"+filename, False))
 
     # retrieving xor result
     files = os.listdir("benchmarks/wmi/output_sdd/xor")
@@ -140,12 +140,13 @@ def get_theory_sdd_from_wmi_bench_data() -> List[Point]:
                           0, 0, 0, "xor/"+filename, True))
             continue
         points.append(Point(DataSource.THEORY_SDD,
-                          data["total computation time"],
-                          data["All-SMT computation time"],
-                          data["T-SDD"]["DD nodes"], "xor/"+filename,
-                          False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data["T-SDD"]["DD nodes"], "xor/"+filename,
+                            False))
 
     return points
+
 
 def get_wmi_bench_data(kind: str, source: str) -> List[Point]:
     """gets the computation data from wmi bench"""
@@ -161,9 +162,9 @@ def get_wmi_bench_data(kind: str, source: str) -> List[Point]:
                           0, 0, 0, "mutex/"+filename, True))
             continue
         points.append(Point(DataSource.THEORY_SDD,
-                          data["total computation time"],
-                          data["All-SMT computation time"],
-                          data[kind]["DD nodes"], "mutex/"+filename, False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data[kind]["DD nodes"], "mutex/"+filename, False))
 
     # retrieving xor result
     files = os.listdir(source+"/xor")
@@ -175,10 +176,10 @@ def get_wmi_bench_data(kind: str, source: str) -> List[Point]:
                           0, 0, 0, "xor/"+filename, True))
             continue
         points.append(Point(DataSource.THEORY_SDD,
-                          data["total computation time"],
-                          data["All-SMT computation time"],
-                          data[kind]["DD nodes"], "xor/"+filename,
-                          False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data[kind]["DD nodes"], "xor/"+filename,
+                            False))
 
     return points
 
@@ -197,9 +198,9 @@ def get_theory_bdd_from_wmi_bench_data() -> List[Point]:
                           0, 0, 0, "mutex/"+filename, True))
             continue
         points.append(Point(DataSource.THEORY_BDD,
-                          data["total computation time"],
-                          data["All-SMT computation time"],
-                          data["T-BDD"]["DD nodes"], "mutex/"+filename, False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data["T-BDD"]["DD nodes"], "mutex/"+filename, False))
 
     # retrieving xor result
     files = os.listdir("benchmarks/wmi/output/xor")
@@ -211,10 +212,10 @@ def get_theory_bdd_from_wmi_bench_data() -> List[Point]:
                           0, 0, 0, "xor/"+filename, True))
             continue
         points.append(Point(DataSource.THEORY_BDD,
-                          data["total computation time"],
-                          data["All-SMT computation time"],
-                          data["T-BDD"]["DD nodes"], "xor/"+filename,
-                          False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data["T-BDD"]["DD nodes"], "xor/"+filename,
+                            False))
 
     return points
 
@@ -235,11 +236,12 @@ def get_theory_bdd_from_randgen_bench_data() -> List[Point]:
                 'benchmarks/randgen/output/', ''), True))
             continue
         points.append(Point(DataSource.THEORY_BDD,
-                          data["total computation time"],
-                          data["All-SMT computation time"],
-                          data["T-BDD"]["DD nodes"],
-                          filename.replace('benchmarks/randgen/output/', ''), False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data["T-BDD"]["DD nodes"],
+                            filename.replace('benchmarks/randgen/output/', ''), False))
     return points
+
 
 def get_ldd_randgen_bench_data(kind: str, source: str) -> List[Point]:
     """gets the computation data from a run on randomly generated LDD benchmark problems"""
@@ -261,11 +263,12 @@ def get_ldd_randgen_bench_data(kind: str, source: str) -> List[Point]:
             allsmttime = 0.1
 
         points.append(Point(DataSource.THEORY_BDD,
-                          data["total computation time"],
-                          allsmttime,
-                          data[kind]["DD nodes"],
-                          filename.replace(source+"/", ''), False))
+                            data["total computation time"],
+                            allsmttime,
+                            data[kind]["DD nodes"],
+                            filename.replace(source+"/", ''), False))
     return points
+
 
 def get_randgen_bench_data(kind: str, source: str) -> List[Point]:
     """gets the computation data from a run on randomly generated benchmark problems"""
@@ -287,11 +290,12 @@ def get_randgen_bench_data(kind: str, source: str) -> List[Point]:
             allsmttime = 0.1
 
         points.append(Point(DataSource.THEORY_BDD,
-                          data["total computation time"],
-                          allsmttime,
-                          data[kind]["DD nodes"],
-                          filename.replace(source+"/", ''), False))
+                            data["total computation time"],
+                            allsmttime,
+                            data[kind]["DD nodes"],
+                            filename.replace(source+"/", ''), False))
     return points
+
 
 def get_smtlib_QF_RDL_bench_data(kind: str, source: str) -> List[Point]:
     """gets the computation data from a run on smtlib QF RDL benchmark problems"""
@@ -313,10 +317,10 @@ def get_smtlib_QF_RDL_bench_data(kind: str, source: str) -> List[Point]:
             allsmttime = 1000
 
         points.append(Point(DataSource.THEORY_BDD,
-                          data["total computation time"],
-                          allsmttime,
-                          data[kind]["DD nodes"],
-                          filename.replace(source+"/", ''), False))
+                            data["total computation time"],
+                            allsmttime,
+                            data[kind]["DD nodes"],
+                            filename.replace(source+"/", ''), False))
     return points
 
 
@@ -336,10 +340,10 @@ def get_theory_sdd_from_randgen_bench_data() -> List[Point]:
                 'benchmarks/randgen/output_sdd/', ''), True))
             continue
         points.append(Point(DataSource.THEORY_BDD,
-                          data["total computation time"],
-                          data["All-SMT computation time"],
-                          data["T-SDD"]["DD nodes"],
-                          filename.replace('benchmarks/randgen/output_sdd/', ''), False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data["T-SDD"]["DD nodes"],
+                            filename.replace('benchmarks/randgen/output_sdd/', ''), False))
     return points
 
 
@@ -359,10 +363,10 @@ def get_abstraction_bdd_from_randgen_bench_data() -> List[Point]:
                 'benchmarks/randgen/output_abstraction/', ''), True))
             continue
         points.append(Point(DataSource.ABSTRACTION_BDD,
-                          data["total computation time"],
-                          data["All-SMT computation time"],
-                          data["T-BDD"]["DD nodes"],
-                          filename.replace('benchmarks/randgen/output_abstraction/', ''), False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data["T-BDD"]["DD nodes"],
+                            filename.replace('benchmarks/randgen/output_abstraction/', ''), False))
     return points
 
 
@@ -382,12 +386,12 @@ def get_abstraction_sdd_from_randgen_bench_data() -> List[Point]:
                 'benchmarks/randgen/output_abstraction_sdd/', ''), True))
             continue
         points.append(Point(DataSource.ABSTRACTION_BDD,
-                          data["total computation time"],
-                          data["All-SMT computation time"],
-                          data["T-SDD"]["DD nodes"],
-                          filename.replace(
-                              'benchmarks/randgen/output_abstraction_sdd/', ''),
-                          False))
+                            data["total computation time"],
+                            data["All-SMT computation time"],
+                            data["T-SDD"]["DD nodes"],
+                            filename.replace(
+                                'benchmarks/randgen/output_abstraction_sdd/', ''),
+                            False))
     return points
 
 
@@ -423,6 +427,7 @@ def get_time_points(
                 abstraction_list.append(a_p.computation_time)
                 break
     return (theory_list, abstraction_list, edge)
+
 
 def get_allsmt_time_points(
         theory_points: List[Point],
@@ -483,7 +488,7 @@ def get_nodes_points(
         if a_p.timeout:
             a_p.dd_nodes = edge
 
-    #count11 = 0
+    # count11 = 0
     for t_p in theory_points:
         for a_p in abstraction_points:
             if t_p.title == a_p.title:
@@ -492,15 +497,17 @@ def get_nodes_points(
                 theory_list.append(t_p.dd_nodes)
                 abstraction_list.append(a_p.dd_nodes)
                 break
-    #print("Count 1 1", count11)
+    # print("Count 1 1", count11)
     return (theory_list, abstraction_list, edge)
 
-def build_graphs(time_points, size_points, x_label: str, y_label:str) -> None:
-    """builds and displays graphs"""
-    build_time_graph(time_points,x_label,y_label)
-    build_size_graph(size_points,x_label,y_label)
 
-def build_time_graph(time_points, x_label: str, y_label:str, file: str | None = None) -> None:
+def build_graphs(time_points, size_points, x_label: str, y_label: str) -> None:
+    """builds and displays graphs"""
+    build_time_graph(time_points, x_label, y_label)
+    build_size_graph(size_points, x_label, y_label)
+
+
+def build_time_graph(time_points, x_label: str, y_label: str, file: str | None = None) -> None:
     """builds and displays the time graph"""
 
     plt.scatter(time_points[0], time_points[1], marker='s')
@@ -521,15 +528,16 @@ def build_time_graph(time_points, x_label: str, y_label:str, file: str | None = 
     ax.callbacks.connect('ylim_changed', on_change_time)
     plt.axvline(x=time_points[2], ls="--", c=".3")
     plt.axhline(y=time_points[2], ls="--", c=".3")
-    plt.xlim((0.0001,1000000))
-    plt.ylim((0.0001,1000000))
-    #plt.axis('square')
+    plt.xlim((0.0001, 1000000))
+    plt.ylim((0.0001, 1000000))
+    # plt.axis('square')
 
     if file is not None:
         plt.savefig(file, bbox_inches='tight')
     plt.show()
 
-def build_size_graph(size_points, x_label: str, y_label:str, file: str | None = None) -> None:
+
+def build_size_graph(size_points, x_label: str, y_label: str, file: str | None = None) -> None:
     """builds and shows the size graph"""
     plt.scatter(size_points[0], size_points[1], marker='s')
     plt.xlabel(x_label)
@@ -540,7 +548,6 @@ def build_size_graph(size_points, x_label: str, y_label:str, file: str | None = 
     ax.set_xscale('log')
     ax.set_aspect('equal', adjustable='box')
     diag_line, = ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".3")
-    
 
     def on_change(_axes):
         x_lims = ax.get_xlim()
@@ -548,11 +555,11 @@ def build_size_graph(size_points, x_label: str, y_label:str, file: str | None = 
         diag_line.set_data(x_lims, y_lims)
     ax.callbacks.connect('xlim_changed', on_change)
     ax.callbacks.connect('ylim_changed', on_change)
-    #plt.axis('square')
+    # plt.axis('square')
     plt.axvline(x=size_points[2], ls="--", c=".3")
     plt.axhline(y=size_points[2], ls="--", c=".3")
-    plt.xlim((0.0001,1000000))
-    plt.ylim((0.0001,1000000))
+    plt.xlim((0.0001, 1000000))
+    plt.ylim((0.0001, 1000000))
 
     if file is not None:
         plt.savefig(file, bbox_inches='tight')
@@ -602,8 +609,6 @@ def main() -> None:
 
     # rgen_tsdd = get_smtlib_QF_RDL_bench_data("T-SDD","benchmarks/randgen/output_sdd")
 
-
-
     # smt_points = get_allsmt_time_points(rgen_tbdd,rgen_tsdd)
     # size_points = get_nodes_points(rgen_tbdd, rgen_tsdd)
     # build_graphs(smt_points, size_points,"BDD","SDD")
@@ -616,13 +621,19 @@ def main() -> None:
     # size_points = get_nodes_points(a_points, d_points)
     # build_graphs(smt_points, size_points,"OLD PARTIAL","TSETSI PARTIAL")
 
-    ldd_randgen_ldds_points = get_ldd_randgen_bench_data("LDD","benchmarks/ldd_randgen/output_ldd")
-    ldd_randgen_bdds_points = get_ldd_randgen_bench_data("T-BDD","benchmarks/ldd_randgen/output")
+    ldd_randgen_ldds_points = get_ldd_randgen_bench_data(
+        "LDD", "benchmarks/ldd_randgen/output_ldd")
+    ldd_randgen_bdds_points = get_ldd_randgen_bench_data(
+        "T-BDD", "benchmarks/ldd_randgen/output")
 
-    time_points = get_time_points(ldd_randgen_bdds_points,ldd_randgen_ldds_points)
-    size_points = get_nodes_points(ldd_randgen_bdds_points,ldd_randgen_ldds_points)
-    build_size_graph(time_points,"T-BDD","LDD","plots/ldd_randgen/ldd_vs_tbdd_time.png")
-    build_time_graph(size_points,"T-BDD","LDD","plots/ldd_randgen/ldd_vs_tbdd_size.png")
+    time_points = get_time_points(
+        ldd_randgen_bdds_points, ldd_randgen_ldds_points)
+    size_points = get_nodes_points(
+        ldd_randgen_bdds_points, ldd_randgen_ldds_points)
+    build_size_graph(time_points, "T-BDD", "LDD",
+                     "plots/ldd_randgen/ldd_vs_tbdd_time.png")
+    build_time_graph(size_points, "T-BDD", "LDD",
+                     "plots/ldd_randgen/ldd_vs_tbdd_size.png")
 
 
 def test_plotting_lib() -> None:
