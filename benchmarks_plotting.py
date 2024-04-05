@@ -636,18 +636,18 @@ def main() -> None:
     #     ldd_randgen_bdds_points, ldd_randgen_ldds_points)
     # size_points = get_nodes_points(
     #     ldd_randgen_bdds_points, ldd_randgen_ldds_points)
-    # build_size_graph(time_points, "T-BDD", "LDD",
+    # build_time_graph(time_points, "T-BDD", "LDD",
     #                  "plots/ldd_randgen/ldd_vs_tbdd_time.png")
-    # build_time_graph(size_points, "T-BDD", "LDD",
+    # build_size_graph(size_points, "T-BDD", "LDD",
     #                  "plots/ldd_randgen/ldd_vs_tbdd_size.png")
 
     # time_points = get_time_points(
     #     ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
     # size_points = get_nodes_points(
     #     ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
-    # build_size_graph(time_points, "T-BDD", "Abs. BDD",
+    # build_time_graph(time_points, "T-BDD", "Abs. BDD",
     #                  "plots/ldd_randgen/abstr_bdd_vs_tbdd_time.png")
-    # build_time_graph(size_points, "T-BDD", "Abs. BDD",
+    # build_size_graph(size_points, "T-BDD", "Abs. BDD",
     #                  "plots/ldd_randgen/abstr_bdd_vs_tbdd_size.png")
 
     # --------------------------------------------------------------
@@ -666,17 +666,17 @@ def main() -> None:
     #     randgen_bdds_points, randgen_abstraction_bdd_points)
     # size_points = get_nodes_points(
     #     randgen_bdds_points, randgen_abstraction_bdd_points)
-    # build_size_graph(time_points, "T-BDD", "Abs. BDD",
+    # build_time_graph(time_points, "T-BDD", "Abs. BDD",
     #                  "plots/randgen/abstr_bdd_vs_tbdd_time.png")
-    # build_time_graph(size_points, "T-BDD", "Abs. BDD",
+    # build_size_graph(size_points, "T-BDD", "Abs. BDD",
     #                  "plots/randgen/abstr_bdd_vs_tbdd_size.png")
     # time_points = get_time_points(
     #     randgen_sdds_points, randgen_abstraction_sdd_points)
     # size_points = get_nodes_points(
     #     randgen_sdds_points, randgen_abstraction_sdd_points)
-    # build_size_graph(time_points, "T-SDD", "Abs. SDD",
+    # build_time_graph(time_points, "T-SDD", "Abs. SDD",
     #                  "plots/randgen/abstr_sdd_vs_tsdd_time.png")
-    # build_time_graph(size_points, "T-SDD", "Abs. SDD",
+    # build_size_graph(size_points, "T-SDD", "Abs. SDD",
     #                  "plots/randgen/abstr_sdd_vs_tsdd_size.png")
 
     # --------------------------------------------------------------
@@ -697,25 +697,25 @@ def main() -> None:
     #     qfrdl_bdds_points, qfrdl_ldds_points)
     # size_points = get_nodes_points(
     #     qfrdl_bdds_points, qfrdl_ldds_points)
-    # build_size_graph(time_points, "T-BDD", "LDD",
+    # build_time_graph(time_points, "T-BDD", "LDD",
     #                  "plots/smtlib/QF_RDL/ldd_vs_tbdd_time.png")
-    # build_time_graph(size_points, "T-BDD", "ALDD",
+    # build_size_graph(size_points, "T-BDD", "ALDD",
     #                  "plots/smtlib/QF_RDL/ldd_vs_tbdd_size.png")
     # time_points = get_time_points(
     #     qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
     # size_points = get_nodes_points(
     #     qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
-    # build_size_graph(time_points, "T-BDD", "Abs. BDD",
+    # build_time_graph(time_points, "T-BDD", "Abs. BDD",
     #                  "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_time.png")
-    # build_time_graph(size_points, "T-BDD", "Abs. BDD",
+    # build_size_graph(size_points, "T-BDD", "Abs. BDD",
     #                  "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_size.png")
     # time_points = get_time_points(
     #     qfrdl_sdds_points, qfrdl_abstraction_sdd_points)
     # size_points = get_nodes_points(
     #     qfrdl_sdds_points, qfrdl_abstraction_sdd_points)
-    # build_size_graph(time_points, "T-SDD", "Abs. SDD",
+    # build_time_graph(time_points, "T-SDD", "Abs. SDD",
     #                  "plots/smtlib/QF_RDL/abstr_sdd_vs_tsdd_time.png")
-    # build_time_graph(size_points, "T-SDD", "Abs. SDD",
+    # build_size_graph(size_points, "T-SDD", "Abs. SDD",
     #                  "plots/smtlib/QF_RDL/abstr_sdd_vs_tsdd_size.png")
 
     # --------------------------------------------------------------
@@ -736,17 +736,17 @@ def main() -> None:
     #     qfuf_bdds_points, qfuf_abstraction_bdd_points)
     # size_points = get_nodes_points(
     #     qfuf_bdds_points, qfuf_abstraction_bdd_points)
-    # build_size_graph(time_points, "T-BDD", "Abs. BDD",
+    # build_time_graph(time_points, "T-BDD", "Abs. BDD",
     #                  "plots/smtlib/QF_UF/abstr_bdd_vs_tbdd_time.png")
-    # build_time_graph(size_points, "T-BDD", "Abs. BDD",
+    # build_size_graph(size_points, "T-BDD", "Abs. BDD",
     #                  "plots/smtlib/QF_UF/abstr_bdd_vs_tbdd_size.png")
     # time_points = get_time_points(
     #     qfuf_sdds_points, qfuf_abstraction_sdd_points)
     # size_points = get_nodes_points(
     #     qfuf_sdds_points, qfuf_abstraction_sdd_points)
-    # build_size_graph(time_points, "T-SDD", "Abs. SDD",
+    # build_time_graph(time_points, "T-SDD", "Abs. SDD",
     #                  "plots/smtlib/QF_UF/abstr_sdd_vs_tsdd_time.png")
-    # build_time_graph(size_points, "T-SDD", "Abs. SDD",
+    # build_size_graph(size_points, "T-SDD", "Abs. SDD",
     #                  "plots/smtlib/QF_UF/abstr_sdd_vs_tsdd_size.png")
 
     # --------------------------------------------------------------
@@ -769,25 +769,25 @@ def main() -> None:
     #     qfuflra_bdds_points, qfuflra_ldds_points)
     # size_points = get_nodes_points(
     #     qfuflra_bdds_points, qfuflra_ldds_points)
-    # build_size_graph(time_points, "T-BDD", "LDD",
+    # build_time_graph(time_points, "T-BDD", "LDD",
     #                  "plots/smtlib/UFLRA/ldd_vs_tbdd_time.png")
-    # build_time_graph(size_points, "T-BDD", "ALDD",
+    # build_size_graph(size_points, "T-BDD", "ALDD",
     #                  "plots/smtlib/UFLRA/ldd_vs_tbdd_size.png")
     # time_points = get_time_points(
     #     qfuflra_bdds_points, qfuflra_abstraction_bdd_points)
     # size_points = get_nodes_points(
     #     qfuflra_bdds_points, qfuflra_abstraction_bdd_points)
-    # build_size_graph(time_points, "T-BDD", "Abs. BDD",
+    # build_time_graph(time_points, "T-BDD", "Abs. BDD",
     #                  "plots/smtlib/UFLRA/abstr_bdd_vs_tbdd_time.png")
-    # build_time_graph(size_points, "T-BDD", "Abs. BDD",
+    # build_size_graph(size_points, "T-BDD", "Abs. BDD",
     #                  "plots/smtlib/UFLRA/abstr_bdd_vs_tbdd_size.png")
     # time_points = get_time_points(
     #     qfuflra_sdds_points, qfuflra_abstraction_sdd_points)
     # size_points = get_nodes_points(
     #     qfuflra_sdds_points, qfuflra_abstraction_sdd_points)
-    # build_size_graph(time_points, "T-SDD", "Abs. SDD",
+    # build_time_graph(time_points, "T-SDD", "Abs. SDD",
     #                  "plots/smtlib/UFLRA/abstr_sdd_vs_tsdd_time.png")
-    # build_time_graph(size_points, "T-SDD", "Abs. SDD",
+    # build_size_graph(size_points, "T-SDD", "Abs. SDD",
     #                  "plots/smtlib/UFLRA/abstr_sdd_vs_tsdd_size.png")
 
 
