@@ -568,6 +568,7 @@ def build_size_graph(size_points, x_label: str, y_label: str, file: str | None =
 
 def main() -> None:
     """main function"""
+    pass
     # randgen BDD (DATA NOT READY)
     # t_points = get_theory_bdd_from_randgen_bench_data()
     # abstr_points = get_abstraction_bdd_from_randgen_bench_data()
@@ -621,19 +622,173 @@ def main() -> None:
     # size_points = get_nodes_points(a_points, d_points)
     # build_graphs(smt_points, size_points,"OLD PARTIAL","TSETSI PARTIAL")
 
-    ldd_randgen_ldds_points = get_ldd_randgen_bench_data(
-        "LDD", "benchmarks/ldd_randgen/output_ldd")
-    ldd_randgen_bdds_points = get_ldd_randgen_bench_data(
-        "T-BDD", "benchmarks/ldd_randgen/output")
+    # --------------------------------------------------------------
+    # LDD RANDGEN
 
-    time_points = get_time_points(
-        ldd_randgen_bdds_points, ldd_randgen_ldds_points)
-    size_points = get_nodes_points(
-        ldd_randgen_bdds_points, ldd_randgen_ldds_points)
-    build_size_graph(time_points, "T-BDD", "LDD",
-                     "plots/ldd_randgen/ldd_vs_tbdd_time.png")
-    build_time_graph(size_points, "T-BDD", "LDD",
-                     "plots/ldd_randgen/ldd_vs_tbdd_size.png")
+    # ldd_randgen_ldds_points = get_ldd_randgen_bench_data(
+    #     "LDD", "benchmarks/ldd_randgen/output_ldd")
+    # ldd_randgen_bdds_points = get_ldd_randgen_bench_data(
+    #     "T-BDD", "benchmarks/ldd_randgen/output")
+    # ldd_randgen_abstraction_bdd_points = get_ldd_randgen_bench_data(
+    #     "Abstraction BDD", "benchmarks/ldd_randgen/output_abstraction")
+
+    # time_points = get_time_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_ldds_points)
+    # size_points = get_nodes_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_ldds_points)
+    # build_size_graph(time_points, "T-BDD", "LDD",
+    #                  "plots/ldd_randgen/ldd_vs_tbdd_time.png")
+    # build_time_graph(size_points, "T-BDD", "LDD",
+    #                  "plots/ldd_randgen/ldd_vs_tbdd_size.png")
+
+    # time_points = get_time_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
+    # size_points = get_nodes_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
+    # build_size_graph(time_points, "T-BDD", "Abs. BDD",
+    #                  "plots/ldd_randgen/abstr_bdd_vs_tbdd_time.png")
+    # build_time_graph(size_points, "T-BDD", "Abs. BDD",
+    #                  "plots/ldd_randgen/abstr_bdd_vs_tbdd_size.png")
+
+    # --------------------------------------------------------------
+    # RANDGEN
+
+    # randgen_bdds_points = get_randgen_bench_data(
+    #     "T-BDD", "benchmarks/randgen/output_tsetsin")
+    # randgen_abstraction_bdd_points = get_randgen_bench_data(
+    #     "Abstraction BDD", "benchmarks/randgen/output_abstraction")
+    # randgen_sdds_points = get_randgen_bench_data(
+    #     "T-SDD", "benchmarks/randgen/output_sdd")
+    # randgen_abstraction_sdd_points = get_randgen_bench_data(
+    #     "Abstraction SDD", "benchmarks/randgen/output_abstraction_sdd")
+
+    # time_points = get_time_points(
+    #     randgen_bdds_points, randgen_abstraction_bdd_points)
+    # size_points = get_nodes_points(
+    #     randgen_bdds_points, randgen_abstraction_bdd_points)
+    # build_size_graph(time_points, "T-BDD", "Abs. BDD",
+    #                  "plots/randgen/abstr_bdd_vs_tbdd_time.png")
+    # build_time_graph(size_points, "T-BDD", "Abs. BDD",
+    #                  "plots/randgen/abstr_bdd_vs_tbdd_size.png")
+    # time_points = get_time_points(
+    #     randgen_sdds_points, randgen_abstraction_sdd_points)
+    # size_points = get_nodes_points(
+    #     randgen_sdds_points, randgen_abstraction_sdd_points)
+    # build_size_graph(time_points, "T-SDD", "Abs. SDD",
+    #                  "plots/randgen/abstr_sdd_vs_tsdd_time.png")
+    # build_time_graph(size_points, "T-SDD", "Abs. SDD",
+    #                  "plots/randgen/abstr_sdd_vs_tsdd_size.png")
+
+    # --------------------------------------------------------------
+    # SMTLIB QF RDL
+
+    # qfrdl_ldds_points = get_smtlib_QF_RDL_bench_data(
+    #     "LDD", "benchmarks/smtlib/output_ldd/non-incremental/QF_RDL")
+    # qfrdl_bdds_points = get_smtlib_QF_RDL_bench_data(
+    #     "T-BDD", "benchmarks/smtlib/output_bdd/non-incremental/QF_RDL")
+    # qfrdl_abstraction_bdd_points = get_smtlib_QF_RDL_bench_data(
+    #     "Abstraction BDD", "benchmarks/smtlib/output_abstraction_bdd/non-incremental/QF_RDL")
+    # qfrdl_sdds_points = get_smtlib_QF_RDL_bench_data(
+    #     "T-SDD", "benchmarks/smtlib/output_sdd/non-incremental/QF_RDL")
+    # qfrdl_abstraction_sdd_points = get_smtlib_QF_RDL_bench_data(
+    #     "Abstraction SDD", "benchmarks/smtlib/output_abstraction_sdd/non-incremental/QF_RDL")
+
+    # time_points = get_time_points(
+    #     qfrdl_bdds_points, qfrdl_ldds_points)
+    # size_points = get_nodes_points(
+    #     qfrdl_bdds_points, qfrdl_ldds_points)
+    # build_size_graph(time_points, "T-BDD", "LDD",
+    #                  "plots/smtlib/QF_RDL/ldd_vs_tbdd_time.png")
+    # build_time_graph(size_points, "T-BDD", "ALDD",
+    #                  "plots/smtlib/QF_RDL/ldd_vs_tbdd_size.png")
+    # time_points = get_time_points(
+    #     qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
+    # size_points = get_nodes_points(
+    #     qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
+    # build_size_graph(time_points, "T-BDD", "Abs. BDD",
+    #                  "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_time.png")
+    # build_time_graph(size_points, "T-BDD", "Abs. BDD",
+    #                  "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_size.png")
+    # time_points = get_time_points(
+    #     qfrdl_sdds_points, qfrdl_abstraction_sdd_points)
+    # size_points = get_nodes_points(
+    #     qfrdl_sdds_points, qfrdl_abstraction_sdd_points)
+    # build_size_graph(time_points, "T-SDD", "Abs. SDD",
+    #                  "plots/smtlib/QF_RDL/abstr_sdd_vs_tsdd_time.png")
+    # build_time_graph(size_points, "T-SDD", "Abs. SDD",
+    #                  "plots/smtlib/QF_RDL/abstr_sdd_vs_tsdd_size.png")
+
+    # --------------------------------------------------------------
+    # SMTLIB QF UF
+
+    # DATA NOT READY: parsing/msat problem
+
+    # qfuf_bdds_points = get_smtlib_QF_RDL_bench_data(
+    #     "T-BDD", "benchmarks/smtlib/output_bdd/non-incremental/QF_UF")
+    # qfuf_abstraction_bdd_points = get_smtlib_QF_RDL_bench_data(
+    #     "Abstraction BDD", "benchmarks/smtlib/output_abstraction_bdd/non-incremental/QF_UF")
+    # qfuf_sdds_points = get_smtlib_QF_RDL_bench_data(
+    #     "T-SDD", "benchmarks/smtlib/output_sdd/non-incremental/QF_UF")
+    # qfuf_abstraction_sdd_points = get_smtlib_QF_RDL_bench_data(
+    #     "Abstraction SDD", "benchmarks/smtlib/output_abstraction_sdd/non-incremental/QF_UF")
+
+    # time_points = get_time_points(
+    #     qfuf_bdds_points, qfuf_abstraction_bdd_points)
+    # size_points = get_nodes_points(
+    #     qfuf_bdds_points, qfuf_abstraction_bdd_points)
+    # build_size_graph(time_points, "T-BDD", "Abs. BDD",
+    #                  "plots/smtlib/QF_UF/abstr_bdd_vs_tbdd_time.png")
+    # build_time_graph(size_points, "T-BDD", "Abs. BDD",
+    #                  "plots/smtlib/QF_UF/abstr_bdd_vs_tbdd_size.png")
+    # time_points = get_time_points(
+    #     qfuf_sdds_points, qfuf_abstraction_sdd_points)
+    # size_points = get_nodes_points(
+    #     qfuf_sdds_points, qfuf_abstraction_sdd_points)
+    # build_size_graph(time_points, "T-SDD", "Abs. SDD",
+    #                  "plots/smtlib/QF_UF/abstr_sdd_vs_tsdd_time.png")
+    # build_time_graph(size_points, "T-SDD", "Abs. SDD",
+    #                  "plots/smtlib/QF_UF/abstr_sdd_vs_tsdd_size.png")
+
+    # --------------------------------------------------------------
+    # SMTLIB QF UFLRA
+
+    # DATA NOT READY: parsing/msat problem
+
+    # qfuflra_ldds_points = get_smtlib_QF_RDL_bench_data(
+    #     "LDD", "benchmarks/smtlib/output_ldd/non-incremental/QF_UFLRA")
+    # qfuflra_bdds_points = get_smtlib_QF_RDL_bench_data(
+    #     "T-BDD", "benchmarks/smtlib/output_bdd/non-incremental/QF_UFLRA")
+    # qfuflra_abstraction_bdd_points = get_smtlib_QF_RDL_bench_data(
+    #     "Abstraction BDD", "benchmarks/smtlib/output_abstraction_bdd/non-incremental/QF_UFLRA")
+    # qfuflra_sdds_points = get_smtlib_QF_RDL_bench_data(
+    #     "T-SDD", "benchmarks/smtlib/output_sdd/non-incremental/QF_RDL")
+    # qfuflra_abstraction_sdd_points = get_smtlib_QF_RDL_bench_data(
+    #     "Abstraction SDD", "benchmarks/smtlib/output_abstraction_sdd/non-incremental/QF_UFLRA")
+
+    # time_points = get_time_points(
+    #     qfuflra_bdds_points, qfuflra_ldds_points)
+    # size_points = get_nodes_points(
+    #     qfuflra_bdds_points, qfuflra_ldds_points)
+    # build_size_graph(time_points, "T-BDD", "LDD",
+    #                  "plots/smtlib/UFLRA/ldd_vs_tbdd_time.png")
+    # build_time_graph(size_points, "T-BDD", "ALDD",
+    #                  "plots/smtlib/UFLRA/ldd_vs_tbdd_size.png")
+    # time_points = get_time_points(
+    #     qfuflra_bdds_points, qfuflra_abstraction_bdd_points)
+    # size_points = get_nodes_points(
+    #     qfuflra_bdds_points, qfuflra_abstraction_bdd_points)
+    # build_size_graph(time_points, "T-BDD", "Abs. BDD",
+    #                  "plots/smtlib/UFLRA/abstr_bdd_vs_tbdd_time.png")
+    # build_time_graph(size_points, "T-BDD", "Abs. BDD",
+    #                  "plots/smtlib/UFLRA/abstr_bdd_vs_tbdd_size.png")
+    # time_points = get_time_points(
+    #     qfuflra_sdds_points, qfuflra_abstraction_sdd_points)
+    # size_points = get_nodes_points(
+    #     qfuflra_sdds_points, qfuflra_abstraction_sdd_points)
+    # build_size_graph(time_points, "T-SDD", "Abs. SDD",
+    #                  "plots/smtlib/UFLRA/abstr_sdd_vs_tsdd_time.png")
+    # build_time_graph(size_points, "T-SDD", "Abs. SDD",
+    #                  "plots/smtlib/UFLRA/abstr_sdd_vs_tsdd_size.png")
 
 
 def test_plotting_lib() -> None:
