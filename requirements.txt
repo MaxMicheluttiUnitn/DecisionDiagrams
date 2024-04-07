@@ -1,1 +1,1 @@
-theorydd @ git+https://github.com/MaxMicheluttiUnitn/TheoryConsistentDecisionDiagrams@main
+theorydd @ git+https://github.com/MaxMicheluttiUnitn/TheoryConsistentDecisionDiagrams@two_phase_dd

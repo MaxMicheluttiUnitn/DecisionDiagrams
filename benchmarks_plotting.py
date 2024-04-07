@@ -558,8 +558,8 @@ def build_size_graph(size_points, x_label: str, y_label: str, file: str | None =
     # plt.axis('square')
     plt.axvline(x=size_points[2], ls="--", c=".3")
     plt.axhline(y=size_points[2], ls="--", c=".3")
-    plt.xlim((0.0001, 1000000))
-    plt.ylim((0.0001, 1000000))
+    plt.xlim((1, 100000))
+    plt.ylim((1, 100000))
 
     if file is not None:
         plt.savefig(file, bbox_inches='tight')
@@ -653,31 +653,31 @@ def main() -> None:
     # --------------------------------------------------------------
     # RANDGEN
 
-    # randgen_bdds_points = get_randgen_bench_data(
-    #     "T-BDD", "benchmarks/randgen/output_tsetsin")
-    # randgen_abstraction_bdd_points = get_randgen_bench_data(
-    #     "Abstraction BDD", "benchmarks/randgen/output_abstraction")
-    # randgen_sdds_points = get_randgen_bench_data(
-    #     "T-SDD", "benchmarks/randgen/output_sdd")
-    # randgen_abstraction_sdd_points = get_randgen_bench_data(
-    #     "Abstraction SDD", "benchmarks/randgen/output_abstraction_sdd")
+    randgen_bdds_points = get_randgen_bench_data(
+        "T-BDD", "benchmarks/randgen/output_tsetsin")
+    randgen_abstraction_bdd_points = get_randgen_bench_data(
+        "Abstraction BDD", "benchmarks/randgen/output_abstraction")
+    randgen_sdds_points = get_randgen_bench_data(
+        "T-SDD", "benchmarks/randgen/output_sdd")
+    randgen_abstraction_sdd_points = get_randgen_bench_data(
+        "Abstraction SDD", "benchmarks/randgen/output_abstraction_sdd")
 
-    # time_points = get_time_points(
-    #     randgen_bdds_points, randgen_abstraction_bdd_points)
-    # size_points = get_nodes_points(
-    #     randgen_bdds_points, randgen_abstraction_bdd_points)
-    # build_time_graph(time_points, "T-BDD", "Abs. BDD",
-    #                  "plots/randgen/abstr_bdd_vs_tbdd_time.png")
-    # build_size_graph(size_points, "T-BDD", "Abs. BDD",
-    #                  "plots/randgen/abstr_bdd_vs_tbdd_size.png")
-    # time_points = get_time_points(
-    #     randgen_sdds_points, randgen_abstraction_sdd_points)
-    # size_points = get_nodes_points(
-    #     randgen_sdds_points, randgen_abstraction_sdd_points)
-    # build_time_graph(time_points, "T-SDD", "Abs. SDD",
-    #                  "plots/randgen/abstr_sdd_vs_tsdd_time.png")
-    # build_size_graph(size_points, "T-SDD", "Abs. SDD",
-    #                  "plots/randgen/abstr_sdd_vs_tsdd_size.png")
+    time_points = get_time_points(
+        randgen_bdds_points, randgen_abstraction_bdd_points)
+    size_points = get_nodes_points(
+        randgen_bdds_points, randgen_abstraction_bdd_points)
+    build_time_graph(time_points, "T-BDD", "Abs. BDD",
+                     "plots/randgen/abstr_bdd_vs_tbdd_time.png")
+    build_size_graph(size_points, "T-BDD", "Abs. BDD",
+                     "plots/randgen/abstr_bdd_vs_tbdd_size.png")
+    time_points = get_time_points(
+        randgen_sdds_points, randgen_abstraction_sdd_points)
+    size_points = get_nodes_points(
+        randgen_sdds_points, randgen_abstraction_sdd_points)
+    build_time_graph(time_points, "T-SDD", "Abs. SDD",
+                     "plots/randgen/abstr_sdd_vs_tsdd_time.png")
+    build_size_graph(size_points, "T-SDD", "Abs. SDD",
+                     "plots/randgen/abstr_sdd_vs_tsdd_size.png")
 
     # --------------------------------------------------------------
     # SMTLIB QF RDL
@@ -699,7 +699,7 @@ def main() -> None:
     #     qfrdl_bdds_points, qfrdl_ldds_points)
     # build_time_graph(time_points, "T-BDD", "LDD",
     #                  "plots/smtlib/QF_RDL/ldd_vs_tbdd_time.png")
-    # build_size_graph(size_points, "T-BDD", "ALDD",
+    # build_size_graph(size_points, "T-BDD", "LDD",
     #                  "plots/smtlib/QF_RDL/ldd_vs_tbdd_size.png")
     # time_points = get_time_points(
     #     qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
@@ -771,7 +771,7 @@ def main() -> None:
     #     qfuflra_bdds_points, qfuflra_ldds_points)
     # build_time_graph(time_points, "T-BDD", "LDD",
     #                  "plots/smtlib/UFLRA/ldd_vs_tbdd_time.png")
-    # build_size_graph(size_points, "T-BDD", "ALDD",
+    # build_size_graph(size_points, "T-BDD", "LDD",
     #                  "plots/smtlib/UFLRA/ldd_vs_tbdd_size.png")
     # time_points = get_time_points(
     #     qfuflra_bdds_points, qfuflra_abstraction_bdd_points)
