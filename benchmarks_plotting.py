@@ -1,4 +1,5 @@
 """main and functions to plot the results of the program running on benchmarks"""
+import copy
 from enum import Enum
 import json
 import os
@@ -95,6 +96,7 @@ def get_ldd_randgen_bench_data(kind: str, source: str) -> List[Point]:
         if data.get("All-SMT computation time") is not None:
             allsmttime = data["All-SMT computation time"]
         else:
+            # to avoid errors with abstraction DDs
             allsmttime = 0.1
         points.append(Point(DataSource.THEORY_BDD,
                             data["total computation time"],
@@ -180,6 +182,9 @@ def get_time_points(
         theory_points: List[Point],
         abstraction_points: List[Point]) -> Tuple[List[float], List[float], int]:
     """translate data into plottable points comparing time"""
+    theory_points = copy.deepcopy(theory_points)
+    abstraction_points = copy.deepcopy(abstraction_points)
+    
     theory_list = []
     abstraction_list = []
     max_theory = theory_points[0].computation_time
@@ -214,6 +219,9 @@ def get_allsmt_time_points(
         theory_points: List[Point],
         abstraction_points: List[Point]) -> Tuple[List[float], List[float], int]:
     """translate data into plottable points comparing all SMT time"""
+    theory_points = copy.deepcopy(theory_points)
+    abstraction_points = copy.deepcopy(abstraction_points)
+    
     theory_list = []
     abstraction_list = []
     max_theory = theory_points[0].all_smt_time
@@ -248,6 +256,9 @@ def get_dd_time_points(
         theory_points: List[Point],
         abstraction_points: List[Point]) -> Tuple[List[float], List[float], int]:
     """translate data into plottable points comparing all SMT time"""
+    theory_points = copy.deepcopy(theory_points)
+    abstraction_points = copy.deepcopy(abstraction_points)
+    
     theory_list = []
     abstraction_list = []
     max_theory = theory_points[0].dd_time
@@ -282,6 +293,9 @@ def get_nodes_points(
         theory_points: List[Point],
         abstraction_points: List[Point]) -> Tuple[List[float], List[float], int]:
     """translate data into plottable points comparing DD size in nodes"""
+    theory_points = copy.deepcopy(theory_points)
+    abstraction_points = copy.deepcopy(abstraction_points)
+    
     theory_list = []
     abstraction_list = []
     max_theory = theory_points[0].dd_nodes
@@ -325,6 +339,9 @@ def get_dd_models_points(
     max_theory = theory_points[0].dd_models
     max_abstraction = abstraction_points[0].dd_models
 
+    theory_points = copy.deepcopy(theory_points)
+    abstraction_points = copy.deepcopy(abstraction_points)
+
     for t_p in theory_points:
         if t_p.dd_models is not None and (max_theory is None or t_p.dd_models > max_theory):
             max_theory = t_p.dd_models
@@ -348,8 +365,14 @@ def get_dd_models_points(
     for t_p in theory_points:
         for a_p in abstraction_points:
             if t_p.title == a_p.title and t_p.dd_models is not None and a_p.dd_models is not None:
+                # if a_p.dd_models < t_p.dd_models:
+                #     print(a_p.title)
                 # if t_p.dd_nodes == 1 and a_p.dd_nodes == 1:
                 #     count11 += 1
+                # if t_p.dd_models > 10**30:
+                #     print(t_p.title)
+                # if a_p.dd_models > 10**30:
+                #     print(a_p.title)
                 theory_list.append(t_p.dd_models)
                 abstraction_list.append(a_p.dd_models)
                 break
@@ -384,8 +407,8 @@ def build_time_graph(time_points, x_label: str, y_label: str, file: str | None =
     ax.callbacks.connect('ylim_changed', on_change_time)
     plt.axvline(x=time_points[2], ls="--", c=".3")
     plt.axhline(y=time_points[2], ls="--", c=".3")
-    plt.xlim((0.0001, 1000000))
-    plt.ylim((0.0001, 1000000))
+    plt.xlim((0.0001, 10*time_points[2]))
+    plt.ylim((0.0001, 10*time_points[2]))
     # plt.axis('square')
 
     if file is not None:
@@ -414,8 +437,8 @@ def build_size_graph(size_points, x_label: str, y_label: str, file: str | None =
     # plt.axis('square')
     plt.axvline(x=size_points[2], ls="--", c=".3")
     plt.axhline(y=size_points[2], ls="--", c=".3")
-    plt.xlim((1, 100000))
-    plt.ylim((1, 100000))
+    plt.xlim((1, size_points[2]*10))
+    plt.ylim((1, size_points[2]*10))
 
     if file is not None:
         plt.savefig(file, bbox_inches='tight')
@@ -475,7 +498,7 @@ def main() -> None:
     #                  "plots/wmi/abstr_bdd_vs_tbdd_time.png")
     # build_size_graph(size_points, "T-BDD", "Abs. BDD",
     #                  "plots/wmi/abstr_bdd_vs_tbdd_size.png")
-    # build_models_graph(size_points, "T-BDD", "Abs. BDD",
+    # build_models_graph(models_points, "T-BDD", "Abs. BDD",
     #                    "plots/wmi/abstr_bdd_vs_tbdd_models.png")
 
     # time_points = get_time_points(
@@ -490,66 +513,66 @@ def main() -> None:
     # --------------------------------------------------------------
     # LDD RANDGEN
 
-    ldd_randgen_ldds_points = get_ldd_randgen_bench_data(
-        "LDD", "benchmarks/ldd_randgen/output_ldd")
-    ldd_randgen_bdds_points = get_ldd_randgen_bench_data(
-        "T-BDD", "benchmarks/ldd_randgen/output")
-    ldd_randgen_abstraction_bdd_points = get_ldd_randgen_bench_data(
-        "Abstraction BDD", "benchmarks/ldd_randgen/output_abstraction")
-    ldd_randgen_sdds_points = get_ldd_randgen_bench_data(
-        "T-SDD", "benchmarks/ldd_randgen/output_sdd")
-    ldd_randgen_abstraction_sdd_points = get_ldd_randgen_bench_data(
-        "Abstraction SDD", "benchmarks/ldd_randgen/output_abstraction_sdd")
-    ldd_randgen_bdds_newgen_points = get_ldd_randgen_bench_data(
-        "T-BDD", "benchmarks/ldd_randgen/output_newddgen")
+    # ldd_randgen_ldds_points = get_ldd_randgen_bench_data(
+    #     "LDD", "benchmarks/ldd_randgen/output_ldd")
+    # ldd_randgen_bdds_points = get_ldd_randgen_bench_data(
+    #     "T-BDD", "benchmarks/ldd_randgen/output")
+    # ldd_randgen_abstraction_bdd_points = get_ldd_randgen_bench_data(
+    #     "Abstraction BDD", "benchmarks/ldd_randgen/output_abstraction")
+    # ldd_randgen_sdds_points = get_ldd_randgen_bench_data(
+    #     "T-SDD", "benchmarks/ldd_randgen/output_sdd")
+    # ldd_randgen_abstraction_sdd_points = get_ldd_randgen_bench_data(
+    #     "Abstraction SDD", "benchmarks/ldd_randgen/output_abstraction_sdd")
+    # ldd_randgen_bdds_newgen_points = get_ldd_randgen_bench_data(
+    #     "T-BDD", "benchmarks/ldd_randgen/output_newddgen")
 
-    time_points = get_time_points(
-        ldd_randgen_bdds_points, ldd_randgen_ldds_points)
-    size_points = get_nodes_points(
-        ldd_randgen_bdds_points, ldd_randgen_ldds_points)
-    models_points = get_dd_models_points(
-        ldd_randgen_bdds_points, ldd_randgen_ldds_points)
-    build_time_graph(time_points, "T-BDD", "LDD",
-                     "plots/ldd_randgen/ldd_vs_tbdd_time.png")
-    build_size_graph(size_points, "T-BDD", "LDD",
-                     "plots/ldd_randgen/ldd_vs_tbdd_size.png")
-    build_models_graph(size_points, "T-BDD", "LDD",
-                       "plots/ldd_randgen/ldd_vs_tbdd_models.png")
+    # time_points = get_time_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_ldds_points)
+    # size_points = get_nodes_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_ldds_points)
+    # models_points = get_dd_models_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_ldds_points)
+    # build_time_graph(time_points, "T-BDD", "LDD",
+    #                  "plots/ldd_randgen/ldd_vs_tbdd_time.png")
+    # build_size_graph(size_points, "T-BDD", "LDD",
+    #                  "plots/ldd_randgen/ldd_vs_tbdd_size.png")
+    # build_models_graph(models_points, "T-BDD", "LDD",
+    #                    "plots/ldd_randgen/ldd_vs_tbdd_models.png")
 
-    time_points = get_time_points(
-        ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
-    size_points = get_nodes_points(
-        ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
-    models_points = get_dd_models_points(
-        ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
-    build_time_graph(time_points, "T-BDD", "Abs. BDD",
-                     "plots/ldd_randgen/abstr_bdd_vs_tbdd_time.png")
-    build_size_graph(size_points, "T-BDD", "Abs. BDD",
-                     "plots/ldd_randgen/abstr_bdd_vs_tbdd_size.png")
-    build_models_graph(size_points, "T-BDD", "Abs. BDD",
-                       "plots/ldd_randgen/abstr_bdd_vs_tbdd_models.png")
+    # time_points = get_time_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
+    # size_points = get_nodes_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
+    # models_points = get_dd_models_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
+    # build_time_graph(time_points, "T-BDD", "Abs. BDD",
+    #                  "plots/ldd_randgen/abstr_bdd_vs_tbdd_time.png")
+    # build_size_graph(size_points, "T-BDD", "Abs. BDD",
+    #                  "plots/ldd_randgen/abstr_bdd_vs_tbdd_size.png")
+    # build_models_graph(models_points, "T-BDD", "Abs. BDD",
+    #                  "plots/ldd_randgen/abstr_bdd_vs_tbdd_models.png")
 
-    time_points = get_time_points(
-        ldd_randgen_sdds_points, ldd_randgen_abstraction_sdd_points)
-    size_points = get_nodes_points(
-        ldd_randgen_sdds_points, ldd_randgen_abstraction_sdd_points)
-    build_time_graph(time_points, "T-SDD", "Abs. SDD",
-                     "plots/ldd_randgen/abstr_sdd_vs_tsdd_time.png")
-    build_size_graph(size_points, "T-SDD", "Abs. SDD",
-                     "plots/ldd_randgen/abstr_sdd_vs_tsdd_size.png")
+    # time_points = get_time_points(
+    #     ldd_randgen_sdds_points, ldd_randgen_abstraction_sdd_points)
+    # size_points = get_nodes_points(
+    #     ldd_randgen_sdds_points, ldd_randgen_abstraction_sdd_points)
+    # build_time_graph(time_points, "T-SDD", "Abs. SDD",
+    #                  "plots/ldd_randgen/abstr_sdd_vs_tsdd_time.png")
+    # build_size_graph(size_points, "T-SDD", "Abs. SDD",
+    #                  "plots/ldd_randgen/abstr_sdd_vs_tsdd_size.png")
 
-    time_points = get_dd_time_points(
-        ldd_randgen_bdds_points, ldd_randgen_bdds_newgen_points)
-    size_points = get_nodes_points(
-        ldd_randgen_bdds_points, ldd_randgen_bdds_newgen_points)
-    models_points = get_dd_models_points(
-        ldd_randgen_bdds_points, ldd_randgen_bdds_newgen_points)
-    build_time_graph(time_points, "Old DD", "New DD",
-                     "plots/ldd_randgen/old_vs_new_dd_time.png")
-    build_size_graph(size_points, "Old DD", "New DD",
-                     "plots/ldd_randgen/old_vs_new_dd_size.png")
-    build_models_graph(models_points, "Old DD", "New DD",
-                       "plots/ldd_randgen/old_vs_new_dd_models.png")
+    # time_points = get_dd_time_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_bdds_newgen_points)
+    # size_points = get_nodes_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_bdds_newgen_points)
+    # models_points = get_dd_models_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_bdds_newgen_points)
+    # build_time_graph(time_points, "Old DD", "New DD",
+    #                  "plots/ldd_randgen/old_vs_new_dd_time.png")
+    # build_size_graph(size_points, "Old DD", "New DD",
+    #                  "plots/ldd_randgen/old_vs_new_dd_size.png")
+    # build_models_graph(models_points, "Old DD", "New DD",
+    #                    "plots/ldd_randgen/old_vs_new_dd_models.png")
 
     # --------------------------------------------------------------
     # RANDGEN
@@ -567,10 +590,14 @@ def main() -> None:
     #     randgen_bdds_points, randgen_abstraction_bdd_points)
     # size_points = get_nodes_points(
     #     randgen_bdds_points, randgen_abstraction_bdd_points)
+    # models_points = get_dd_models_points(
+    #     randgen_bdds_points, randgen_abstraction_bdd_points)
     # build_time_graph(time_points, "T-BDD", "Abs. BDD",
     #                  "plots/randgen/abstr_bdd_vs_tbdd_time.png")
     # build_size_graph(size_points, "T-BDD", "Abs. BDD",
     #                  "plots/randgen/abstr_bdd_vs_tbdd_size.png")
+    # build_models_graph(models_points, "T-BDD", "Abs. BDD",
+    #                  "plots/randgen/abstr_bdd_vs_tbdd_models.png")
     # time_points = get_time_points(
     #     randgen_sdds_points, randgen_abstraction_sdd_points)
     # size_points = get_nodes_points(
@@ -604,16 +631,20 @@ def main() -> None:
     #                  "plots/smtlib/QF_RDL/ldd_vs_tbdd_time.png")
     # build_size_graph(size_points, "T-BDD", "LDD",
     #                  "plots/smtlib/QF_RDL/ldd_vs_tbdd_size.png")
-    # build_models_graph(size_points, "T-BDD", "LDD",
+    # build_models_graph(models_points, "T-BDD", "LDD",
     #                    "plots/smtlib/QF_RDL/ldd_vs_tbdd_models.png")
     # time_points = get_time_points(
     #     qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
     # size_points = get_nodes_points(
     #     qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
+    # models_points = get_dd_models_points(
+    #     qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
     # build_time_graph(time_points, "T-BDD", "Abs. BDD",
     #                  "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_time.png")
     # build_size_graph(size_points, "T-BDD", "Abs. BDD",
     #                  "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_size.png")
+    # build_models_graph(models_points, "T-BDD", "Abs. BDD",
+    #                  "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_models.png")
     # time_points = get_time_points(
     #     qfrdl_sdds_points, qfrdl_abstraction_sdd_points)
     # size_points = get_nodes_points(
