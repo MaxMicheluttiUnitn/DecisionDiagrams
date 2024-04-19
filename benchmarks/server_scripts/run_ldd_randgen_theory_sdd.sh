@@ -2,7 +2,7 @@
 
 mkdir ./benchmarks/ldd_randgen/output_sdd
 
-for gen in ./benchmarks/randgen/data/*
+for gen in ./benchmarks/ldd_randgen/data/*
 do
 	outputgen="${gen/data/output_sdd}"
 	tmpgen="${gen/data/tmp}"
