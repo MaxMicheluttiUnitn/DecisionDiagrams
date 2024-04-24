@@ -8,19 +8,14 @@ from dataclasses import dataclass
 from typing import List, Tuple
 import matplotlib.pyplot as plt
 
-# font = {'family' : 'normal',
-#         'size'   : 16}
-
-# plt.rc('font', **font)
-
 TITLE_SIZE = 20
 TICK_SIZE = 14
 AXES_LABEL_SIZE = 20
 
-plt.rc('font', size=AXES_LABEL_SIZE)          # controls default text sizes
-plt.rc('axes', titlesize=TITLE_SIZE)     # fontsize of the axes title
+plt.rc('font', size=AXES_LABEL_SIZE)
+plt.rc('axes', titlesize=TITLE_SIZE)
 plt.rc('xtick', labelsize=TICK_SIZE)
-plt.rc('ytick', labelsize=TICK_SIZE) 
+plt.rc('ytick', labelsize=TICK_SIZE)
 
 
 class DataSource(Enum):
@@ -198,7 +193,7 @@ def get_time_points(
     """translate data into plottable points comparing time"""
     theory_points = copy.deepcopy(theory_points)
     abstraction_points = copy.deepcopy(abstraction_points)
-    
+
     theory_list = []
     abstraction_list = []
     max_theory = theory_points[0].computation_time
@@ -235,7 +230,7 @@ def get_allsmt_time_points(
     """translate data into plottable points comparing all SMT time"""
     theory_points = copy.deepcopy(theory_points)
     abstraction_points = copy.deepcopy(abstraction_points)
-    
+
     theory_list = []
     abstraction_list = []
     max_theory = theory_points[0].all_smt_time
@@ -272,7 +267,7 @@ def get_dd_time_points(
     """translate data into plottable points comparing all SMT time"""
     theory_points = copy.deepcopy(theory_points)
     abstraction_points = copy.deepcopy(abstraction_points)
-    
+
     theory_list = []
     abstraction_list = []
     max_theory = theory_points[0].dd_time
@@ -309,7 +304,7 @@ def get_nodes_points(
     """translate data into plottable points comparing DD size in nodes"""
     theory_points = copy.deepcopy(theory_points)
     abstraction_points = copy.deepcopy(abstraction_points)
-    
+
     theory_list = []
     abstraction_list = []
     max_theory = theory_points[0].dd_nodes
@@ -322,7 +317,7 @@ def get_nodes_points(
         if a_p.dd_nodes > max_abstraction:
             max_abstraction = a_p.dd_nodes
 
-    edge = max(max_theory, max_abstraction) * 10
+    edge = max(max_theory, max_abstraction) * 2
 
     for t_p in theory_points:
         if t_p.timeout:
@@ -387,11 +382,11 @@ def get_dd_models_points(
                 #     print(t_p.title)
                 # if a_p.dd_models > 10**30:
                 #     print(a_p.title)
-                if(a_p.dd_models > 0):
-                    print(1-t_p.dd_models/a_p.dd_models)
-                else:
-                    print(t_p.dd_models, a_p.dd_models)
-                    print(t_p.title)
+                # if(a_p.dd_models > 0):
+                #     print(1-t_p.dd_models/a_p.dd_models)
+                # else:
+                #     print(t_p.dd_models, a_p.dd_models)
+                #     print(t_p.title)
                 theory_list.append(t_p.dd_models)
                 abstraction_list.append(a_p.dd_models)
                 break
@@ -411,12 +406,20 @@ def build_time_graph(time_points, x_label: str, y_label: str, file: str | None =
     plt.scatter(time_points[0], time_points[1], marker='x')
     plt.xlabel(x_label)
     plt.ylabel(y_label)
-    plt.title("Computation Time")
+    # plt.title("Computation Time")
     ax = plt.gca()
     ax.set_yscale('log')
     ax.set_xscale('log')
     ax.set_aspect('equal', adjustable='box')
-    diag_line, = ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".3")
+    diag_line, = ax.plot(ax.get_xlim(), ax.get_ylim(), ls=":", c=".3")
+
+    multiplier = 0.001
+    while multiplier < time_points[2]:
+        plt.plot([0.0001, time_points[2]], [multiplier, time_points[2]
+                 * multiplier*10000], 'r-', ls=":", c=".3", alpha=0.2)
+        plt.plot([multiplier, time_points[2]*multiplier*10000],
+                 [0.0001, time_points[2]], 'r-', ls=":", c=".3", alpha=0.2)
+        multiplier = multiplier*10
 
     def on_change_time(_axes):
         x_lims = ax.get_xlim()
@@ -440,12 +443,20 @@ def build_size_graph(size_points, x_label: str, y_label: str, file: str | None =
     plt.scatter(size_points[0], size_points[1], marker='x')
     plt.xlabel(x_label)
     plt.ylabel(y_label)
-    plt.title("DD size in nodes")
+    # plt.title("DD size in nodes")
     ax = plt.gca()
     ax.set_yscale('log')
     ax.set_xscale('log')
     ax.set_aspect('equal', adjustable='box')
-    diag_line, = ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".3")
+    diag_line, = ax.plot(ax.get_xlim(), ax.get_ylim(), ls=":", c=".3")
+
+    multiplier = 10
+    while multiplier < size_points[2]:
+        plt.plot([1, size_points[2]], [multiplier, size_points[2]
+                 * multiplier], 'r-', ls=":", c=".3", alpha=0.2)
+        plt.plot([multiplier, size_points[2]*multiplier],
+                 [1, size_points[2]], 'r-', ls=":", c=".3", alpha=0.2)
+        multiplier = multiplier*10
 
     def on_change(_axes):
         x_lims = ax.get_xlim()
@@ -456,8 +467,8 @@ def build_size_graph(size_points, x_label: str, y_label: str, file: str | None =
     # plt.axis('square')
     # plt.axvline(x=size_points[2], ls="--", c=".3")
     # plt.axhline(y=size_points[2], ls="--", c=".3")
-    plt.xlim((1, size_points[2]*10))
-    plt.ylim((1, size_points[2]*10))
+    plt.xlim((1, size_points[2]))
+    plt.ylim((1, size_points[2]))
 
     if file is not None:
         plt.savefig(file, bbox_inches='tight')
@@ -470,12 +481,20 @@ def build_models_graph(points, x_label: str, y_label: str, file: str | None = No
     plt.xlabel(x_label)
     plt.ylabel(y_label)
 
-    plt.title("DD amount of models")
+    # plt.title("DD amount of models")
     ax = plt.gca()
     ax.set_yscale('log')
     ax.set_xscale('log')
     ax.set_aspect('equal', adjustable='box')
-    diag_line, = ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", c=".3")
+    diag_line, = ax.plot(ax.get_xlim(), ax.get_ylim(), ls=":", c=".3")
+
+    multiplier = 1000
+    while multiplier < points[2]:
+        plt.plot([1, points[2]], [multiplier, points[2]*multiplier],
+                 'r-', ls=":", c=".3", alpha=0.2)
+        plt.plot([multiplier, points[2]*multiplier],
+                 [1, points[2]], 'r-', ls=":", c=".3", alpha=0.2)
+        multiplier = multiplier*1000
 
     def on_change(_axes):
         x_lims = ax.get_xlim()
@@ -515,11 +534,11 @@ def main() -> None:
         wmi_bdds_points, wmi_abstraction_bdd_points)
     models_points = get_dd_models_points(
         wmi_bdds_points, wmi_abstraction_bdd_points)
-    build_time_graph(time_points, "T-BDD", "Abs. BDD",
+    build_time_graph(time_points, "T-OBDD", "Abs. BDD",
                      "plots/wmi/abstr_bdd_vs_tbdd_time.pdf")
-    build_size_graph(size_points, "T-BDD", "Abs. BDD",
+    build_size_graph(size_points, "T-OBDD", "Abs. BDD",
                      "plots/wmi/abstr_bdd_vs_tbdd_size.pdf")
-    build_models_graph(models_points, "T-BDD", "Abs. BDD",
+    build_models_graph(models_points, "T-OBDD", "Abs. BDD",
                        "plots/wmi/abstr_bdd_vs_tbdd_models.pdf")
 
     print("WMI SDD graphs")
@@ -538,19 +557,24 @@ def main() -> None:
     ldd_randgen_ldds_points = get_ldd_randgen_bench_data(
         "LDD", "benchmarks/ldd_randgen/output_ldd")
     print(len(ldd_randgen_ldds_points))
-    print("Timeouts of LDDs on LDD randgen: ",len(list(filter(lambda x: x.timeout,ldd_randgen_ldds_points))))
+    print("Timeouts of LDDs on LDD randgen: ", len(
+        list(filter(lambda x: x.timeout, ldd_randgen_ldds_points))))
     ldd_randgen_bdds_points = get_ldd_randgen_bench_data(
         "T-BDD", "benchmarks/ldd_randgen/output")
-    print("Timeouts of T-BDDs on LDD randgen: ",len(list(filter(lambda x: x.timeout,ldd_randgen_bdds_points))))
+    print("Timeouts of T-BDDs on LDD randgen: ",
+          len(list(filter(lambda x: x.timeout, ldd_randgen_bdds_points))))
     ldd_randgen_abstraction_bdd_points = get_ldd_randgen_bench_data(
         "Abstraction BDD", "benchmarks/ldd_randgen/output_abstraction")
-    print("Timeouts of Abs-BDDs on LDD randgen: ",len(list(filter(lambda x: x.timeout,ldd_randgen_abstraction_bdd_points))))
+    print("Timeouts of Abs-BDDs on LDD randgen: ",
+          len(list(filter(lambda x: x.timeout, ldd_randgen_abstraction_bdd_points))))
     ldd_randgen_sdds_points = get_ldd_randgen_bench_data(
         "T-SDD", "benchmarks/ldd_randgen/output_sdd")
-    print("Timeouts of T-SDDs on LDD randgen: ",len(list(filter(lambda x: x.timeout,ldd_randgen_sdds_points))))
+    print("Timeouts of T-SDDs on LDD randgen: ",
+          len(list(filter(lambda x: x.timeout, ldd_randgen_sdds_points))))
     ldd_randgen_abstraction_sdd_points = get_ldd_randgen_bench_data(
         "Abstraction SDD", "benchmarks/ldd_randgen/output_abstraction_sdd")
-    print("Timeouts of Abs-SDDs on LDD randgen: ",len(list(filter(lambda x: x.timeout,ldd_randgen_abstraction_sdd_points))))
+    print("Timeouts of Abs-SDDs on LDD randgen: ",
+          len(list(filter(lambda x: x.timeout, ldd_randgen_abstraction_sdd_points))))
     ldd_randgen_bdds_newgen_points = get_ldd_randgen_bench_data(
         "T-BDD", "benchmarks/ldd_randgen/output_newddgen")
 
@@ -561,11 +585,11 @@ def main() -> None:
         ldd_randgen_bdds_points, ldd_randgen_ldds_points)
     models_points = get_dd_models_points(
         ldd_randgen_bdds_points, ldd_randgen_ldds_points)
-    build_time_graph(time_points, "T-BDD", "LDD",
+    build_time_graph(time_points, "T-OBDD", "LDD",
                      "plots/ldd_randgen/ldd_vs_tbdd_time.pdf")
-    build_size_graph(size_points, "T-BDD", "LDD",
+    build_size_graph(size_points, "T-OBDD", "LDD",
                      "plots/ldd_randgen/ldd_vs_tbdd_size.pdf")
-    build_models_graph(models_points, "T-BDD", "LDD",
+    build_models_graph(models_points, "T-OBDD", "LDD",
                        "plots/ldd_randgen/ldd_vs_tbdd_models.pdf")
 
     print("LDD randgen BDD graphs")
@@ -575,12 +599,12 @@ def main() -> None:
         ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
     models_points = get_dd_models_points(
         ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
-    build_time_graph(time_points, "T-BDD", "Abs. BDD",
+    build_time_graph(time_points, "T-OBDD", "Abs. BDD",
                      "plots/ldd_randgen/abstr_bdd_vs_tbdd_time.pdf")
-    build_size_graph(size_points, "T-BDD", "Abs. BDD",
+    build_size_graph(size_points, "T-OBDD", "Abs. BDD",
                      "plots/ldd_randgen/abstr_bdd_vs_tbdd_size.pdf")
-    build_models_graph(models_points, "T-BDD", "Abs. BDD",
-                     "plots/ldd_randgen/abstr_bdd_vs_tbdd_models.pdf")
+    build_models_graph(models_points, "T-OBDD", "Abs. BDD",
+                       "plots/ldd_randgen/abstr_bdd_vs_tbdd_models.pdf")
 
     print("LDD randgen SDD graphs")
     time_points = get_time_points(
@@ -612,16 +636,20 @@ def main() -> None:
     randgen_bdds_points = get_randgen_bench_data(
         "T-BDD", "benchmarks/randgen/output_tsetsin")
     print(len(randgen_bdds_points))
-    print("Timeouts of T-BDDs on randgen: ",len(list(filter(lambda x: x.timeout,randgen_bdds_points))))
+    print("Timeouts of T-BDDs on randgen: ",
+          len(list(filter(lambda x: x.timeout, randgen_bdds_points))))
     randgen_abstraction_bdd_points = get_randgen_bench_data(
         "Abstraction BDD", "benchmarks/randgen/output_abstraction")
-    print("Timeouts of Abs-BDDs on randgen: ",len(list(filter(lambda x: x.timeout,randgen_abstraction_bdd_points))))
+    print("Timeouts of Abs-BDDs on randgen: ",
+          len(list(filter(lambda x: x.timeout, randgen_abstraction_bdd_points))))
     randgen_sdds_points = get_randgen_bench_data(
         "T-SDD", "benchmarks/randgen/output_sdd")
-    print("Timeouts of T-SDDs on randgen: ",len(list(filter(lambda x: x.timeout,randgen_sdds_points))))
+    print("Timeouts of T-SDDs on randgen: ",
+          len(list(filter(lambda x: x.timeout, randgen_sdds_points))))
     randgen_abstraction_sdd_points = get_randgen_bench_data(
         "Abstraction SDD", "benchmarks/randgen/output_abstraction_sdd")
-    print("Timeouts of Abs-SDDs on randgen: ",len(list(filter(lambda x: x.timeout,randgen_abstraction_sdd_points))))
+    print("Timeouts of Abs-SDDs on randgen: ",
+          len(list(filter(lambda x: x.timeout, randgen_abstraction_sdd_points))))
 
     print("randgen BDD graphs")
     time_points = get_time_points(
@@ -630,13 +658,13 @@ def main() -> None:
         randgen_bdds_points, randgen_abstraction_bdd_points)
     models_points = get_dd_models_points(
         randgen_bdds_points, randgen_abstraction_bdd_points)
-    build_time_graph(time_points, "T-BDD", "Abs. BDD",
+    build_time_graph(time_points, "T-OBDD", "Abs. BDD",
                      "plots/randgen/abstr_bdd_vs_tbdd_time.pdf")
-    build_size_graph(size_points, "T-BDD", "Abs. BDD",
+    build_size_graph(size_points, "T-OBDD", "Abs. BDD",
                      "plots/randgen/abstr_bdd_vs_tbdd_size.pdf")
     build_models_graph(models_points, "T-BDD", "Abs. BDD",
-                     "plots/randgen/abstr_bdd_vs_tbdd_models.pdf")
-    
+                       "plots/randgen/abstr_bdd_vs_tbdd_models.pdf")
+
     print("randgen SDD graphs")
     time_points = get_time_points(
         randgen_sdds_points, randgen_abstraction_sdd_points)
@@ -653,19 +681,24 @@ def main() -> None:
     qfrdl_ldds_points = get_smtlib_bench_data(
         "LDD", "benchmarks/smtlib/output_ldd/non-incremental/QF_RDL")
     print(len(qfrdl_ldds_points))
-    print("Timeouts of LDDs on smtlib QF RDL: ",len(list(filter(lambda x: x.timeout,qfrdl_ldds_points))))
+    print("Timeouts of LDDs on smtlib QF RDL: ", len(
+        list(filter(lambda x: x.timeout, qfrdl_ldds_points))))
     qfrdl_bdds_points = get_smtlib_bench_data(
         "T-BDD", "benchmarks/smtlib/output_bdd/non-incremental/QF_RDL")
-    print("Timeouts of T-BDDs on smtlib QF RDL: ",len(list(filter(lambda x: x.timeout,qfrdl_bdds_points))))
+    print("Timeouts of T-BDDs on smtlib QF RDL: ",
+          len(list(filter(lambda x: x.timeout, qfrdl_bdds_points))))
     qfrdl_abstraction_bdd_points = get_smtlib_bench_data(
         "Abstraction BDD", "benchmarks/smtlib/output_abstraction_bdd/non-incremental/QF_RDL")
-    print("Timeouts of Abs-BDDs on smtlib QF RDL: ",len(list(filter(lambda x: x.timeout,qfrdl_abstraction_bdd_points))))
+    print("Timeouts of Abs-BDDs on smtlib QF RDL: ",
+          len(list(filter(lambda x: x.timeout, qfrdl_abstraction_bdd_points))))
     qfrdl_sdds_points = get_smtlib_bench_data(
         "T-SDD", "benchmarks/smtlib/output_sdd/non-incremental/QF_RDL")
-    print("Timeouts of T-SDDs on smtlib QF RDL: ",len(list(filter(lambda x: x.timeout,qfrdl_sdds_points))))
+    print("Timeouts of T-SDDs on smtlib QF RDL: ",
+          len(list(filter(lambda x: x.timeout, qfrdl_sdds_points))))
     qfrdl_abstraction_sdd_points = get_smtlib_bench_data(
         "Abstraction SDD", "benchmarks/smtlib/output_abstraction_sdd/non-incremental/QF_RDL")
-    print("Timeouts of Abs-SDDs on smtlib QF RDL: ",len(list(filter(lambda x: x.timeout,qfrdl_abstraction_sdd_points))))
+    print("Timeouts of Abs-SDDs on smtlib QF RDL: ",
+          len(list(filter(lambda x: x.timeout, qfrdl_abstraction_sdd_points))))
 
     print("QF RDL LDD vs BDD graphs")
     time_points = get_time_points(
@@ -674,13 +707,13 @@ def main() -> None:
         qfrdl_bdds_points, qfrdl_ldds_points)
     models_points = get_dd_models_points(
         qfrdl_bdds_points, qfrdl_ldds_points)
-    build_time_graph(time_points, "T-BDD", "LDD",
+    build_time_graph(time_points, "T-OBDD", "LDD",
                      "plots/smtlib/QF_RDL/ldd_vs_tbdd_time.pdf")
-    build_size_graph(size_points, "T-BDD", "LDD",
+    build_size_graph(size_points, "T-OBDD", "LDD",
                      "plots/smtlib/QF_RDL/ldd_vs_tbdd_size.pdf")
-    build_models_graph(models_points, "T-BDD", "LDD",
+    build_models_graph(models_points, "T-OBDD", "LDD",
                        "plots/smtlib/QF_RDL/ldd_vs_tbdd_models.pdf")
-    
+
     print("QF RDL BDD graphs")
     time_points = get_time_points(
         qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
@@ -688,13 +721,13 @@ def main() -> None:
         qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
     models_points = get_dd_models_points(
         qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
-    build_time_graph(time_points, "T-BDD", "Abs. BDD",
+    build_time_graph(time_points, "T-OBDD", "Abs. BDD",
                      "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_time.pdf")
-    build_size_graph(size_points, "T-BDD", "Abs. BDD",
+    build_size_graph(size_points, "T-OBDD", "Abs. BDD",
                      "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_size.pdf")
-    build_models_graph(models_points, "T-BDD", "Abs. BDD",
-                     "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_models.pdf")
-    
+    build_models_graph(models_points, "T-OBDD", "Abs. BDD",
+                       "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_models.pdf")
+
     print("QF RDL SDD graphs")
     time_points = get_time_points(
         qfrdl_sdds_points, qfrdl_abstraction_sdd_points)
