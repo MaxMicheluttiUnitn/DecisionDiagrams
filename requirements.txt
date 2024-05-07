@@ -1,1 +1,2 @@
 theorydd @ git+https://github.com/MaxMicheluttiUnitn/TheoryConsistentDecisionDiagrams@two_phase_dd
+allsat_cnf @ git+https://github.com/masinag/allsat-cnf@main
