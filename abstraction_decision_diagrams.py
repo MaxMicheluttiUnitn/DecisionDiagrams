@@ -2,12 +2,33 @@
 import time
 from typing import Dict
 
+from pysmt.shortcuts import write_smtlib
+
 from theorydd.theory_ldd import TheoryLDD
 from theorydd.theory_xsdd import TheoryXSDD
 from theorydd.abstraction_bdd import AbstractionBDD
 from theorydd.abstraction_sdd import AbstractionSDD
 
 from commands import Options
+from pysmt_c2d_middleware import compile_dDNNF
+
+def abstr_ddnnf(phi, args: Options, logger: Dict):
+    """abstraction dDNNF"""
+    # ABSTRACTION dDNNF
+    start_time = time.time()
+    logger["Abstraction dDNNF"] = {}
+    if args.verbose:
+        print("Abstraction dDNNF computation starting...")
+    abs_ddnnf = compile_dDNNF(phi)
+    if args.abstraction_dDNNF_output is not None:
+        write_smtlib(abs_ddnnf,args.abstraction_dDNNF_output)
+    del abs_ddnnf
+
+    elapsed_time = time.time() - start_time
+    logger["Abstraction dDNNF"]["total computation time"] = elapsed_time
+    if args.verbose:
+        print("Abstraction dDNNF computation completed in ",
+              elapsed_time, " seconds")
 
 
 def abstr_bdd(phi, args: Options, logger: Dict):
@@ -119,7 +140,6 @@ def ldd(phi, args: Options, logger: Dict):
     logger["LDD"]["total DD computation time"] = elapsed_time
     if args.verbose:
         print("LDD computation completed in ", elapsed_time, " seconds")
-
 
 def xsdd(phi, args: Options, logger: Dict):
     """xsdd"""

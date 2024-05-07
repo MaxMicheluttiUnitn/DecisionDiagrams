@@ -37,6 +37,9 @@ def get_phi(args: Options, logger: Dict) -> FNode:
 
 def do_pure_abstraction(phi: FNode, args: Options, logger: Dict) -> None:
     """DO ALL FUNCTIONS THAT DO NOT REQUIRE All-SMT to be computed"""
+    # ABSTRACTION dDNNF
+    if args.abstraction_dDNNF:
+        add.abstr_ddnnf(phi,args,logger)
     # ABSTRACTION BDD
     if args.abstraction_bdd:
         add.abstr_bdd(phi, args, logger)
@@ -77,7 +80,7 @@ def get_solver(args: Options) -> SMTSolver | PartialSMTSolver:
 
 def is_smt_phase_necessary(args: Options):
     """checks if the user necessitates to do the all-SMT phase"""
-    return args.save_lemmas or args.tsdd or args.tbdd or args.print_lemmas or args.print_models
+    return args.save_lemmas or args.tsdd or args.tbdd or args.print_lemmas or args.print_models or args.tdDNNF
 
 
 def smt_phase(phi: FNode, args: Options, logger: Dict):
@@ -136,6 +139,10 @@ def smt_phase(phi: FNode, args: Options, logger: Dict):
                 formula.save_phi(tlemmas[0], args.save_lemmas)
             else:
                 formula.save_phi(formula.top(), args.save_lemmas)
+
+    # T-dDNNF
+    if args.tdDNNF:
+        tdd.theory_ddnnf(phi,args,logger,smt_solver,tlemmas)
 
     # T-BDD
     if args.tbdd:
