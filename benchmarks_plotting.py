@@ -518,38 +518,38 @@ def main() -> None:
     # --------------------------------------------------------------
     # WMI
 
-    wmi_bdds_points = get_wmi_bench_data(
-        "BDD", "benchmarks/wmi/output")
-    wmi_abstraction_bdd_points = get_wmi_bench_data(
-        "BDD", "benchmarks/wmi/output_abstraction")
-    wmi_sdds_points = get_wmi_bench_data(
-        "SDD", "benchmarks/wmi/output_sdd")
-    wmi_abstraction_sdd_points = get_wmi_bench_data(
-        "SDD", "benchmarks/wmi/output_abstraction_sdd")
+    # wmi_bdds_points = get_wmi_bench_data(
+    #     "BDD", "benchmarks/wmi/output")
+    # wmi_abstraction_bdd_points = get_wmi_bench_data(
+    #     "BDD", "benchmarks/wmi/output_abstraction")
+    # wmi_sdds_points = get_wmi_bench_data(
+    #     "SDD", "benchmarks/wmi/output_sdd")
+    # wmi_abstraction_sdd_points = get_wmi_bench_data(
+    #     "SDD", "benchmarks/wmi/output_abstraction_sdd")
 
-    print("WMI BDD graphs")
-    time_points = get_time_points(
-        wmi_bdds_points, wmi_abstraction_bdd_points)
-    size_points = get_nodes_points(
-        wmi_bdds_points, wmi_abstraction_bdd_points)
-    models_points = get_dd_models_points(
-        wmi_bdds_points, wmi_abstraction_bdd_points)
-    build_time_graph(time_points, "T-OBDD", "Abs. BDD",
-                     "plots/wmi/abstr_bdd_vs_tbdd_time.pdf")
-    build_size_graph(size_points, "T-OBDD", "Abs. BDD",
-                     "plots/wmi/abstr_bdd_vs_tbdd_size.pdf")
-    build_models_graph(models_points, "T-OBDD", "Abs. BDD",
-                       "plots/wmi/abstr_bdd_vs_tbdd_models.pdf")
+    # print("WMI BDD graphs")
+    # time_points = get_time_points(
+    #     wmi_bdds_points, wmi_abstraction_bdd_points)
+    # size_points = get_nodes_points(
+    #     wmi_bdds_points, wmi_abstraction_bdd_points)
+    # models_points = get_dd_models_points(
+    #     wmi_bdds_points, wmi_abstraction_bdd_points)
+    # build_time_graph(time_points, "T-OBDD", "Abs. BDD",
+    #                  "plots/wmi/abstr_bdd_vs_tbdd_time.pdf")
+    # build_size_graph(size_points, "T-OBDD", "Abs. BDD",
+    #                  "plots/wmi/abstr_bdd_vs_tbdd_size.pdf")
+    # build_models_graph(models_points, "T-OBDD", "Abs. BDD",
+    #                    "plots/wmi/abstr_bdd_vs_tbdd_models.pdf")
 
-    print("WMI SDD graphs")
-    time_points = get_time_points(
-        wmi_sdds_points, wmi_abstraction_sdd_points)
-    size_points = get_nodes_points(
-        wmi_sdds_points, wmi_abstraction_sdd_points)
-    build_time_graph(time_points, "T-SDD", "Abs. SDD",
-                     "plots/wmi/abstr_sdd_vs_tsdd_time.pdf")
-    build_size_graph(size_points, "T-SDD", "Abs. SDD",
-                     "plots/wmi/abstr_sdd_vs_tsdd_size.pdf")
+    # print("WMI SDD graphs")
+    # time_points = get_time_points(
+    #     wmi_sdds_points, wmi_abstraction_sdd_points)
+    # size_points = get_nodes_points(
+    #     wmi_sdds_points, wmi_abstraction_sdd_points)
+    # build_time_graph(time_points, "T-SDD", "Abs. SDD",
+    #                  "plots/wmi/abstr_sdd_vs_tsdd_time.pdf")
+    # build_size_graph(size_points, "T-SDD", "Abs. SDD",
+    #                  "plots/wmi/abstr_sdd_vs_tsdd_size.pdf")
 
     # --------------------------------------------------------------
     # LDD RANDGEN
@@ -575,60 +575,75 @@ def main() -> None:
         "Abstraction SDD", "benchmarks/ldd_randgen/output_abstraction_sdd")
     print("Timeouts of Abs-SDDs on LDD randgen: ",
           len(list(filter(lambda x: x.timeout, ldd_randgen_abstraction_sdd_points))))
-    ldd_randgen_bdds_newgen_points = get_ldd_randgen_bench_data(
-        "T-BDD", "benchmarks/ldd_randgen/output_newddgen")
+    # ldd_randgen_bdds_newgen_points = get_ldd_randgen_bench_data(
+    #     "T-BDD", "benchmarks/ldd_randgen/output_newddgen")
+    ldd_randgen_bdds_points_noeqsplit = get_ldd_randgen_bench_data(
+        "T-BDD", "benchmarks/ldd_randgen/output")
+    print("Timeouts of T-BDDs on LDD randgen (no eq split): ",
+          len(list(filter(lambda x: x.timeout, ldd_randgen_bdds_points_noeqsplit))))
 
-    print("LDD randgen LDD vs BDD graphs")
+    # print("LDD randgen LDD vs BDD graphs")
+    # time_points = get_time_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_ldds_points)
+    # size_points = get_nodes_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_ldds_points)
+    # models_points = get_dd_models_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_ldds_points)
+    # build_time_graph(time_points, "T-OBDD", "LDD",
+    #                  "plots/ldd_randgen/ldd_vs_tbdd_time.pdf")
+    # build_size_graph(size_points, "T-OBDD", "LDD",
+    #                  "plots/ldd_randgen/ldd_vs_tbdd_size.pdf")
+    # build_models_graph(models_points, "T-OBDD", "LDD",
+    #                    "plots/ldd_randgen/ldd_vs_tbdd_models.pdf")
+
+    print("LDD randgen BDD no eq graphs")
     time_points = get_time_points(
-        ldd_randgen_bdds_points, ldd_randgen_ldds_points)
+        ldd_randgen_bdds_points, ldd_randgen_bdds_points_noeqsplit)
     size_points = get_nodes_points(
-        ldd_randgen_bdds_points, ldd_randgen_ldds_points)
+        ldd_randgen_bdds_points, ldd_randgen_bdds_points_noeqsplit)
     models_points = get_dd_models_points(
-        ldd_randgen_bdds_points, ldd_randgen_ldds_points)
-    build_time_graph(time_points, "T-OBDD", "LDD",
-                     "plots/ldd_randgen/ldd_vs_tbdd_time.pdf")
-    build_size_graph(size_points, "T-OBDD", "LDD",
-                     "plots/ldd_randgen/ldd_vs_tbdd_size.pdf")
-    build_models_graph(models_points, "T-OBDD", "LDD",
-                       "plots/ldd_randgen/ldd_vs_tbdd_models.pdf")
+        ldd_randgen_bdds_points, ldd_randgen_bdds_points_noeqsplit)
+    build_time_graph(time_points, "NO Opt", "Opt")
+    build_size_graph(size_points, "NO Opt", "Opt")
+    build_models_graph(models_points, "NO Opt", "Opt")
 
-    print("LDD randgen BDD graphs")
-    time_points = get_time_points(
-        ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
-    size_points = get_nodes_points(
-        ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
-    models_points = get_dd_models_points(
-        ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
-    build_time_graph(time_points, "T-OBDD", "Abs. BDD",
-                     "plots/ldd_randgen/abstr_bdd_vs_tbdd_time.pdf")
-    build_size_graph(size_points, "T-OBDD", "Abs. BDD",
-                     "plots/ldd_randgen/abstr_bdd_vs_tbdd_size.pdf")
-    build_models_graph(models_points, "T-OBDD", "Abs. BDD",
-                       "plots/ldd_randgen/abstr_bdd_vs_tbdd_models.pdf")
+    # print("LDD randgen BDD graphs")
+    # time_points = get_time_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
+    # size_points = get_nodes_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
+    # models_points = get_dd_models_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_abstraction_bdd_points)
+    # build_time_graph(time_points, "T-OBDD", "Abs. BDD",
+    #                  "plots/ldd_randgen/abstr_bdd_vs_tbdd_time.pdf")
+    # build_size_graph(size_points, "T-OBDD", "Abs. BDD",
+    #                  "plots/ldd_randgen/abstr_bdd_vs_tbdd_size.pdf")
+    # build_models_graph(models_points, "T-OBDD", "Abs. BDD",
+    #                    "plots/ldd_randgen/abstr_bdd_vs_tbdd_models.pdf")
 
-    print("LDD randgen SDD graphs")
-    time_points = get_time_points(
-        ldd_randgen_sdds_points, ldd_randgen_abstraction_sdd_points)
-    size_points = get_nodes_points(
-        ldd_randgen_sdds_points, ldd_randgen_abstraction_sdd_points)
-    build_time_graph(time_points, "T-SDD", "Abs. SDD",
-                     "plots/ldd_randgen/abstr_sdd_vs_tsdd_time.pdf")
-    build_size_graph(size_points, "T-SDD", "Abs. SDD",
-                     "plots/ldd_randgen/abstr_sdd_vs_tsdd_size.pdf")
+    # print("LDD randgen SDD graphs")
+    # time_points = get_time_points(
+    #     ldd_randgen_sdds_points, ldd_randgen_abstraction_sdd_points)
+    # size_points = get_nodes_points(
+    #     ldd_randgen_sdds_points, ldd_randgen_abstraction_sdd_points)
+    # build_time_graph(time_points, "T-SDD", "Abs. SDD",
+    #                  "plots/ldd_randgen/abstr_sdd_vs_tsdd_time.pdf")
+    # build_size_graph(size_points, "T-SDD", "Abs. SDD",
+    #                  "plots/ldd_randgen/abstr_sdd_vs_tsdd_size.pdf")
 
-    print("LDD randgen DD gen graphs")
-    time_points = get_dd_time_points(
-        ldd_randgen_bdds_points, ldd_randgen_bdds_newgen_points)
-    size_points = get_nodes_points(
-        ldd_randgen_bdds_points, ldd_randgen_bdds_newgen_points)
-    models_points = get_dd_models_points(
-        ldd_randgen_bdds_points, ldd_randgen_bdds_newgen_points)
-    build_time_graph(time_points, "Old DD", "New DD",
-                     "plots/ldd_randgen/old_vs_new_dd_time.pdf")
-    build_size_graph(size_points, "Old DD", "New DD",
-                     "plots/ldd_randgen/old_vs_new_dd_size.pdf")
-    build_models_graph(models_points, "Old DD", "New DD",
-                       "plots/ldd_randgen/old_vs_new_dd_models.pdf")
+    # print("LDD randgen DD gen graphs")
+    # time_points = get_dd_time_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_bdds_newgen_points)
+    # size_points = get_nodes_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_bdds_newgen_points)
+    # models_points = get_dd_models_points(
+    #     ldd_randgen_bdds_points, ldd_randgen_bdds_newgen_points)
+    # build_time_graph(time_points, "Old DD", "New DD",
+    #                  "plots/ldd_randgen/old_vs_new_dd_time.pdf")
+    # build_size_graph(size_points, "Old DD", "New DD",
+    #                  "plots/ldd_randgen/old_vs_new_dd_size.pdf")
+    # build_models_graph(models_points, "Old DD", "New DD",
+    #                    "plots/ldd_randgen/old_vs_new_dd_models.pdf")
 
     # --------------------------------------------------------------
     # RANDGEN
@@ -650,93 +665,111 @@ def main() -> None:
         "Abstraction SDD", "benchmarks/randgen/output_abstraction_sdd")
     print("Timeouts of Abs-SDDs on randgen: ",
           len(list(filter(lambda x: x.timeout, randgen_abstraction_sdd_points))))
+    randgen_no_eqsplit_points = get_randgen_bench_data(
+        "T-BDD", "benchmarks/randgen/output_noeqsplit")
+    print("Timeouts of T-OBDDs on randgen no eq split: ",
+          len(list(filter(lambda x: x.timeout, randgen_no_eqsplit_points))))
+
+    # print("randgen BDD graphs")
+    # time_points = get_time_points(
+    #     randgen_bdds_points, randgen_abstraction_bdd_points)
+    # size_points = get_nodes_points(
+    #     randgen_bdds_points, randgen_abstraction_bdd_points)
+    # models_points = get_dd_models_points(
+    #     randgen_bdds_points, randgen_abstraction_bdd_points)
+    # build_time_graph(time_points, "T-OBDD", "Abs. BDD",
+    #                  "plots/randgen/abstr_bdd_vs_tbdd_time.pdf")
+    # build_size_graph(size_points, "T-OBDD", "Abs. BDD",
+    #                  "plots/randgen/abstr_bdd_vs_tbdd_size.pdf")
+    # build_models_graph(models_points, "T-BDD", "Abs. BDD",
+    #                    "plots/randgen/abstr_bdd_vs_tbdd_models.pdf")
 
     print("randgen BDD graphs")
     time_points = get_time_points(
-        randgen_bdds_points, randgen_abstraction_bdd_points)
+        randgen_bdds_points, randgen_no_eqsplit_points)
     size_points = get_nodes_points(
-        randgen_bdds_points, randgen_abstraction_bdd_points)
+        randgen_bdds_points, randgen_no_eqsplit_points)
     models_points = get_dd_models_points(
-        randgen_bdds_points, randgen_abstraction_bdd_points)
-    build_time_graph(time_points, "T-OBDD", "Abs. BDD",
-                     "plots/randgen/abstr_bdd_vs_tbdd_time.pdf")
-    build_size_graph(size_points, "T-OBDD", "Abs. BDD",
-                     "plots/randgen/abstr_bdd_vs_tbdd_size.pdf")
-    build_models_graph(models_points, "T-BDD", "Abs. BDD",
-                       "plots/randgen/abstr_bdd_vs_tbdd_models.pdf")
+        randgen_bdds_points, randgen_no_eqsplit_points)
+    allsmt_points = get_allsmt_time_points(
+        randgen_bdds_points, randgen_no_eqsplit_points)
+    build_time_graph(time_points, "No opt", "Opt")
+    build_size_graph(size_points, "No opt", "Opt")
+    build_models_graph(models_points, "No opt", "Opt")
+    build_time_graph(allsmt_points, "No opt", "Opt")
 
-    print("randgen SDD graphs")
-    time_points = get_time_points(
-        randgen_sdds_points, randgen_abstraction_sdd_points)
-    size_points = get_nodes_points(
-        randgen_sdds_points, randgen_abstraction_sdd_points)
-    build_time_graph(time_points, "T-SDD", "Abs. SDD",
-                     "plots/randgen/abstr_sdd_vs_tsdd_time.pdf")
-    build_size_graph(size_points, "T-SDD", "Abs. SDD",
-                     "plots/randgen/abstr_sdd_vs_tsdd_size.pdf")
+    # print("randgen SDD graphs")
+    # time_points = get_time_points(
+    #     randgen_sdds_points, randgen_abstraction_sdd_points)
+    # size_points = get_nodes_points(
+    #     randgen_sdds_points, randgen_abstraction_sdd_points)
+    # build_time_graph(time_points, "T-SDD", "Abs. SDD",
+    #                  "plots/randgen/abstr_sdd_vs_tsdd_time.pdf")
+    # build_size_graph(size_points, "T-SDD", "Abs. SDD",
+    #                  "plots/randgen/abstr_sdd_vs_tsdd_size.pdf")
 
     # --------------------------------------------------------------
     # SMTLIB QF RDL
 
-    qfrdl_ldds_points = get_smtlib_bench_data(
-        "LDD", "benchmarks/smtlib/output_ldd/non-incremental/QF_RDL")
-    print(len(qfrdl_ldds_points))
-    print("Timeouts of LDDs on smtlib QF RDL: ", len(
-        list(filter(lambda x: x.timeout, qfrdl_ldds_points))))
-    qfrdl_bdds_points = get_smtlib_bench_data(
-        "T-BDD", "benchmarks/smtlib/output_bdd/non-incremental/QF_RDL")
-    print("Timeouts of T-BDDs on smtlib QF RDL: ",
-          len(list(filter(lambda x: x.timeout, qfrdl_bdds_points))))
-    qfrdl_abstraction_bdd_points = get_smtlib_bench_data(
-        "Abstraction BDD", "benchmarks/smtlib/output_abstraction_bdd/non-incremental/QF_RDL")
-    print("Timeouts of Abs-BDDs on smtlib QF RDL: ",
-          len(list(filter(lambda x: x.timeout, qfrdl_abstraction_bdd_points))))
-    qfrdl_sdds_points = get_smtlib_bench_data(
-        "T-SDD", "benchmarks/smtlib/output_sdd/non-incremental/QF_RDL")
-    print("Timeouts of T-SDDs on smtlib QF RDL: ",
-          len(list(filter(lambda x: x.timeout, qfrdl_sdds_points))))
-    qfrdl_abstraction_sdd_points = get_smtlib_bench_data(
-        "Abstraction SDD", "benchmarks/smtlib/output_abstraction_sdd/non-incremental/QF_RDL")
-    print("Timeouts of Abs-SDDs on smtlib QF RDL: ",
-          len(list(filter(lambda x: x.timeout, qfrdl_abstraction_sdd_points))))
+    # qfrdl_ldds_points = get_smtlib_bench_data(
+    #     "LDD", "benchmarks/smtlib/output_ldd/non-incremental/QF_RDL")
+    # print(len(qfrdl_ldds_points))
+    # print("Timeouts of LDDs on smtlib QF RDL: ", len(
+    #     list(filter(lambda x: x.timeout, qfrdl_ldds_points))))
+    # qfrdl_bdds_points = get_smtlib_bench_data(
+    #     "T-BDD", "benchmarks/smtlib/output_bdd/non-incremental/QF_RDL")
+    # print("Timeouts of T-BDDs on smtlib QF RDL: ",
+    #       len(list(filter(lambda x: x.timeout, qfrdl_bdds_points))))
+    # qfrdl_abstraction_bdd_points = get_smtlib_bench_data(
+    #     "Abstraction BDD", "benchmarks/smtlib/output_abstraction_bdd/non-incremental/QF_RDL")
+    # print("Timeouts of Abs-BDDs on smtlib QF RDL: ",
+    #       len(list(filter(lambda x: x.timeout, qfrdl_abstraction_bdd_points))))
+    # qfrdl_sdds_points = get_smtlib_bench_data(
+    #     "T-SDD", "benchmarks/smtlib/output_sdd/non-incremental/QF_RDL")
+    # print("Timeouts of T-SDDs on smtlib QF RDL: ",
+    #       len(list(filter(lambda x: x.timeout, qfrdl_sdds_points))))
+    # qfrdl_abstraction_sdd_points = get_smtlib_bench_data(
+    #     "Abstraction SDD", "benchmarks/smtlib/output_abstraction_sdd/non-incremental/QF_RDL")
+    # print("Timeouts of Abs-SDDs on smtlib QF RDL: ",
+    #       len(list(filter(lambda x: x.timeout, qfrdl_abstraction_sdd_points))))
 
-    print("QF RDL LDD vs BDD graphs")
-    time_points = get_time_points(
-        qfrdl_bdds_points, qfrdl_ldds_points)
-    size_points = get_nodes_points(
-        qfrdl_bdds_points, qfrdl_ldds_points)
-    models_points = get_dd_models_points(
-        qfrdl_bdds_points, qfrdl_ldds_points)
-    build_time_graph(time_points, "T-OBDD", "LDD",
-                     "plots/smtlib/QF_RDL/ldd_vs_tbdd_time.pdf")
-    build_size_graph(size_points, "T-OBDD", "LDD",
-                     "plots/smtlib/QF_RDL/ldd_vs_tbdd_size.pdf")
-    build_models_graph(models_points, "T-OBDD", "LDD",
-                       "plots/smtlib/QF_RDL/ldd_vs_tbdd_models.pdf")
+    # print("QF RDL LDD vs BDD graphs")
+    # time_points = get_time_points(
+    #     qfrdl_bdds_points, qfrdl_ldds_points)
+    # size_points = get_nodes_points(
+    #     qfrdl_bdds_points, qfrdl_ldds_points)
+    # models_points = get_dd_models_points(
+    #     qfrdl_bdds_points, qfrdl_ldds_points)
+    # build_time_graph(time_points, "T-OBDD", "LDD",
+    #                  "plots/smtlib/QF_RDL/ldd_vs_tbdd_time.pdf")
+    # build_size_graph(size_points, "T-OBDD", "LDD",
+    #                  "plots/smtlib/QF_RDL/ldd_vs_tbdd_size.pdf")
+    # build_models_graph(models_points, "T-OBDD", "LDD",
+    #                    "plots/smtlib/QF_RDL/ldd_vs_tbdd_models.pdf")
 
-    print("QF RDL BDD graphs")
-    time_points = get_time_points(
-        qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
-    size_points = get_nodes_points(
-        qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
-    models_points = get_dd_models_points(
-        qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
-    build_time_graph(time_points, "T-OBDD", "Abs. BDD",
-                     "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_time.pdf")
-    build_size_graph(size_points, "T-OBDD", "Abs. BDD",
-                     "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_size.pdf")
-    build_models_graph(models_points, "T-OBDD", "Abs. BDD",
-                       "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_models.pdf")
+    # print("QF RDL BDD graphs")
+    # time_points = get_time_points(
+    #     qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
+    # size_points = get_nodes_points(
+    #     qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
+    # models_points = get_dd_models_points(
+    #     qfrdl_bdds_points, qfrdl_abstraction_bdd_points)
+    # build_time_graph(time_points, "T-OBDD", "Abs. BDD",
+    #                  "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_time.pdf")
+    # build_size_graph(size_points, "T-OBDD", "Abs. BDD",
+    #                  "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_size.pdf")
+    # build_models_graph(models_points, "T-OBDD", "Abs. BDD",
+    #                    "plots/smtlib/QF_RDL/abstr_bdd_vs_tbdd_models.pdf")
 
-    print("QF RDL SDD graphs")
-    time_points = get_time_points(
-        qfrdl_sdds_points, qfrdl_abstraction_sdd_points)
-    size_points = get_nodes_points(
-        qfrdl_sdds_points, qfrdl_abstraction_sdd_points)
-    build_time_graph(time_points, "T-SDD", "Abs. SDD",
-                     "plots/smtlib/QF_RDL/abstr_sdd_vs_tsdd_time.pdf")
-    build_size_graph(size_points, "T-SDD", "Abs. SDD",
-                     "plots/smtlib/QF_RDL/abstr_sdd_vs_tsdd_size.pdf")
+    # print("QF RDL SDD graphs")
+    # time_points = get_time_points(
+    #     qfrdl_sdds_points, qfrdl_abstraction_sdd_points)
+    # size_points = get_nodes_points(
+    #     qfrdl_sdds_points, qfrdl_abstraction_sdd_points)
+    # build_time_graph(time_points, "T-SDD", "Abs. SDD",
+    #                  "plots/smtlib/QF_RDL/abstr_sdd_vs_tsdd_time.pdf")
+    # build_size_graph(size_points, "T-SDD", "Abs. SDD",
+    #                  "plots/smtlib/QF_RDL/abstr_sdd_vs_tsdd_size.pdf")
 
     # --------------------------------------------------------------
     # SMTLIB QF UF
