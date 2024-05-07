@@ -1,4 +1,4 @@
-# Decision Diagrams
+# Decision Diagrams and dDNNFs
 
 ## Running
 
@@ -36,6 +36,17 @@ Finally install the Mathsat SMT-solver from the pysmt package
 ```
     pysmt-install --msat
 ```
+
+## Compiking to dDNNF
+
+The tool supports both abstraction based and theory consistent compilation in dDNNF. However, in order to compile to this language you will need to download the dDNNF compiler [c2d](http://reasoning.cs.ucla.edu/c2d/). Download it and put the binary inside the tool main folder. Remember to grant the binary permission to execute.
+
+```
+    chmod +x c2d_linux
+```
+
+Compilation in dDNNF is currently not supported by the tool for other operative systems.
+
 
 ## Dumping XSDDs
 
