@@ -42,6 +42,10 @@ class Options:
     save_lemmas: str | None
     load_lemmas: str | None
     verbose: bool
+    abstraction_dDNNF: bool
+    tdDNNF: bool
+    abstraction_dDNNF_output: str | None
+    tdDNNF_output: str | None
 
     def __init__(self,args: argparse.Namespace):
         self.tsdd = args.tsdd
@@ -75,6 +79,10 @@ class Options:
         self.load_lemmas = args.load_lemmas
         self.verbose = args.verbose
         self.load_details = args.load_details
+        self.abstraction_dDNNF = args.abstraction_dDNNF
+        self.tdDNNF = args.tdDNNF
+        self.abstraction_dDNNF_output = args.abstraction_dDNNF_output
+        self.tdDNNF_output = args.tdDNNF_output
 
 def get_args() -> Options:
     """Reads the args from the command line"""
@@ -216,6 +224,22 @@ def get_args() -> Options:
         "--load_lemmas",
         help="Specify a .smt file to load lemmas from instead of performing All-SMT",
         type=str)
+    parser.add_argument(
+        "--abstraction_dDNNF_output",
+        help="Specify a .smt file to save the abstraction dDNNF",
+        type=str)
+    parser.add_argument(
+        "--tdDNNF_output",
+        help="Specify a .smt file to save the T-dDNNF of the input formula",
+        type=str)
+    parser.add_argument(
+        "--tdDNNF",
+        help="Generate the T-dDNNF of the input formula",
+        action="store_true")
+    parser.add_argument(
+        "--abstraction_dDNNF",
+        help="Generate the  Abstraction dDNNF of the input formula",
+        action="store_true")
     # parser.add_argument(
     #     "--check_eq",
     #     help="Check the T-equivalence of the T-agnostic DD with the T-formula phi",

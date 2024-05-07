@@ -22,7 +22,7 @@ First install the dd package with cython and wheel. This is a fork of the offici
 To check that this step completed successfully, the following command should not yield any errors
 
 ```
-python -c 'from dd import ldd; ldd.LDD(ldd.TVPI,0,0)'
+    python -c 'from dd import ldd; ldd.LDD(ldd.TVPI,0,0)'
 ```
 
 Then install all other dependencies of the project
