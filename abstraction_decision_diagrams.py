@@ -19,7 +19,7 @@ def abstr_ddnnf(phi, args: Options, logger: Dict):
     logger["Abstraction dDNNF"] = {}
     if args.verbose:
         print("Abstraction dDNNF computation starting...")
-    abs_ddnnf = compile_dDNNF(phi)
+    abs_ddnnf = compile_dDNNF(phi,keep_temp=args.keep_c2d_temp)
     if args.abstraction_dDNNF_output is not None:
         write_smtlib(abs_ddnnf,args.abstraction_dDNNF_output)
     del abs_ddnnf

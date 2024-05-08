@@ -30,7 +30,7 @@ def theory_ddnnf(phi,
         tlemmas_big_and = formula.read_phi(args.load_lemmas)
         phi_and_lemmas = formula.get_phi_and_lemmas(phi,[tlemmas_big_and])
     phi_and_lemmas = formula.get_normalized(phi_and_lemmas,solver.get_converter())
-    tddnnf : FNode= compile_dDNNF(phi_and_lemmas)
+    tddnnf : FNode= compile_dDNNF(phi_and_lemmas,keep_temp=args.keep_c2d_temp)
     elapsed_time = time.time() - start_time
     logger["T-dDNNF"]["total computation time"] = elapsed_time
     if args.tdDNNF_output is not None:
