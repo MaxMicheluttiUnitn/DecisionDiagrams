@@ -12,6 +12,7 @@ from theorydd.abstraction_sdd import AbstractionSDD
 from commands import Options
 from pysmt_c2d_middleware import compile_dDNNF
 
+
 def abstr_ddnnf(phi, args: Options, logger: Dict):
     """abstraction dDNNF"""
     # ABSTRACTION dDNNF
@@ -19,9 +20,9 @@ def abstr_ddnnf(phi, args: Options, logger: Dict):
     logger["Abstraction dDNNF"] = {}
     if args.verbose:
         print("Abstraction dDNNF computation starting...")
-    abs_ddnnf = compile_dDNNF(phi,keep_temp=args.keep_c2d_temp)
+    abs_ddnnf = compile_dDNNF(phi, keep_temp=args.keep_c2d_temp)
     if args.abstraction_dDNNF_output is not None:
-        write_smtlib(abs_ddnnf,args.abstraction_dDNNF_output)
+        write_smtlib(abs_ddnnf, args.abstraction_dDNNF_output)
     del abs_ddnnf
 
     elapsed_time = time.time() - start_time
@@ -114,7 +115,7 @@ def ldd(phi, args: Options, logger: Dict):
 
     ldd_obj = TheoryLDD(phi, args.ldd_theory,
                         verbose=args.verbose, computation_logger=logger)
-    
+
     if args.ldd_output is not None:
         ldd_obj.dump(args.ldd_output)
 
@@ -133,13 +134,14 @@ def ldd(phi, args: Options, logger: Dict):
         if args.verbose:
             print("Models: ", models)
         logger["LDD"]["DD models"] = models
-    
+
     del ldd_obj
 
     elapsed_time = time.time() - start_time
     logger["LDD"]["total DD computation time"] = elapsed_time
     if args.verbose:
         print("LDD computation completed in ", elapsed_time, " seconds")
+
 
 def xsdd(phi, args: Options, logger: Dict):
     """xsdd"""

@@ -13,11 +13,12 @@ import theorydd.formula as formula
 from commands import Options
 from pysmt_c2d_middleware import compile_dDNNF
 
+
 def theory_ddnnf(phi,
-               args: Options,
-               logger: Dict,
-               solver: SMTSolver | PartialSMTSolver,
-               tlemmas: List[FNode]):
+                 args: Options,
+                 logger: Dict,
+                 solver: SMTSolver | PartialSMTSolver,
+                 tlemmas: List[FNode]):
     """theory dDNNF"""
     # THEORY dDNNF
     start_time = time.time()
@@ -25,20 +26,22 @@ def theory_ddnnf(phi,
     if args.verbose:
         print("T-dDNNF computation starting...")
     if tlemmas is not None:
-        phi_and_lemmas = formula.get_phi_and_lemmas(phi,tlemmas)
+        phi_and_lemmas = formula.get_phi_and_lemmas(phi, tlemmas)
     else:
         tlemmas_big_and = formula.read_phi(args.load_lemmas)
-        phi_and_lemmas = formula.get_phi_and_lemmas(phi,[tlemmas_big_and])
-    phi_and_lemmas = formula.get_normalized(phi_and_lemmas,solver.get_converter())
-    tddnnf : FNode= compile_dDNNF(phi_and_lemmas,keep_temp=args.keep_c2d_temp)
+        phi_and_lemmas = formula.get_phi_and_lemmas(phi, [tlemmas_big_and])
+    phi_and_lemmas = formula.get_normalized(
+        phi_and_lemmas, solver.get_converter())
+    tddnnf: FNode = compile_dDNNF(phi_and_lemmas, keep_temp=args.keep_c2d_temp)
     elapsed_time = time.time() - start_time
     logger["T-dDNNF"]["total computation time"] = elapsed_time
     if args.tdDNNF_output is not None:
-        write_smtlib(tddnnf,args.tdDNNF_output)
+        write_smtlib(tddnnf, args.tdDNNF_output)
     if args.verbose:
         print("T-dDNNF computation completed in ",
               elapsed_time, " seconds")
     del tddnnf
+
 
 def theory_bdd(phi,
                args: Options,
@@ -121,7 +124,7 @@ def theory_sdd(phi,
             print("Models: ", models)
         logger["T-SDD"]["DD models"] = models
     if args.tsdd_output is not None:
-        tsdd.dump(args.tsdd_output,dump_abstraction=args.dump_abstraction)
+        tsdd.dump(args.tsdd_output, dump_abstraction=args.dump_abstraction)
     if args.tvtree_output is not None:
         tsdd.dump(args.tvtree_output)
     if args.print_mapping:

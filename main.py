@@ -39,7 +39,7 @@ def do_pure_abstraction(phi: FNode, args: Options, logger: Dict) -> None:
     """DO ALL FUNCTIONS THAT DO NOT REQUIRE All-SMT to be computed"""
     # ABSTRACTION dDNNF
     if args.abstraction_dDNNF:
-        add.abstr_ddnnf(phi,args,logger)
+        add.abstr_ddnnf(phi, args, logger)
     # ABSTRACTION BDD
     if args.abstraction_bdd:
         add.abstr_bdd(phi, args, logger)
@@ -142,7 +142,7 @@ def smt_phase(phi: FNode, args: Options, logger: Dict):
 
     # T-dDNNF
     if args.tdDNNF:
-        tdd.theory_ddnnf(phi,args,logger,smt_solver,tlemmas)
+        tdd.theory_ddnnf(phi, args, logger, smt_solver, tlemmas)
 
     # T-BDD
     if args.tbdd:

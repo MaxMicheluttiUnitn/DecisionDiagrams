@@ -73,7 +73,8 @@ def from_smtlib_to_dimacs_file(
                 for literal in literals:
                     if literal.is_not():
                         negated_literal: FNode = literal.arg(0)
-                        translated_literals.append(str(mapping[negated_literal] * -1))
+                        translated_literals.append(
+                            str(mapping[negated_literal] * -1))
                     else:
                         translated_literals.append(str(mapping[literal]))
                 line = " ".join(translated_literals)
@@ -89,7 +90,8 @@ def from_smtlib_to_dimacs_file(
     with open(quantification_file, "w", encoding="utf8") as quantification_out:
         quantified_indexes = [str(mapping[atom]) for atom in fresh_atoms]
         quantified_indexes_str: str = " ".join(quantified_indexes)
-        quantification_out.write(f"{len(quantified_indexes)} {quantified_indexes_str}")
+        quantification_out.write(
+            f"{len(quantified_indexes)} {quantified_indexes_str}")
 
     # RETURN MAPPING
     return mapping
@@ -196,7 +198,8 @@ def compile_dDNNF(phi: FNode, keep_temp: bool = False) -> FNode:
         f"./c2d_linux -in {tmp_folder}/test_dimacs.cnf -exist {tmp_folder}/test_quantification.exist > /dev/null"
     )
     # translate to pysmt
-    result = from_c2d_nnf_to_pysmt(f"{tmp_folder}/test_dimacs.cnf.nnf", reverse_mapping)
+    result = from_c2d_nnf_to_pysmt(
+        f"{tmp_folder}/test_dimacs.cnf.nnf", reverse_mapping)
     if os.path.exists(tmp_folder) and not keep_temp:
         os.system(f"rm -rd {tmp_folder}")
     return result

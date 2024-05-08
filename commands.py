@@ -4,9 +4,10 @@ from dataclasses import dataclass
 
 VALID_VTREE = ["left", "right", "balanced", "vertical", "random"]
 
-VALID_LDD_THEORY = ["TVPI","TVPIZ","UTVPIZ","BOX","BOXZ"]
+VALID_LDD_THEORY = ["TVPI", "TVPIZ", "UTVPIZ", "BOX", "BOXZ"]
 
-VALID_SOLVER = ["partial","total"]
+VALID_SOLVER = ["partial", "total"]
+
 
 @dataclass
 class Options:
@@ -48,7 +49,7 @@ class Options:
     tdDNNF_output: str | None
     keep_c2d_temp: bool
 
-    def __init__(self,args: argparse.Namespace):
+    def __init__(self, args: argparse.Namespace):
         self.tsdd = args.tsdd
         self.xsdd = args.xsdd
         self.tbdd = args.tbdd
@@ -86,6 +87,7 @@ class Options:
         self.tdDNNF_output = args.tdDNNF_output
         self.keep_c2d_temp = args.keep_c2d_temp
 
+
 def get_args() -> Options:
     """Reads the args from the command line"""
     parser = argparse.ArgumentParser()
@@ -94,7 +96,7 @@ def get_args() -> Options:
         help="Generate the T-SDD of the formula",
         action="store_true")
     parser.add_argument(
-        "-v","--verbose",
+        "-v", "--verbose",
         help="Get output on stdout during computation",
         action="store_true"
     )
