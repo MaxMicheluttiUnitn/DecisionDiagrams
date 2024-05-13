@@ -40,7 +40,7 @@ do
 				else
 					timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver partial -d "$tmpjsonfile" --count_models
 					if [ $? -eq 0 ]; then
-						timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile" --load_details ""$tmpjsonfile" --tbdd --count_nodes --count_models -d "$outputprobs"/"$jsonfilename"
+						timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile" --load_details "$tmpjsonfile" --tbdd --count_nodes --count_models -d "$outputprobs"/"$jsonfilename"
 						if [ $? -eq 0 ]; then
 							echo "Task completed on $smtfilename"
 						else
