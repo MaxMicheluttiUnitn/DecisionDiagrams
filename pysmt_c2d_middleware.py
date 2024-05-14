@@ -2,6 +2,7 @@
 
 import random
 import os
+import time
 from typing import Dict, List
 from pysmt.shortcuts import (
     write_smtlib,
@@ -173,35 +174,113 @@ def from_c2d_nnf_to_smtlib(
     write_smtlib(phi, smtlib_file)
 
 
-def compile_dDNNF(phi: FNode, keep_temp: bool = False) -> FNode:
+def save_mapping(mapping: Dict[int, FNode], mapping_path: str) -> None:
+    """
+    Saves a mapping from integers to pysmt atoms in a file
+
+    Args:
+        mapping (Dict[int,FNode]) -> a mapping that associates to integers a pysmt atom
+        mapping_path (str) -> the path to the folder where the mapping files will be saved
+    """
+    for k, v in mapping.items():
+        write_smtlib(v, f"{mapping_path}/{k}.smt2")
+        # with open(f"{mapping_path}/{k}.smt2", "w", encoding="utf8") as mapping_out:
+        #     mapping_out.write(f"{k}\n{v.serialize()}\n")
+
+
+def load_mapping(mapping_path: str) -> Dict[int, FNode]:
+    """
+    Loads a mapping from integers to pysmt atoms from a file
+
+    Args:
+        mapping_path (str) -> the path to the folder where the mapping is saved
+
+    Returns:
+        (Dict[int,FNode]) -> a mapping that associates to integers a pysmt atom
+    """
+    mapping = {}
+    for filename in os.listdir(mapping_path):
+        if filename.endswith(".smt2"):
+            k = int(filename.split(".")[0])
+            v = read_smtlib(f"{mapping_path}/{filename}")
+            mapping[k] = v
+    return mapping
+
+
+def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = None, computation_logger: Dict | None = None, verbose: bool = False, back_to_fnode: bool = True) -> FNode | None:
     """
     Compiles an FNode in dDNNF through the c2d compiler
 
     Args:
         phi (FNode) -> a pysmt formula
         keep_temp (bool) = False -> set it to true to keep temporary computation data
+        tmp_path (str | None) = None -> the path where temporary data will be saved. 
+            If keep_temp is set to False, this path is removed from the system after 
+            computation is ccompleted
+        computation_logger (Dict | None) = None -> a dictionary that will be filled with
+            data about the computation
+        verbose (bool) = False -> set it to True to print information about the computation
+        back_to_fnode (bool) = True -> set it to False to avoid the final pysmt translation
 
     Returns:
-        (Fnode) -> the input pysmt formula in dDNNF
+        (FNode) -> the input pysmt formula in dDNNF
     """
-    tmp_folder = "temp_" + str(random.randint(0, 9223372036854775807))
+    if computation_logger is None:
+        computation_logger = {}
+    if tmp_path is None:
+        tmp_folder = "temp_" + str(random.randint(0, 9223372036854775807))
+    else:
+        tmp_folder = tmp_path
     # translate to CNF
     if not os.path.exists(tmp_folder):
         os.mkdir(tmp_folder)
+    start_time = time.time()
+    if verbose:
+        print("Translating to DIMACS...")
     mapping = from_smtlib_to_dimacs_file(
-        phi, f"{tmp_folder}/test_dimacs.cnf", f"{tmp_folder}/test_quantification.exist"
+        phi, f"{tmp_folder}/dimacs.cnf", f"{tmp_folder}/quantification.exist"
     )
+    elapsed_time = time.time() - start_time
+    computation_logger["DIMACS translation time"] = elapsed_time
+    if verbose:
+        print(f"DIMACS translation completed in {elapsed_time} seconds")
     reverse_mapping = {v: k for k, v in mapping.items()}
+    if not os.path.exists(f"{tmp_folder}/mapping"):
+        os.mkdir(f"{tmp_folder}/mapping")
+    if verbose:
+        print("Saving mapping...")
+    save_mapping(reverse_mapping, f"{tmp_folder}/mapping")
+    if verbose:
+        print("Mapping saved")
     # call c2d
     # output should be in file temp_folder/test_dimacs.cnf.nnf
-    os.system(
-        f"./c2d_linux -in {tmp_folder}/test_dimacs.cnf -exist {tmp_folder}/test_quantification.exist > /dev/null"
+    start_time = time.time()
+    if verbose:
+        print("Compiling dDNNF...")
+    result = os.system(
+        f"timeout 3600s ./c2d_linux -in {tmp_folder}/dimacs.cnf -exist {tmp_folder}/quantification.exist > /dev/null"
     )
+    if result != 0:
+        raise Exception("c2d compilation failed: timeout")
+    elapsed_time = time.time() - start_time
+    computation_logger["dDNNF compilation time"] = elapsed_time
+    if verbose:
+        print(f"dDNNF compilation cpmpleted in {elapsed_time} seconds")
+    # reverse_mapping = load_mapping(f"{tmp_folder}/mapping")
+    if not back_to_fnode:
+        return None
     # translate to pysmt
+    start_time = time.time()
+    if verbose:
+        print("Translating to pysmt...")
     result = from_c2d_nnf_to_pysmt(
-        f"{tmp_folder}/test_dimacs.cnf.nnf", reverse_mapping)
+        f"{tmp_folder}/dimacs.cnf.nnf", reverse_mapping)
     if os.path.exists(tmp_folder) and not keep_temp:
         os.system(f"rm -rd {tmp_folder}")
+    elapsed_time = time.time() - start_time
+    computation_logger["pysmt translation time"] = elapsed_time
+    if verbose:
+        print(f"pysmt translation completed in {elapsed_time} seconds")
     return result
 
 
