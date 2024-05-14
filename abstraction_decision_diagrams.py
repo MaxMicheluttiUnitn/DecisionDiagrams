@@ -22,16 +22,21 @@ def abstr_ddnnf(phi, args: Options, logger: Dict):
         print("Abstraction dDNNF computation starting...")
     try:
         abs_ddnnf = compile_dDNNF(phi,
-                              keep_temp=(args.keep_c2d_temp is not None),
-                              verbose=args.verbose,
-                              computation_logger=logger["Abstraction dDNNF"],
-                              tmp_path=args.keep_c2d_temp)
+                                  keep_temp=(args.keep_c2d_temp is not None),
+                                  verbose=args.verbose,
+                                  computation_logger=logger["Abstraction dDNNF"],
+                                  tmp_path=args.keep_c2d_temp,
+                                  back_to_fnode=(not args.no_dDNNF_to_pysmt))
     except TimeoutError:
         if args.verbose:
             print("Timeout error in dDNNF computation")
         logger["timeout"] = "dDNNF"
         return
+    if args.no_dDNNF_to_pysmt:
+        return
     if args.abstraction_dDNNF_output is not None:
+        if args.verbose:
+            print("Saving abstraction dDNNF to ", args.abstraction_dDNNF_output)    
         write_smtlib(abs_ddnnf, args.abstraction_dDNNF_output)
     del abs_ddnnf
 
