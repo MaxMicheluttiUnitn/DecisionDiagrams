@@ -265,7 +265,7 @@ def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = No
     elapsed_time = time.time() - start_time
     computation_logger["dDNNF compilation time"] = elapsed_time
     if verbose:
-        print(f"dDNNF compilation opmpleted in {elapsed_time} seconds")
+        print(f"dDNNF compilation completed in {elapsed_time} seconds")
     # reverse_mapping = load_mapping(f"{tmp_folder}/mapping")
     if not back_to_fnode:
         return None
