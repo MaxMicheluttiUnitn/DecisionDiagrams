@@ -37,6 +37,8 @@ class Point:
     dd_models: float
     dd_nodes: int
     total_lemmas: int
+    fresh_atoms: int
+    fresh_atoms_quantification_time: float
     title: str
     timeout: bool
 
@@ -52,7 +54,7 @@ def get_wmi_bench_data(kind: str, source: str) -> List[Point]:
         data = json.load(f)
         if len(data) == 0 or data.get("timeout") is not None:
             points.append(Point(DataSource.THEORY_SDD, 0,
-                          0, 0, 0, 0, 0, "mutex/"+filename, True))
+                          0, 0, 0, 0, 0, 0, 0, "mutex/"+filename, True))
             continue
         if data.get("All-SAT computation time") is not None:
             allsmttime = data.get("All-SAT computation time")
@@ -71,6 +73,8 @@ def get_wmi_bench_data(kind: str, source: str) -> List[Point]:
                             data[kind]["model count"],
                             data[kind]["DD nodes"],
                             tlemmas,
+                            data[kind]["fresh T-atoms detected"],
+                            data[kind]["fresh T-atoms quantification time"],
                             "mutex/"+filename, False))
 
     # retrieving xor result
@@ -80,7 +84,7 @@ def get_wmi_bench_data(kind: str, source: str) -> List[Point]:
         data = json.load(f)
         if len(data) == 0 or data.get("timeout") is not None:
             points.append(Point(DataSource.THEORY_SDD,
-                          0, 0, 0, 0, 0, 0, "xor/"+filename, True))
+                          0, 0, 0, 0, 0, 0, 0, 0, "xor/"+filename, True))
             continue
         if data.get("All-SAT computation time") is not None:
             allsmttime = data.get("All-SAT computation time")
@@ -99,6 +103,8 @@ def get_wmi_bench_data(kind: str, source: str) -> List[Point]:
                             data[kind]["model count"],
                             data[kind]["DD nodes"],
                             tlemmas,
+                            data[kind]["fresh T-atoms detected"],
+                            data[kind]["fresh T-atoms quantification time"],
                             "xor/"+filename,
                             False))
 
@@ -116,7 +122,7 @@ def get_ldd_randgen_bench_data(kind: str, source: str) -> List[Point]:
         f = open(filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0 or data.get("timeout") is not None:
-            points.append(Point(DataSource.THEORY_BDD, 0, 0, 0, 0, 0, 0, filename.replace(
+            points.append(Point(DataSource.THEORY_BDD, 0, 0, 0, 0, 0, 0, 0, 0, filename.replace(
                 source+"/", ''), True))
             continue
         if data.get("All-SMT computation time") is not None:
@@ -130,6 +136,23 @@ def get_ldd_randgen_bench_data(kind: str, source: str) -> List[Point]:
             tlemmas = data["total lemmas"]
         else:
             tlemmas = 0
+
+        if data.get(kind) is not None:
+            if data.get(kind).get("fresh T-atoms detected") is not None:
+                fresh_atoms = data[kind]["fresh T-atoms detected"]
+            else:
+                fresh_atoms = 0
+        else:
+            fresh_atoms = 0
+
+        if data.get(kind) is not None:
+            if data.get(kind).get("fresh T-atoms quantification time") is not None:
+                fresh_atoms_quant_time = data[kind]["fresh T-atoms quantification time"]
+            else:
+                fresh_atoms_quant_time = 0
+        else:
+            fresh_atoms_quant_time = 0
+        
         points.append(Point(DataSource.THEORY_BDD,
                             data["total computation time"],
                             allsmttime,
@@ -137,6 +160,8 @@ def get_ldd_randgen_bench_data(kind: str, source: str) -> List[Point]:
                             data[kind]["DD models"],
                             data[kind]["DD nodes"],
                             tlemmas,
+                            fresh_atoms,
+                            fresh_atoms_quant_time,
                             filename.replace(source+"/", ''), False))
     return points
 
@@ -152,7 +177,7 @@ def get_randgen_bench_data(kind: str, source: str) -> List[Point]:
         f = open(filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0 or data.get("timeout") is not None:
-            points.append(Point(DataSource.THEORY_BDD, 0, 0, 0, 0, 0, 0, filename.replace(
+            points.append(Point(DataSource.THEORY_BDD, 0, 0, 0, 0, 0, 0, 0, 0, filename.replace(
                 source+"/", ''), True))
             continue
         if data.get("All-SMT computation time") is not None:
@@ -172,6 +197,8 @@ def get_randgen_bench_data(kind: str, source: str) -> List[Point]:
                             data[kind]["DD models"],
                             data[kind]["DD nodes"],
                             tlemmas,
+                            data[kind]["fresh T-atoms detected"],
+                            data[kind]["fresh T-atoms quantification time"],
                             filename.replace(source+"/", ''), False))
     return points
 
@@ -184,12 +211,12 @@ def get_smtlib_bench_data(kind: str, source: str) -> List[Point]:
         for name in files:
             files_list.append(os.path.join(path, name))
     for filename in files_list:
-        if filename.count("smt2")> 0:
+        if filename.count("smt2") > 0:
             continue
         f = open(filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0 or data.get("timeout") is not None:
-            points.append(Point(DataSource.THEORY_BDD, 0, 0, 0, 0, 0, 0, filename.replace(
+            points.append(Point(DataSource.THEORY_BDD, 0, 0, 0, 0, 0, 0, 0, 0, filename.replace(
                 source+"/", ''), True))
             continue
         if data.get("All-SMT computation time") is not None:
@@ -214,7 +241,7 @@ def get_smtlib_bench_data(kind: str, source: str) -> List[Point]:
             tlemmas = data["total lemmas"]
         else:
             tlemmas = 0
-        
+
         if data.get(kind) is not None:
             if data.get(kind).get("DD models") is not None:
                 ddmodels = data[kind]["DD models"]
@@ -229,6 +256,22 @@ def get_smtlib_bench_data(kind: str, source: str) -> List[Point]:
         else:
             ddnodes = 0
 
+        if data.get(kind) is not None:
+            if data.get(kind).get("fresh T-atoms detected") is not None:
+                fresh_atoms = data[kind]["fresh T-atoms detected"]
+            else:
+                fresh_atoms = 0
+        else:
+            fresh_atoms = 0
+
+        if data.get(kind) is not None:
+            if data.get(kind).get("fresh T-atoms quantification time") is not None:
+                fresh_atoms_quant_time = data[kind]["fresh T-atoms quantification time"]
+            else:
+                fresh_atoms_quant_time = 0
+        else:
+            fresh_atoms_quant_time = 0
+
         points.append(Point(DataSource.THEORY_BDD,
                             data["total computation time"],
                             allsmttime,
@@ -236,6 +279,8 @@ def get_smtlib_bench_data(kind: str, source: str) -> List[Point]:
                             ddmodels,
                             ddnodes,
                             tlemmas,
+                            fresh_atoms,
+                            fresh_atoms_quant_time,
                             filename.replace(source+"/", ''), False))
     return points
 
@@ -428,6 +473,44 @@ def get_nodes_points(
     # print("Count 1 1", count11)
     return (theory_list, abstraction_list, edge)
 
+def get_dd_fresh_atoms_points(
+        theory_points: List[Point],
+        abstraction_points: List[Point]) -> Tuple[List[float], List[float], int]:
+    """translate data into plottable points comparing amount of fresh T-atoms"""
+    theory_list = []
+    abstraction_list = []
+    max_theory = theory_points[0].fresh_atoms
+    max_abstraction = abstraction_points[0].fresh_atoms
+
+    theory_points = copy.deepcopy(theory_points)
+    abstraction_points = copy.deepcopy(abstraction_points)
+
+    for t_p in theory_points:
+        if t_p.fresh_atoms is not None and (max_theory is None or t_p.fresh_atoms > max_theory):
+            max_theory = t_p.fresh_atoms
+    for a_p in abstraction_points:
+        if a_p.fresh_atoms is not None and (max_abstraction is None or a_p.fresh_atoms > max_abstraction):
+            max_abstraction = a_p.fresh_atoms
+    if max_abstraction is None or max_theory is None:
+        raise Exception("Un-plottable data provided!!!")
+
+    edge = max(max_theory, max_abstraction) * 10
+
+    # for t_p in theory_points:
+    #     if t_p.timeout:
+    #         t_p.fresh_atoms = edge
+    # for a_p in abstraction_points:
+    #     if a_p.timeout:
+    #         a_p.fresh_atoms = edge
+
+    for t_p in theory_points:
+        for a_p in abstraction_points:
+            if t_p.title == a_p.title and not t_p.timeout and not a_p.timeout:
+                #print(t_p.fresh_atoms_quantification_time,a_p.fresh_atoms_quantification_time)
+                theory_list.append(t_p.fresh_atoms)
+                abstraction_list.append(a_p.fresh_atoms)
+                break
+    return (theory_list, abstraction_list, edge)
 
 def get_dd_models_points(
         theory_points: List[Point],
@@ -864,8 +947,8 @@ def main() -> None:
         "T-BDD", "benchmarks/smtlib/output_bdd_noeqsplit/non-incremental/QF_RDL")
     print("Timeouts of T-BDDs no eq split on smtlib QF RDL: ",
           len(list(filter(lambda x: x.timeout, qfrdl_bdds_noeqsplit_points))))
-    qfrdl_tmp = get_smtlib_bench_data("", "benchmarks/smtlib/tmp/non-incremental/QF_RDL")
-    qfrdl_tmp_noeqsplit = get_smtlib_bench_data("", "benchmarks/smtlib/tmp_noeqsplit/non-incremental/QF_RDL")
+    # qfrdl_tmp = get_smtlib_bench_data("", "benchmarks/smtlib/tmp/non-incremental/QF_RDL")
+    # qfrdl_tmp_noeqsplit = get_smtlib_bench_data("", "benchmarks/smtlib/tmp_noeqsplit/non-incremental/QF_RDL")
 
     # print("QF RDL LDD vs BDD graphs")
     # time_points = get_time_points(
@@ -890,16 +973,20 @@ def main() -> None:
         qfrdl_bdds_points, qfrdl_bdds_noeqsplit_points)
     lemmas_points = get_lemmas_points(
         qfrdl_bdds_points, qfrdl_bdds_noeqsplit_points)
+    fresh_atoms_points = get_dd_fresh_atoms_points(
+        qfrdl_bdds_points, qfrdl_bdds_noeqsplit_points)
     build_time_graph(time_points, "No Opt", "Opt")
     build_size_graph(size_points, "No Opt", "Opt")
     build_models_graph(models_points, "No Opt", "Opt")
     build_lemmas_graph(lemmas_points, "No Opt", "Opt")
+    print(fresh_atoms_points)
+    build_models_graph(fresh_atoms_points, "No Opt", "Opt")
 
-    lemmas_points = get_lemmas_points(
-        qfrdl_tmp, qfrdl_tmp_noeqsplit)
-    print(len(qfrdl_tmp))
-    print(len(qfrdl_tmp_noeqsplit))
-    build_lemmas_graph(lemmas_points, "No Opt", "Opt")
+    # lemmas_points = get_lemmas_points(
+    #     qfrdl_tmp, qfrdl_tmp_noeqsplit)
+    # print(len(qfrdl_tmp))
+    # print(len(qfrdl_tmp_noeqsplit))
+    # build_lemmas_graph(lemmas_points, "No Opt", "Opt")
 
     # print("QF RDL BDD graphs")
     # time_points = get_time_points(

@@ -30,7 +30,7 @@ do
 			else
 				echo "Performing task on $smtfilename"
 				if [ -f "$tmpfile" ]; then
-					timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile" --load_details "$tmpjsonfile" --tbdd --count_nodes --count_models -d "$outputprobs"/"$jsonfilename"
+					timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile" --load_details "$tmpjsonfile" --tdDNNF -d "$outputprobs"/"$jsonfilename"
 					if [ $? -eq 0 ]; then
 						echo "Task completed on $smtfilename"
 					else
@@ -38,10 +38,10 @@ do
 						echo "{\"timeout\":\"DD\"}" > "$outputprobs"/"$jsonfilename"
 					fi
 				else
-                    ### IF lLEMMAS NOT AVAILABLE
+                    ### IF LEMMAS NOT AVAILABLE
                     # timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver partial -d "$tmpjsonfile" --count_models
                     # if [ $? -eq 0 ]; then
-                    #     timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile" --load_details "$tmpjsonfile" --tbdd --count_nodes --count_models -d "$outputprobs"/"$jsonfilename"
+                    #     timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile" --load_details "$tmpjsonfile" --tdDNNF --count_nodes --count_models -d "$outputprobs"/"$jsonfilename"
                     #     if [ $? -eq 0 ]; then
                     #         echo "Task completed on $smtfilename"
                     #     else
