@@ -22,6 +22,7 @@ do
 			jsonfilename="${smtfilename/.smt2/.json}"
 			tmpfile="${item/data/tmp}"
 			tmpjsonfile="${tmpfile/.smt2/.json}"
+			tmpfolder="${tmpfile/.smt2/_c2d}"
 			#echo $smtfilename
 			#echo $jsonfilename
 			#echo $tmpfile
@@ -30,7 +31,7 @@ do
 			else
 				echo "Performing task on $smtfilename"
 				if [ -f "$tmpfile" ]; then
-					timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile" --load_details "$tmpjsonfile" --tdDNNF -d "$outputprobs"/"$jsonfilename"
+					timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile" --load_details "$tmpjsonfile" --tdDNNF -d "$outputprobs"/"$jsonfilename" --no_dDNNF_to_pysmt --keep_c2d_temp "$tmpfolder"
 					if [ $? -eq 0 ]; then
 						echo "Task completed on $smtfilename"
 					else
@@ -41,7 +42,7 @@ do
                     ### IF LEMMAS NOT AVAILABLE
                     # timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver partial -d "$tmpjsonfile" --count_models
                     # if [ $? -eq 0 ]; then
-                    #     timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile" --load_details "$tmpjsonfile" --tdDNNF --count_nodes --count_models -d "$outputprobs"/"$jsonfilename"
+                    #     timeout 3600s python main.py -i "$item" --load_lemmas "$tmpfile" --load_details "$tmpjsonfile" --tdDNNF --count_nodes --count_models -d "$outputprobs"/"$jsonfilename" --no_dDNNF_to_pysmt --keep_c2d_temp "$tmpfolder"
                     #     if [ $? -eq 0 ]; then
                     #         echo "Task completed on $smtfilename"
                     #     else
