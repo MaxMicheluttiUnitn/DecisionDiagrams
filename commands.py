@@ -254,18 +254,3 @@ def get_args() -> Options:
     #     action="store_true")
     args = parser.parse_args()
     return Options(args)
-
-
-# def help() -> None:
-#    ' ' 'Prints the help screen' ' '
-#    print("Usage: python3 main.py [options]")
-#    print("Available options:")
-#    print("--help:              Print this list")
-#    print("--sdd:               Generate the SDD of the formula")
-#    print("--bdd:               Generate the BDD of the formula")
-#    print("--vtree=[value]:     Specify V-Tree kind for SDD generation (default is right). Available values: ",VALID_VTREE)
-#    print("--input=[file]:      Specify a file from witch to read the formula")
-#    print("--sdd-output=[file]: Specify a .dot file to output the SDD (default is sdd.dot)")
-#    print("--bdd-output=[file]: Specify a .svg file to output the BDD (default is bdd.svg)")
-#    print("--print-models:      Print the models obtained from All-SAT computation")
-#    print("--print-lemmas:      Print the lemmas generated during the All-SAT compiutation")

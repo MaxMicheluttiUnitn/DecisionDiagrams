@@ -261,7 +261,7 @@ def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = No
         f"timeout 3600s ./c2d_linux -in {tmp_folder}/dimacs.cnf -exist {tmp_folder}/quantification.exist > /dev/null"
     )
     if result != 0:
-        raise Exception("c2d compilation failed: timeout")
+        raise TimeoutError("c2d compilation failed: timeout")
     elapsed_time = time.time() - start_time
     computation_logger["dDNNF compilation time"] = elapsed_time
     if verbose:
