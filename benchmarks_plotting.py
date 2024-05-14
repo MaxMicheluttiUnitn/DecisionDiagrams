@@ -152,7 +152,7 @@ def get_ldd_randgen_bench_data(kind: str, source: str) -> List[Point]:
                 fresh_atoms_quant_time = 0
         else:
             fresh_atoms_quant_time = 0
-        
+
         points.append(Point(DataSource.THEORY_BDD,
                             data["total computation time"],
                             allsmttime,
@@ -473,6 +473,7 @@ def get_nodes_points(
     # print("Count 1 1", count11)
     return (theory_list, abstraction_list, edge)
 
+
 def get_dd_fresh_atoms_points(
         theory_points: List[Point],
         abstraction_points: List[Point]) -> Tuple[List[float], List[float], int]:
@@ -506,11 +507,12 @@ def get_dd_fresh_atoms_points(
     for t_p in theory_points:
         for a_p in abstraction_points:
             if t_p.title == a_p.title and not t_p.timeout and not a_p.timeout:
-                #print(t_p.fresh_atoms_quantification_time,a_p.fresh_atoms_quantification_time)
+                # print(t_p.fresh_atoms_quantification_time,a_p.fresh_atoms_quantification_time)
                 theory_list.append(t_p.fresh_atoms)
                 abstraction_list.append(a_p.fresh_atoms)
                 break
     return (theory_list, abstraction_list, edge)
+
 
 def get_dd_models_points(
         theory_points: List[Point],
