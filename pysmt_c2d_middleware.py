@@ -249,7 +249,8 @@ def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = No
         os.mkdir(f"{tmp_folder}/mapping")
     if verbose:
         print("Saving mapping...")
-    save_mapping(reverse_mapping, f"{tmp_folder}/mapping")
+    # TEMPORARILY DISABLED DUE TO DISK MEMORY ISSUES
+    #save_mapping(reverse_mapping, f"{tmp_folder}/mapping")
     if verbose:
         print("Mapping saved")
     # call c2d

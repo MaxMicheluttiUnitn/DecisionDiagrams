@@ -12,6 +12,7 @@ from pysmt.fnode import FNode
 
 from theorydd.smt_solver import SMTSolver
 from theorydd.smt_solver_partial import PartialSMTSolver
+from theorydd.smt_solver_full_partial import FullPartialSMTSolver
 from theorydd.lemma_extractor import extract
 
 import abstraction_decision_diagrams as add
@@ -70,12 +71,14 @@ def load_details(args: Options) -> Dict:
     return logger
 
 
-def get_solver(args: Options) -> SMTSolver | PartialSMTSolver:
+def get_solver(args: Options) -> SMTSolver | PartialSMTSolver | FullPartialSMTSolver:
     """returns the solver chosen by the user"""
     if args.solver == "total":
         return SMTSolver()
-    else:
+    elif args.solver == "partial":
         return PartialSMTSolver()
+    else:
+        return FullPartialSMTSolver()
 
 
 def is_smt_phase_necessary(args: Options):
