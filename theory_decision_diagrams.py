@@ -33,24 +33,32 @@ def theory_ddnnf(phi,
     phi_and_lemmas = formula.get_normalized(
         phi_and_lemmas, solver.get_converter())
     try:
-        tddnnf: FNode = compile_dDNNF(phi_and_lemmas,
-                                      keep_temp=(
-                                          args.keep_c2d_temp is not None),
-                                      verbose=args.verbose,
-                                      computation_logger=logger["T-dDNNF"],
-                                      tmp_path=args.keep_c2d_temp,
-                                      back_to_fnode=(not args.no_dDNNF_to_pysmt))
+        tddnnf, nodes, edges = compile_dDNNF(phi_and_lemmas,
+                                             keep_temp=(
+                                                 args.keep_c2d_temp is not None),
+                                             verbose=args.verbose,
+                                             computation_logger=logger["T-dDNNF"],
+                                             tmp_path=args.keep_c2d_temp,
+                                             back_to_fnode=(not args.no_dDNNF_to_pysmt))
     except TimeoutError:
         if args.verbose:
             print("Timeout error in dDNNF computation")
         logger["timeout"] = "dDNNF"
         return
+    if args.count_nodes:
+        if args.verbose:
+            print("T-dDNNF Nodes: ", nodes)
+        logger["T-dDNNF"]["nodes"] = nodes
+    if args.count_vertices:
+        if args.verbose:
+            print("T-dDNNF Vertices: ", edges)
+        logger["T-dDNNF"]["edges"] = edges
     if args.no_dDNNF_to_pysmt:
         return
     elapsed_time = time.time() - start_time
     logger["T-dDNNF"]["total computation time"] = elapsed_time
     if args.tdDNNF_output is not None:
-        if args.verbose:    
+        if args.verbose:
             print("Saving T-dDNNF to ", args.tdDNNF_output)
         write_smtlib(tddnnf, args.tdDNNF_output)
     if args.verbose:

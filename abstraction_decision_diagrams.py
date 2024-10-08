@@ -21,22 +21,32 @@ def abstr_ddnnf(phi, args: Options, logger: Dict):
     if args.verbose:
         print("Abstraction dDNNF computation starting...")
     try:
-        abs_ddnnf = compile_dDNNF(phi,
-                                  keep_temp=(args.keep_c2d_temp is not None),
-                                  verbose=args.verbose,
-                                  computation_logger=logger["Abstraction dDNNF"],
-                                  tmp_path=args.keep_c2d_temp,
-                                  back_to_fnode=(not args.no_dDNNF_to_pysmt))
+        abs_ddnnf, nodes, edges = compile_dDNNF(phi,
+                                                keep_temp=(
+                                                    args.keep_c2d_temp is not None),
+                                                verbose=args.verbose,
+                                                computation_logger=logger["Abstraction dDNNF"],
+                                                tmp_path=args.keep_c2d_temp,
+                                                back_to_fnode=(not args.no_dDNNF_to_pysmt))
     except TimeoutError:
         if args.verbose:
             print("Timeout error in dDNNF computation")
         logger["timeout"] = "dDNNF"
         return
+    if args.count_nodes:
+        if args.verbose:
+            print("T-dDNNF Nodes: ", nodes)
+        logger["T-dDNNF"]["nodes"] = nodes
+    if args.count_vertices:
+        if args.verbose:
+            print("T-dDNNF Vertices: ", edges)
+        logger["T-dDNNF"]["edges"] = edges
     if args.no_dDNNF_to_pysmt:
         return
     if args.abstraction_dDNNF_output is not None:
         if args.verbose:
-            print("Saving abstraction dDNNF to ", args.abstraction_dDNNF_output)    
+            print("Saving abstraction dDNNF to ",
+                  args.abstraction_dDNNF_output)
         write_smtlib(abs_ddnnf, args.abstraction_dDNNF_output)
     del abs_ddnnf
 

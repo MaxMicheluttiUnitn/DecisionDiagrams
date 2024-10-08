@@ -17,8 +17,27 @@ from theorydd.lemma_extractor import extract
 
 import abstraction_decision_diagrams as add
 import theory_decision_diagrams as tdd
+import tabular_solver as tabular
 from commands import Options, get_args
 
+def print_models(models, boolean_mapping) -> None:
+    """prints the models from allSMT computation on screen"""
+    if boolean_mapping is not None:
+        counter = 0
+        for model in models:
+            out = ""
+            for elem in model:
+                if elem in boolean_mapping.keys():
+                    if elem.is_not():
+                        out += str(boolean_mapping[elem.args()[0]]) + ", "
+                    else:
+                        out += str(boolean_mapping[elem]) + ", "
+                else:
+                    out += str(elem) + ", "
+            counter += 1
+            print(counter, ": [", out[:len(out)-2], "]", sep="")
+    else:
+        print("\n".join(map(str, models)))
 
 def get_phi(args: Options, logger: Dict) -> FNode:
     """load the formula"""
@@ -77,8 +96,15 @@ def get_solver(args: Options) -> SMTSolver | PartialSMTSolver | FullPartialSMTSo
         return SMTSolver()
     elif args.solver == "partial":
         return PartialSMTSolver()
-    else:
+    elif args.solver == "full-partial":
         return FullPartialSMTSolver()
+    elif args.solver == "tabular_total":
+        return tabular.TabularSMTSolver(is_partial=False)
+    elif args.solver == "tabular_partial":
+        return tabular.TabularSMTSolver(is_partial=True)
+    else:
+        # default on total solver
+        return SMTSolver()
 
 
 def is_smt_phase_necessary(args: Options):
@@ -107,24 +133,12 @@ def smt_phase(phi: FNode, args: Options, logger: Dict):
                 print("All-SMT total models ", models_total)
 
         if args.print_models:
-            print("All-SMT models:")
-            models = smt_solver.get_models()
-            if boolean_mapping is not None:
-                counter = 0
-                for model in models:
-                    out = ""
-                    for elem in model:
-                        if elem in boolean_mapping.keys():
-                            if elem.is_not():
-                                out += str(boolean_mapping[elem.args()[0]]) + ", "
-                            else:
-                                out += str(boolean_mapping[elem]) + ", "
-                        else:
-                            out += str(elem) + ", "
-                    counter += 1
-                    print(counter, ": [", out[:len(out)-2], "]", sep="")
+            if isinstance(smt_solver, tabular.TabularSMTSolver):
+                print("Models not available from Tabular computation")
             else:
-                print("\n".join(map(str, models)))
+                print("All-SMT models:")
+                models = smt_solver.get_models()
+                print_models(models, boolean_mapping)
 
         logger["total lemmas"] = len(tlemmas)
         if args.verbose:

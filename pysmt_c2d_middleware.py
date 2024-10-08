@@ -3,7 +3,7 @@
 import random
 import os
 import time
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from pysmt.shortcuts import (
     write_smtlib,
     read_smtlib,
@@ -155,6 +155,65 @@ def from_c2d_nnf_to_pysmt(c2d_file: str, mapping: Dict[int, FNode]) -> FNode:
                 pysmt_nodes.append(Not(mapping[abs(variable)]))
     return pysmt_nodes[len(pysmt_nodes) - 1]
 
+def count_nodes_and_edges_from_c2d_nnf(c2d_file: str) -> Tuple[int,int]:
+    """
+    Counts nodes and edges of the formula contained in the file c2d_file from nnf format to a pysmt FNode
+
+    Args:
+        c2d_file (str) -> the path to the file where the dimacs output needs to be saved
+
+    Returns:
+        (int,int) -> the total nodes and edges of the formula (#nodes,#edges)
+    """
+    total_nodes = 0
+    total_edges = 0
+    with open(c2d_file, "r", encoding="utf8") as data:
+        contents = data.read()
+    lines: List[str] = contents.split("\n")
+    lines = list(filter(lambda x: x != "", lines))
+    for line in lines:
+        if line.startswith("nnf "):
+            # I DO NOT CARE ABOUT THIS DATA FOR PARSING
+            continue
+        elif line.startswith("A "):
+            # AND node
+            total_nodes += 1
+            if line.startswith("A 0"):
+                continue
+            tokens = line.split(" ")[2:]
+            and_nodes = [int(t) for t in tokens]
+            if len(and_nodes) == 1:
+                total_edges+=1
+                continue
+            total_edges += len(and_nodes)
+        elif line.startswith("O "):
+            # OR node
+            total_nodes += 1
+            tokens = line.split(" ")[1:]
+            _j = tokens[0]
+            tokens = tokens[1:]
+            c = tokens[0]
+            tokens = tokens[1:]
+            if c == "0":
+                continue
+            or_nodes = [int(t) for t in tokens]
+            if len(or_nodes) == 1:
+                total_edges+=1
+                continue
+            total_edges += len(or_nodes)
+        elif line.startswith("L "):
+            # LITERAL
+            #tokens = line.split(" ")[1:]
+            #variable = int(tokens[0])
+            total_nodes += 1
+            #if variable > 0:
+                #pysmt_nodes.append(mapping[variable])
+                #total_nodes += 1
+            #else:
+                #total_nodes += 1
+                #pysmt_nodes.append(Not(mapping[abs(variable)]))
+    return (total_nodes,total_edges)
+
 
 def from_c2d_nnf_to_smtlib(
     c2d_file: str, smtlib_file: str, mapping: Dict[int, FNode]
@@ -207,7 +266,7 @@ def load_mapping(mapping_path: str) -> Dict[int, FNode]:
     return mapping
 
 
-def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = None, computation_logger: Dict | None = None, verbose: bool = False, back_to_fnode: bool = True) -> FNode | None:
+def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = None, computation_logger: Dict | None = None, verbose: bool = False, back_to_fnode: bool = True) -> Tuple[FNode,int,int] | None:
     """
     Compiles an FNode in dDNNF through the c2d compiler
 
@@ -223,7 +282,10 @@ def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = No
         back_to_fnode (bool) = True -> set it to False to avoid the final pysmt translation
 
     Returns:
+        Tuple[FNode,int,int] | None -> if back_to_fnode is set to True, the function returns:
         (FNode) -> the input pysmt formula in dDNNF
+        (int) -> the number of nodes in the dDNNF
+        (int) -> the number of edges in the dDNNF
     """
     if computation_logger is None:
         computation_logger = {}
@@ -274,6 +336,7 @@ def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = No
     start_time = time.time()
     if verbose:
         print("Translating to pysmt...")
+    nodes,edges = count_nodes_and_edges_from_c2d_nnf(f"{tmp_folder}/dimacs.cnf.nnf")
     result = from_c2d_nnf_to_pysmt(
         f"{tmp_folder}/dimacs.cnf.nnf", reverse_mapping)
     if os.path.exists(tmp_folder) and not keep_temp:
@@ -282,9 +345,9 @@ def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = No
     computation_logger["pysmt translation time"] = elapsed_time
     if verbose:
         print(f"pysmt translation completed in {elapsed_time} seconds")
-    return result
+    return result,nodes,edges
 
-
+# import json
 if __name__ == "__main__":
     test_phi = read_smtlib("test.smt2")
 

@@ -1,0 +1,140 @@
+"""this module handles interactions with the mathsat solver"""
+import os
+import re
+
+import sys
+from typing import List, Dict
+from pysmt.fnode import FNode
+from theorydd.constants import SAT, UNSAT
+from theorydd.smt_solver import SMTSolver as _SMTSolver
+from theorydd.formula import get_normalized, save_phi, read_phi
+
+_TLEMMAS_FILE_REGEX = "tlemma_[0-9]+.smt2"
+
+_TABULAR_ALLSMT_BINARY = "tabular_allsmt/tabularAllSMT_new"
+
+class TabularSMTSolver:
+    """A wrapper for the tabular T-solver
+
+    is_partial: bool [False]:   if True, the solver will only compute partial assignments,
+                                which may have theory inconsistent extensions
+    """
+
+    def __init__(self, is_partial: bool = False) -> None:
+        self.normalizer_solver = _SMTSolver()
+        self._tlemmas = []
+        self._models = []
+        self._converter = self.normalizer_solver.get_converter()
+        self._atoms = []
+        self._is_partial = is_partial
+
+    def check_all_sat(
+        self, phi: FNode, boolean_mapping: Dict[FNode, FNode] = None
+    ) -> bool:
+        """Computes All-SMT for the SMT-formula phi using partial assignment and Tsetsin CNF-ization
+
+        Args:
+            phi (FNode): a pysmt formula
+            boolean_mapping (Dict[FNode, FNode]) [None]: unused, for compatibility with SMTSolver
+        """
+        if boolean_mapping is not None:
+            boolean_mapping = None
+        self._tlemmas = []
+        self._models = []
+        self._atoms = []
+
+        self._atoms = phi.get_atoms()
+
+        normal_phi = get_normalized(phi, self.get_converter())
+
+        # phi_tsetsin = PolarityCNFizer(nnf=True, mutex_nnf_labels=True).convert_as_formula(normal_phi)
+
+        # save normalized phi on temporary smt file
+        phi_file = "temp_phi.smt"
+        save_phi(normal_phi, phi_file)
+
+        if not self._is_partial:
+            minimize_models = "true"
+        else:
+            minimize_models = "false"
+
+        # run solver with one hour timeout
+        output_file = "temp_output.txt"
+        options = f"--debug.dump_theory_lemmas=true --dpll.store_tlemmas=true --theory.la.split_rat_eq=false --preprocessor.simplification=0 --preprocessor.toplevel_propagation=false --dpll.allsat_minimize_model={minimize_models}"
+        result = os.system(
+            f"echo $(timeout 3600 ./{_TABULAR_ALLSMT_BINARY} {options} < {phi_file}) > {output_file}")
+
+        # check if output is timeout
+        if result == 124:
+            print("Timeout")
+            sys.exit(124)
+        elif result == 1:
+            print("Tabular Solver Error")
+            sys.exit(1)
+        elif result != 0:
+            print("Error")
+            sys.exit(result)
+
+        # read output
+        with open(output_file, "r", encoding='utf8') as f:
+            output = f.read()
+            # load models
+            print(output)
+
+        # read lemmas
+        for item in os.listdir():
+            if re.search(_TLEMMAS_FILE_REGEX, item):
+                tlemma = read_phi(item)
+                normal_tlemma = self.get_converter().convert(tlemma)
+                self._tlemmas.append(normal_tlemma)
+
+        # remove temporary files
+        # lemmas
+        _clear_tlemmas()
+        # phi
+        os.remove(phi_file)
+
+        # read output file
+        with open(output_file, "r", encoding='utf8') as f:
+            data = f.read()
+            # read model
+            # output syntax:
+            # s MODEL COUNT <models> s MODEL COUNT 0
+            total_models = int(data.replace('s MODEL COUNT', '').strip().split(' ')[0])
+            self._models = [0] * total_models
+
+        # remove temporary output file
+        os.remove(output_file)
+
+        if len(self._models) == 0:
+            return UNSAT
+        return SAT
+
+    def get_theory_lemmas(self) -> List[FNode]:
+        """Returns the theory lemmas found during the All-SAT computation"""
+        return self._tlemmas
+
+    def get_models(self) -> List:
+        """Returns the models found during the All-SAT computation"""
+        return self._models
+
+    def get_converter(self):
+        """Returns the converter used for the normalization of T-atoms"""
+        return self._converter
+
+    def get_converted_atoms(self, atoms):
+        """Returns a list of normalized atoms"""
+        return [self._converter.convert(a) for a in atoms]
+
+
+def _clear_tlemmas():
+    for item in os.listdir():
+        if re.search(_TLEMMAS_FILE_REGEX, item):
+            os.remove(item)
+
+
+if __name__ == "__main__":
+    _clear_tlemmas()
+    phi_test = read_phi("input/example.smt")
+    solver = TabularSMTSolver()
+    print(solver.check_all_sat(phi_test))

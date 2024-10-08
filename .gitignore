@@ -7,6 +7,7 @@
 /problems_and_solutions
 /problems_and_solutions_synth
 /logs
+/tabular_allsmt
 
 *.smt
 *.smt2
@@ -16,11 +17,15 @@
 *.json
 *.pdf
 *.png
+*.cnf
+*.nnf
+*.exist
 
 fix_tsetsin.py
 
 out.txt
 tmp.txt
+tmp_data.txt
 
 mathsat
 c2d_linux
