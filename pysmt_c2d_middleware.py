@@ -266,7 +266,7 @@ def load_mapping(mapping_path: str) -> Dict[int, FNode]:
     return mapping
 
 
-def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = None, computation_logger: Dict | None = None, verbose: bool = False, back_to_fnode: bool = True) -> Tuple[FNode,int,int] | None:
+def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = None, computation_logger: Dict | None = None, verbose: bool = False, back_to_fnode: bool = True) -> Tuple[FNode | None,int,int]:
     """
     Compiles an FNode in dDNNF through the c2d compiler
 
@@ -330,13 +330,13 @@ def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = No
     if verbose:
         print(f"dDNNF compilation completed in {elapsed_time} seconds")
     # reverse_mapping = load_mapping(f"{tmp_folder}/mapping")
+    nodes,edges = count_nodes_and_edges_from_c2d_nnf(f"{tmp_folder}/dimacs.cnf.nnf")
     if not back_to_fnode:
-        return None
+        return None,nodes,edges
     # translate to pysmt
     start_time = time.time()
     if verbose:
         print("Translating to pysmt...")
-    nodes,edges = count_nodes_and_edges_from_c2d_nnf(f"{tmp_folder}/dimacs.cnf.nnf")
     result = from_c2d_nnf_to_pysmt(
         f"{tmp_folder}/dimacs.cnf.nnf", reverse_mapping)
     if os.path.exists(tmp_folder) and not keep_temp:
