@@ -35,7 +35,7 @@ do
 					echo "Task completed on $smtfilename"
 				else
                     ### IF LEMMAS NOT AVAILABLE
-                    # timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver partial -d "$tmpjsonfile" --count_models
+                    # timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver full_partial -d "$tmpjsonfile" --count_models
                     # if [ $? -eq 0 ]; then
                     #     python main.py -i "$item" --load_lemmas "$tmpfile" --load_details "$tmpjsonfile" --tdDNNF --count_nodes --count_models -d "$outputprobs"/"$jsonfilename" --no_dDNNF_to_pysmt --keep_c2d_temp "$tmpfolder"
                     #     echo "Task completed on $smtfilename"

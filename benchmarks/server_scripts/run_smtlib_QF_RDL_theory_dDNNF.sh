@@ -32,7 +32,7 @@ do
                 python main.py -i "$item" --load_details "$tmpjsonfilename" --load_lemmas "$tmpfile"  --tdDNNF -d "$outputfolder"/"$jsonfilename" --no_dDNNF_to_pysmt --keep_c2d_temp "$tmpfolder"
                 echo "Task completed on $smtfilename"
             else
-                timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver partial -d "$tmpjsonfilename" --count_models
+                timeout 3600s python main.py -i "$item" --save_lemmas "$tmpfile" --solver full_partial -d "$tmpjsonfilename" --count_models
                 if [ $? -eq 0 ]; then
                     python main.py -i "$item" --load_details "$tmpjsonfilename" --load_lemmas "$tmpfile"  --tdDNNF -d "$outputfolder"/"$jsonfilename" --no_dDNNF_to_pysmt --keep_c2d_temp "$tmpfolder"
                     echo "Task completed on $smtfilename"

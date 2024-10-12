@@ -96,7 +96,7 @@ def get_solver(args: Options) -> SMTSolver | PartialSMTSolver | FullPartialSMTSo
         return SMTSolver()
     elif args.solver == "partial":
         return PartialSMTSolver()
-    elif args.solver == "full-partial":
+    elif args.solver == "full_partial":
         return FullPartialSMTSolver()
     elif args.solver == "tabular_total":
         return tabular.TabularSMTSolver(is_partial=False)
