@@ -1,2 +1,2 @@
-theorydd @ git+https://github.com/MaxMicheluttiUnitn/TheoryConsistentDecisionDiagrams@two_phase_dd
+theorydd @ git+https://github.com/MaxMicheluttiUnitn/TheoryConsistentDecisionDiagrams@main
 allsat_cnf @ git+https://github.com/masinag/allsat-cnf@main
