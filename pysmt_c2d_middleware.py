@@ -347,12 +347,11 @@ def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = No
         print(f"pysmt translation completed in {elapsed_time} seconds")
     return result,nodes,edges
 
-# import json
 if __name__ == "__main__":
     test_phi = read_smtlib("test.smt2")
 
     print(test_phi.serialize())
 
-    phi_ddnnf = compile_dDNNF(test_phi, True)
+    phi_ddnnf, _a, _b = compile_dDNNF(test_phi, back_to_fnode=True)
 
     print(phi_ddnnf.serialize())
