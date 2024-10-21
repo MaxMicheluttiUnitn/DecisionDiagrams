@@ -47,6 +47,9 @@ The tool supports both abstraction based and theory consistent compilation in dD
 
 Compilation in dDNNF is currently not supported by the tool for other operative systems.
 
+## Using the Tabular AllSMT solver
+
+This tool is compatible with the Tabular AllSMT solver. In order to use this solver, create a ".env" file by copying the ".env.example" file and change the variable for path of the solver inside the ".env" file to the location where you installed the solver. If you launch the tool with an incorrect value for the path of the tabular solver and select one of the possible configurations for the tabular solver in the options of the command, this tool will gracefully exit before performing any allSMT tasks.
 
 ## Dumping XSDDs
 
