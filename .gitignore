@@ -8,6 +8,7 @@
 /problems_and_solutions_synth
 /logs
 /tabular_allsmt
+/temp_*
 
 *.smt
 *.smt2
