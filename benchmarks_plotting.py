@@ -126,6 +126,8 @@ def get_ldd_randgen_bench_data(kind: str, source: str) -> List[Point]:
         for name in files:
             files_list.append(os.path.join(path, name))
     for filename in files_list:
+        if not filename.endswith(".json"):
+            continue
         f = open(filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0 or data.get("timeout") is not None:
@@ -170,6 +172,8 @@ def get_randgen_bench_data(kind: str, source: str) -> List[Point]:
         for name in files:
             files_list.append(os.path.join(path, name))
     for filename in files_list:
+        if not filename.endswith(".json"):
+            continue
         f = open(filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0 or data.get("timeout") is not None:
@@ -213,6 +217,8 @@ def get_smtlib_bench_data(kind: str, source: str) -> List[Point]:
         for name in files:
             files_list.append(os.path.join(path, name))
     for filename in files_list:
+        if not filename.endswith(".json"):
+            continue
         if filename.count("smt2") > 0:
             continue
         f = open(filename, encoding="utf8")
@@ -833,7 +839,21 @@ def main() -> None:
     ldd_randgen_sample_points = get_ldd_randgen_bench_data(
         "T-dDNNF", "benchmarks/ldd_randgen/output_dDNNF_sample")
     print("Timeouts of T-dDNNFs sample on LDD randgen: ", timeout_to_str(ldd_randgen_sample_points))
-    
+    ldd_randgen_sdd_full_partial_points = get_ldd_randgen_bench_data(
+        "T-SDD", "benchmarks/ldd_randgen/output_sdd_full_partial")
+    print("Timeouts of T-SDDs full partial on LDD randgen: ", timeout_to_str(ldd_randgen_sdd_full_partial_points))
+
+    ldd_randgen_allsmt_total_points = get_ldd_randgen_bench_data(
+        "NoDD", "benchmarks/ldd_randgen/tmp_total")
+    ldd_randgen_allsmt_partial_points = get_ldd_randgen_bench_data(
+        "NoDD", "benchmarks/ldd_randgen/tmp_full_partial")
+
+    # allsmt time total vs partial
+    allsmt_points = get_allsmt_time_points(
+        ldd_randgen_allsmt_total_points, ldd_randgen_allsmt_partial_points)
+    build_time_graph(allsmt_points, "Total All-SMT", "Partial All-SMT",
+                     "plots/ldd_randgen/allsmt_partial_vs_total_time.pdf")
+
     # dDNNF
     # dDNNF partial vs total
     # time_points = get_time_points(
@@ -882,6 +902,16 @@ def main() -> None:
     build_models_graph(models_points, "Total T-BDD", "Partial T-BDD",
                         "plots/ldd_randgen/bdd_partial_vs_total_models.pdf")
     
+    # SDD total vs partial
+    time_points = get_time_points(
+        ldd_randgen_sdds_points, ldd_randgen_sdd_full_partial_points)
+    build_time_graph(time_points, "Total T-SDD", "Partial T-SDD",
+                        "plots/ldd_randgen/sdd_partial_vs_total_time.pdf")
+    size_points = get_nodes_points(
+        ldd_randgen_sdds_points, ldd_randgen_sdd_full_partial_points)
+    build_size_graph(size_points, "Total T-SDD", "Partial T-SDD",
+                        "plots/ldd_randgen/sdd_partial_vs_total_size.pdf")
+    
     # Partial BDD vs LDD
     time_points = get_time_points(
         ldd_randgen_bdds_fp_points, ldd_randgen_ldds_points)
@@ -901,6 +931,10 @@ def main() -> None:
         ldd_randgen_ddnnf_partial_points, ldd_randgen_sample_points)
     build_time_graph(time_points, "Partial T-dDNNF", "Sample T-dDNNF",
                         "plots/ldd_randgen/ddnnf_partial_vs_sample_time.pdf")
+    size_points = get_nodes_points(
+        ldd_randgen_ddnnf_partial_points, ldd_randgen_sample_points)
+    build_size_graph(size_points, "Partial T-dDNNF", "Sample T-dDNNF",
+                        "plots/ldd_randgen/ddnnf_partial_vs_sample_size.pdf")
 
     # print("LDD randgen LDD vs BDD graphs")
     # time_points = get_time_points(
@@ -999,6 +1033,19 @@ def main() -> None:
     randgen_sample_points = get_randgen_bench_data(
         "T-dDNNF", "benchmarks/randgen/output_ddnnf_sample")
     print("Timeouts of T-dDNNFs sample on randgen: ", timeout_to_str(randgen_sample_points))
+    randgen_sdd_fp_points = get_randgen_bench_data(
+        "T-SDD", "benchmarks/randgen/output_sdd_fp")
+    print("Timeouts of T-SDDs full partial on randgen: ", timeout_to_str(randgen_sdd_fp_points))
+    randgen_allsmt_total_points = get_ldd_randgen_bench_data(
+        "NoDD", "benchmarks/randgen/tmp_total")
+    randgen_allsmt_partial_points = get_ldd_randgen_bench_data(
+        "NoDD", "benchmarks/randgen/tmp_fp")
+
+    # allsmt time total vs partial
+    allsmt_points = get_allsmt_time_points(
+        randgen_allsmt_total_points, randgen_allsmt_partial_points)
+    build_time_graph(allsmt_points, "Total All-SMT", "Partial All-SMT",
+                     "plots/randgen/allsmt_partial_vs_total_time.pdf")
 
     # allsmt_points = get_allsmt_time_points(
     #     randgen_ddnnf_points, randgen_ddnnf_total_points)
@@ -1044,7 +1091,7 @@ def main() -> None:
     #     randgen_ddnnf_full_partial_points, randgen_bdds_points)
     # build_time_graph(time_points, "Partial T-dDNNF", "T-BDD",
     #                  "plots/randgen/ddnnf_vs_bdd_time.pdf")
-        
+    
     # BDD total vs partial
     time_points = get_time_points(
         randgen_bdds_points, randgen_bdds_fp_points)
@@ -1058,6 +1105,16 @@ def main() -> None:
         randgen_bdds_points, randgen_bdds_fp_points)
     build_models_graph(models_points, "Total T-BDD", "Partial T-BDD",
                         "plots/randgen/bdd_partial_vs_total_models.pdf")
+    
+    # SDD total vs partial
+    time_points = get_time_points(
+        randgen_sdds_points, randgen_sdd_fp_points)
+    build_time_graph(time_points, "Total T-SDD", "Partial T-SDD",
+                        "plots/randgen/sdd_partial_vs_total_time.pdf")
+    size_points = get_nodes_points(
+        randgen_sdds_points, randgen_sdd_fp_points)
+    build_size_graph(size_points, "Total T-SDD", "Partial T-SDD",
+                        "plots/randgen/sdd_partial_vs_total_size.pdf")
 
 
     # Partial dDNNF vs sample
@@ -1065,6 +1122,10 @@ def main() -> None:
         randgen_ddnnf_full_partial_points, randgen_sample_points)
     build_time_graph(time_points, "Partial enum. T-dDNNF", "Sample enum. T-dDNNF",
                         "plots/randgen/ddnnf_sample_vs_partial_time.pdf") 
+    size_points = get_nodes_points(
+        randgen_ddnnf_full_partial_points, randgen_sample_points)
+    build_size_graph(size_points, "Partial enum. T-dDNNF", "Sample enum. T-dDNNF",
+                        "plots/randgen/ddnnf_sample_vs_partial_size.pdf")
 
     # # Partial BDD vs LDD
     # time_points = get_time_points(
@@ -1144,7 +1205,19 @@ def main() -> None:
     qfrdl_ddnnf_abstraction_points = get_smtlib_bench_data(
         "Abstraction dDNNF", "benchmarks/smtlib/output_ddnnf_abstract/non-incremental/QF_RDL")
     print("Timeouts of Abstraction dDNNFs on smtlib QF RDL: ", timeout_to_str(qfrdl_ddnnf_abstraction_points))
+    qfrdl_sdd_full_partial_points = get_smtlib_bench_data(
+        "T-SDD", "benchmarks/smtlib/output_sdd_full_partial/non-incremental/QF_RDL")
+    print("Timeouts of full partial T-SDDs on smtlib QF RDL: ", timeout_to_str(qfrdl_sdd_full_partial_points))
+    qfrdl_allsmt_total_points = get_ldd_randgen_bench_data(
+        "NoDD", "benchmarks/smtlib/tmp_noeqsplit_total/non-incremental/QF_RDL")
+    qfrdl_allsmt_partial_points = get_ldd_randgen_bench_data(
+        "NoDD", "benchmarks/smtlib/tmp_noeqsplit_full_partial/non-incremental/QF_RDL")
 
+    # allsmt time total vs partial
+    allsmt_points = get_allsmt_time_points(
+        qfrdl_allsmt_total_points, qfrdl_allsmt_partial_points)
+    build_time_graph(allsmt_points, "Total All-SMT", "Partial All-SMT",
+                     "plots/smtlib/QF_RDL/allsmt_partial_vs_total_time.pdf")
 
     # dDNNF partial vs total
     # time_points = get_time_points(
@@ -1192,6 +1265,16 @@ def main() -> None:
         qfrdl_bdds_points, qfrdl_bdds_fp_points)
     build_models_graph(models_points, "Total T-BDD", "Partial T-BDD",
                         "plots/smtlib/QF_RDL/bdd_partial_vs_total_models.pdf")
+
+    # SDD total vs partial
+    time_points = get_time_points(
+        qfrdl_sdds_points, qfrdl_sdd_full_partial_points)
+    build_time_graph(time_points, "Total T-SDD", "Partial T-SDD",
+                        "plots/smtlib/QF_RDL/sdd_partial_vs_total_time.pdf")
+    size_points = get_nodes_points(
+        qfrdl_sdds_points, qfrdl_sdd_full_partial_points)
+    build_size_graph(size_points, "Total T-SDD", "Partial T-SDD",
+                        "plots/smtlib/QF_RDL/sdd_partial_vs_total_size.pdf")
 
     # BDD partial vs LDD
     time_points = get_time_points(

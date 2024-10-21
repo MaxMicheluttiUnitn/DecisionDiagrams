@@ -21,6 +21,7 @@
 *.cnf
 *.nnf
 *.exist
+.env
 
 fix_tsetsin.py
 fix_ddnnf.py

@@ -5,19 +5,26 @@ import re
 import sys
 from typing import List, Dict
 from pysmt.fnode import FNode
+from allsat_cnf.polarity_cnfizer import PolarityCNFizer
 from theorydd.constants import SAT, UNSAT
 from theorydd.smt_solver import SMTSolver as _SMTSolver
 from theorydd.formula import get_normalized, save_phi, read_phi
+from dotenv import load_dotenv
 
+load_dotenv()
+
+# path to the tabular allsmt binary
+_TABULAR_ALLSMT_BINARY = os.getenv("TABULAR_ALLSMT_BINARY")
+
+# regex for tlemmas files
 _TLEMMAS_FILE_REGEX = "tlemma_[0-9]+.smt2"
-
-_TABULAR_ALLSMT_BINARY = "tabular_allsmt/tabularAllSMT_new"
 
 class TabularSMTSolver:
     """A wrapper for the tabular T-solver
 
     is_partial: bool [False]:   if True, the solver will only compute partial assignments,
-                                which may have theory inconsistent extensions
+                                which may have theory inconsistent extensions, but are
+                                guaranteed to have at least one theory consistent extension
     """
 
     def __init__(self, is_partial: bool = False) -> None:
@@ -28,6 +35,10 @@ class TabularSMTSolver:
         self._atoms = []
         self._is_partial = is_partial
 
+        if not os.path.isfile(_TABULAR_ALLSMT_BINARY):
+            print("The binary for the tabular AllSMT solver is missing. Please check the installation path and update the .env file.")
+            sys.exit(1)
+
     def check_all_sat(
         self, phi: FNode, boolean_mapping: Dict[FNode, FNode] = None
     ) -> bool:
@@ -37,6 +48,9 @@ class TabularSMTSolver:
             phi (FNode): a pysmt formula
             boolean_mapping (Dict[FNode, FNode]) [None]: unused, for compatibility with SMTSolver
         """
+        # there may be some previously saved t-lemmas from a crashed run
+        _clear_tlemmas()
+        
         if boolean_mapping is not None:
             boolean_mapping = None
         self._tlemmas = []
@@ -47,13 +61,13 @@ class TabularSMTSolver:
 
         normal_phi = get_normalized(phi, self.get_converter())
 
-        # phi_tsetsin = PolarityCNFizer(nnf=True, mutex_nnf_labels=True).convert_as_formula(normal_phi)
+        phi_tsetsin = PolarityCNFizer(nnf=True, mutex_nnf_labels=True).convert_as_formula(normal_phi)
 
         # save normalized phi on temporary smt file
         phi_file = "temp_phi.smt"
-        save_phi(normal_phi, phi_file)
+        save_phi(phi_tsetsin, phi_file)
 
-        if not self._is_partial:
+        if self._is_partial:
             minimize_models = "true"
         else:
             minimize_models = "false"
@@ -76,10 +90,10 @@ class TabularSMTSolver:
             sys.exit(result)
 
         # read output
-        with open(output_file, "r", encoding='utf8') as f:
-            output = f.read()
-            # load models
-            print(output)
+        # with open(output_file, "r", encoding='utf8') as f:
+        #     output = f.read()
+        #     # load models
+        #     print(output)
 
         # read lemmas
         for item in os.listdir():
@@ -97,14 +111,18 @@ class TabularSMTSolver:
         # read output file
         with open(output_file, "r", encoding='utf8') as f:
             data = f.read()
+            print(data)
             # read model
             # output syntax:
             # s MODEL COUNT <models> s MODEL COUNT 0
-            total_models = int(data.replace('s MODEL COUNT', '').strip().split(' ')[0])
+            try:
+                total_models = int(data.replace('s MODEL COUNT', '').strip().split(' ')[0])
+            except ValueError:
+                total_models = 0
             self._models = [0] * total_models
 
         # remove temporary output file
-        os.remove(output_file)
+        # os.remove(output_file)
 
         if len(self._models) == 0:
             return UNSAT
