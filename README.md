@@ -53,7 +53,7 @@ This tool is compatible with the Tabular AllSMT solver. In order to use this sol
 
 ## Dumping XSDDs
 
-When using XSDDs be careful to install https://github.com/ML-KULeuven/psipy instead of the default psipy to use the PSI solver
+<!-- When using XSDDs be careful to install https://github.com/ML-KULeuven/psipy instead of the default psipy to use the PSI solver -->
 
 The dd library was slightly changed to allow for .dot dumping as follows:
 
