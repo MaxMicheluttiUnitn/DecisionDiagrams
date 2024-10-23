@@ -15,8 +15,19 @@ from pysmt.shortcuts import (
     Not,
 )
 from pysmt.fnode import FNode
-
 from allsat_cnf.label_cnfizer import LabelCNFizer
+
+# load c2d executable location from dotenv
+from dotenv import load_dotenv as _load_env
+_load_env()
+_C2D_EXECUTABLE = os.getenv("C2D_BINARY")
+
+# fix command to launch c2d compiler
+if _C2D_EXECUTABLE is not None and os.path.isfile(_C2D_EXECUTABLE) and not _C2D_EXECUTABLE.startswith("."):
+    if _C2D_EXECUTABLE.startswith("/"):
+        _C2D_EXECUTABLE = f".{_C2D_EXECUTABLE}"
+    else:
+        _C2D_EXECUTABLE = f"./{_C2D_EXECUTABLE}"
 
 
 def from_smtlib_to_dimacs_file(
@@ -155,7 +166,8 @@ def from_c2d_nnf_to_pysmt(c2d_file: str, mapping: Dict[int, FNode]) -> FNode:
                 pysmt_nodes.append(Not(mapping[abs(variable)]))
     return pysmt_nodes[len(pysmt_nodes) - 1]
 
-def count_nodes_and_edges_from_c2d_nnf(c2d_file: str) -> Tuple[int,int]:
+
+def count_nodes_and_edges_from_c2d_nnf(c2d_file: str) -> Tuple[int, int]:
     """
     Counts nodes and edges of the formula contained in the file c2d_file from nnf format to a pysmt FNode
 
@@ -183,7 +195,7 @@ def count_nodes_and_edges_from_c2d_nnf(c2d_file: str) -> Tuple[int,int]:
             tokens = line.split(" ")[2:]
             and_nodes = [int(t) for t in tokens]
             if len(and_nodes) == 1:
-                total_edges+=1
+                total_edges += 1
                 continue
             total_edges += len(and_nodes)
         elif line.startswith("O "):
@@ -198,21 +210,21 @@ def count_nodes_and_edges_from_c2d_nnf(c2d_file: str) -> Tuple[int,int]:
                 continue
             or_nodes = [int(t) for t in tokens]
             if len(or_nodes) == 1:
-                total_edges+=1
+                total_edges += 1
                 continue
             total_edges += len(or_nodes)
         elif line.startswith("L "):
             # LITERAL
-            #tokens = line.split(" ")[1:]
-            #variable = int(tokens[0])
+            # tokens = line.split(" ")[1:]
+            # variable = int(tokens[0])
             total_nodes += 1
-            #if variable > 0:
-                #pysmt_nodes.append(mapping[variable])
-                #total_nodes += 1
-            #else:
-                #total_nodes += 1
-                #pysmt_nodes.append(Not(mapping[abs(variable)]))
-    return (total_nodes,total_edges)
+            # if variable > 0:
+            # pysmt_nodes.append(mapping[variable])
+            # total_nodes += 1
+            # else:
+            # total_nodes += 1
+            # pysmt_nodes.append(Not(mapping[abs(variable)]))
+    return (total_nodes, total_edges)
 
 
 def from_c2d_nnf_to_smtlib(
@@ -266,7 +278,13 @@ def load_mapping(mapping_path: str) -> Dict[int, FNode]:
     return mapping
 
 
-def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = None, computation_logger: Dict | None = None, verbose: bool = False, back_to_fnode: bool = True) -> Tuple[FNode | None,int,int]:
+def compile_dDNNF(
+        phi: FNode,
+        keep_temp: bool = False,
+        tmp_path: str | None = None,
+        computation_logger: Dict | None = None,
+        verbose: bool = False,
+        back_to_fnode: bool = True) -> Tuple[FNode | None, int, int]:
     """
     Compiles an FNode in dDNNF through the c2d compiler
 
@@ -287,6 +305,10 @@ def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = No
         (int) -> the number of nodes in the dDNNF
         (int) -> the number of edges in the dDNNF
     """
+    if _C2D_EXECUTABLE is None or not os.path.isfile(_C2D_EXECUTABLE):
+        raise FileNotFoundError("The binary for the c2d compiler is missing. Please check the installation path and update the .env file.")
+    if not os.access(_C2D_EXECUTABLE, os.X_OK):
+        raise PermissionError("The c2d binary is not executable. Please check the permissions for the file and grant execution rights.")
     if computation_logger is None:
         computation_logger = {}
     if tmp_path is None:
@@ -307,21 +329,22 @@ def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = No
     if verbose:
         print(f"DIMACS translation completed in {elapsed_time} seconds")
     reverse_mapping = {v: k for k, v in mapping.items()}
-    if not os.path.exists(f"{tmp_folder}/mapping"):
-        os.mkdir(f"{tmp_folder}/mapping")
-    if verbose:
-        print("Saving mapping...")
-    # TEMPORARILY DISABLED DUE TO DISK MEMORY ISSUES
-    #save_mapping(reverse_mapping, f"{tmp_folder}/mapping")
-    if verbose:
-        print("Mapping saved")
+    # mapping is temporarily disabled due to high disk usage
+    # if not os.path.exists(f"{tmp_folder}/mapping"):
+    #     os.mkdir(f"{tmp_folder}/mapping")
+    # if verbose:
+    #     print("Saving mapping...")
+    # # TEMPORARILY DISABLED DUE TO DISK MEMORY ISSUES
+    # # save_mapping(reverse_mapping, f"{tmp_folder}/mapping")
+    # if verbose:
+    #     print("Mapping saved")
     # call c2d
     # output should be in file temp_folder/test_dimacs.cnf.nnf
     start_time = time.time()
     if verbose:
         print("Compiling dDNNF...")
     result = os.system(
-        f"timeout 3600s ./c2d_linux -in {tmp_folder}/dimacs.cnf -exist {tmp_folder}/quantification.exist > /dev/null"
+        f"timeout 3600s {_C2D_EXECUTABLE} -in {tmp_folder}/dimacs.cnf -exist {tmp_folder}/quantification.exist > /dev/null"
     )
     if result != 0:
         raise TimeoutError("c2d compilation failed: timeout")
@@ -330,9 +353,10 @@ def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = No
     if verbose:
         print(f"dDNNF compilation completed in {elapsed_time} seconds")
     # reverse_mapping = load_mapping(f"{tmp_folder}/mapping")
-    nodes,edges = count_nodes_and_edges_from_c2d_nnf(f"{tmp_folder}/dimacs.cnf.nnf")
+    nodes, edges = count_nodes_and_edges_from_c2d_nnf(
+        f"{tmp_folder}/dimacs.cnf.nnf")
     if not back_to_fnode:
-        return None,nodes,edges
+        return None, nodes, edges
     # translate to pysmt
     start_time = time.time()
     if verbose:
@@ -345,7 +369,8 @@ def compile_dDNNF(phi: FNode, keep_temp: bool = False, tmp_path: str | None = No
     computation_logger["pysmt translation time"] = elapsed_time
     if verbose:
         print(f"pysmt translation completed in {elapsed_time} seconds")
-    return result,nodes,edges
+    return result, nodes, edges
+
 
 if __name__ == "__main__":
     test_phi = read_smtlib("test.smt2")

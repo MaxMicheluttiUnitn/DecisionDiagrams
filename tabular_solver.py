@@ -9,15 +9,21 @@ from allsat_cnf.polarity_cnfizer import PolarityCNFizer
 from theorydd.constants import SAT, UNSAT
 from theorydd.smt_solver import SMTSolver as _SMTSolver
 from theorydd.formula import get_normalized, save_phi, read_phi
-from dotenv import load_dotenv
+from dotenv import load_dotenv as _load_env
 
-load_dotenv()
+_load_env()
 
 # path to the tabular allsmt binary
 _TABULAR_ALLSMT_BINARY = os.getenv("TABULAR_ALLSMT_BINARY")
+if _TABULAR_ALLSMT_BINARY is not None and isinstance(_TABULAR_ALLSMT_BINARY,str) and not _TABULAR_ALLSMT_BINARY.startswith("."):
+    if _TABULAR_ALLSMT_BINARY.startswith("/"):
+        _TABULAR_ALLSMT_BINARY = f".{_TABULAR_ALLSMT_BINARY}"
+    else:
+        _TABULAR_ALLSMT_BINARY = f"./{_TABULAR_ALLSMT_BINARY}"
 
 # regex for tlemmas files
 _TLEMMAS_FILE_REGEX = "tlemma_[0-9]+.smt2"
+
 
 class TabularSMTSolver:
     """A wrapper for the tabular T-solver
@@ -35,9 +41,12 @@ class TabularSMTSolver:
         self._atoms = []
         self._is_partial = is_partial
 
-        if not os.path.isfile(_TABULAR_ALLSMT_BINARY):
-            print("The binary for the tabular AllSMT solver is missing. Please check the installation path and update the .env file.")
-            sys.exit(1)
+        if _TABULAR_ALLSMT_BINARY is None or not os.path.isfile(_TABULAR_ALLSMT_BINARY):
+            raise FileNotFoundError(
+                "The binary for the tabular AllSMT solver is missing. Please check the installation path and update the .env file.")
+        if not os.access(_TABULAR_ALLSMT_BINARY, os.X_OK):
+            raise PermissionError(
+                "The binary for the tabular AllSMT solver is not executable. Please check the permissions and grant execution rights.")
 
     def check_all_sat(
         self, phi: FNode, boolean_mapping: Dict[FNode, FNode] = None
@@ -50,7 +59,7 @@ class TabularSMTSolver:
         """
         # there may be some previously saved t-lemmas from a crashed run
         _clear_tlemmas()
-        
+
         if boolean_mapping is not None:
             boolean_mapping = None
         self._tlemmas = []
@@ -61,7 +70,8 @@ class TabularSMTSolver:
 
         normal_phi = get_normalized(phi, self.get_converter())
 
-        phi_tsetsin = PolarityCNFizer(nnf=True, mutex_nnf_labels=True).convert_as_formula(normal_phi)
+        phi_tsetsin = PolarityCNFizer(
+            nnf=True, mutex_nnf_labels=True).convert_as_formula(normal_phi)
 
         # save normalized phi on temporary smt file
         phi_file = "temp_phi.smt"
@@ -116,7 +126,8 @@ class TabularSMTSolver:
             # output syntax:
             # s MODEL COUNT <models> s MODEL COUNT 0
             try:
-                total_models = int(data.replace('s MODEL COUNT', '').strip().split(' ')[0])
+                total_models = int(data.replace(
+                    's MODEL COUNT', '').strip().split(' ')[0])
             except ValueError:
                 total_models = 0
             self._models = [0] * total_models

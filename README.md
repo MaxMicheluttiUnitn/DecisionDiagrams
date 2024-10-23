@@ -39,17 +39,13 @@ Finally install the Mathsat SMT-solver from the pysmt package
 
 ## Compiling to dDNNF
 
-The tool supports both abstraction based and theory consistent compilation in dDNNF. However, in order to compile to this language you will need to download the dDNNF compiler [c2d](http://reasoning.cs.ucla.edu/c2d/). Download it and put the binary inside the tool main folder. Remember to grant the binary permission to execute.
-
-```
-    chmod +x c2d_linux
-```
+The tool supports both abstraction based and theory consistent compilation in dDNNF. However, in order to compile to this language you will need to download the dDNNF compiler [c2d](http://reasoning.cs.ucla.edu/c2d/). Download the binary and update your .env to point to the path of the binary. Remember to grant the binary execution permission.
 
 Compilation in dDNNF is currently not supported by the tool for other operative systems.
 
 ## Using the Tabular AllSMT solver
 
-This tool is compatible with the Tabular AllSMT solver. In order to use this solver, create a ".env" file by copying the ".env.example" file and change the variable for path of the solver inside the ".env" file to the location where you installed the solver. If you launch the tool with an incorrect value for the path of the tabular solver and select one of the possible configurations for the tabular solver in the options of the command, this tool will gracefully exit before performing any allSMT tasks.
+This tool is compatible with the Tabular AllSMT solver. This solver is currently not publicly available and it was implemented in this tool for research purposes. If you happen to own a copy of the solver's binary, update your .env to point to the path of the binary. Remember to grant the binary execution permission.
 
 ## Dumping XSDDs
 
