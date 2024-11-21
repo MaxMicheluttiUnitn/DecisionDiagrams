@@ -1,6 +1,7 @@
 """this module handles interactions with the mathsat solver"""
 import os
 import re
+import subprocess
 
 import sys
 from typing import List, Dict
@@ -83,21 +84,26 @@ class TabularSMTSolver:
             minimize_models = "false"
 
         # run solver with one hour timeout
-        output_file = "temp_output.txt"
         options = f"--debug.dump_theory_lemmas=true --dpll.store_tlemmas=true --theory.la.split_rat_eq=false --preprocessor.simplification=0 --preprocessor.toplevel_propagation=false --dpll.allsat_minimize_model={minimize_models}"
-        result = os.system(
-            f"echo $(timeout 3600 ./{_TABULAR_ALLSMT_BINARY} {options} < {phi_file}) > {output_file}")
+        
+        command = f"timeout 3600 ./{_TABULAR_ALLSMT_BINARY} {options} < {phi_file}"
+        try:
+            output_data = subprocess.check_output(command, shell=True, text=True)
+        except subprocess.CalledProcessError as e:
+            result = e.returncode
+            if result == 124:
+                print("Timeout")
+                sys.exit(124)
+            elif result == 1:
+                print("Tabular Solver Error")
+                sys.exit(1)
+            elif result != 0:
+                print("Error")
+                sys.exit(result)
+        # result = os.system(
+        #     f"echo $() > {output_file}")
 
         # check if output is timeout
-        if result == 124:
-            print("Timeout")
-            sys.exit(124)
-        elif result == 1:
-            print("Tabular Solver Error")
-            sys.exit(1)
-        elif result != 0:
-            print("Error")
-            sys.exit(result)
 
         # read output
         # with open(output_file, "r", encoding='utf8') as f:
@@ -106,10 +112,13 @@ class TabularSMTSolver:
         #     print(output)
 
         # read lemmas
+         #count_lemmas = 1
         for item in os.listdir():
             if re.search(_TLEMMAS_FILE_REGEX, item):
+                # print(count_lemmas,item)
+                # count_lemmas += 1
                 tlemma = read_phi(item)
-                normal_tlemma = self.get_converter().convert(tlemma)
+                normal_tlemma = get_normalized(tlemma, self.get_converter())
                 self._tlemmas.append(normal_tlemma)
 
         # remove temporary files
@@ -118,19 +127,24 @@ class TabularSMTSolver:
         # phi
         os.remove(phi_file)
 
-        # read output file
-        with open(output_file, "r", encoding='utf8') as f:
-            data = f.read()
-            print(data)
-            # read model
-            # output syntax:
-            # s MODEL COUNT <models> s MODEL COUNT 0
-            try:
-                total_models = int(data.replace(
-                    's MODEL COUNT', '').strip().split(' ')[0])
-            except ValueError:
-                total_models = 0
-            self._models = [0] * total_models
+        
+        # read model
+        # output syntax:
+        # [MODELS] s MODEL COUNT <models>
+        try:
+            if not self._is_partial:
+                total_models_tokenized = output_data.split('MODEL COUNT')
+            else:
+                total_models_tokenized = output_data.split('NUMBER OF PARTIAL ASSIGNMENTS')
+            if len(total_models_tokenized) != 2:
+                raise ValueError
+            total_models_string = total_models_tokenized[1].strip()
+            total_models = int(total_models_string)
+        except ValueError:
+            total_models = 0
+
+        # placeholder in order to ignore models but return a count
+        self._models = [0] * total_models
 
         # remove temporary output file
         # os.remove(output_file)
