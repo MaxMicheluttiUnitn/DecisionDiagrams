@@ -166,13 +166,12 @@ def main() -> None:
     # prepare for the run
     if bench_source == "ldd_randgen":
         input_files = prepare_paths_ldd_randgen(output_folder, tmp_folder)
-        print(input_files)
     elif bench_source == "randgen":
         input_files = prepare_paths_randgen(output_folder, tmp_folder)
-        print(input_files)
     elif bench_source == "qfrdl":
         input_files = prepare_paths_qfrdl(output_folder, tmp_folder)
-        print(input_files)
+    else:
+        raise ValueError("Invalid benchmark source")
 
     # run the benchmarks
     for input_file in input_files:
