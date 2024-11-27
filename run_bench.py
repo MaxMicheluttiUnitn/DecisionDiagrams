@@ -123,11 +123,6 @@ def main() -> None:
     output_folder = None
     if run_type != "abstraction":
         tmp_folder = input("Enter the temporary folder name: ")
-        dd_type = input("Enter the dd type: ")
-        dd_type = dd_type.strip().lower()
-        if dd_type not in VALID_ABSTRACT_DD:
-            print("Invalid dd type")
-            return
     if run_type == "allsmt" or run_type == "both":
         print(VALID_SOLVERS)
         solver_type = input("Enter the solver type: ")
@@ -147,7 +142,7 @@ def main() -> None:
         print(VALID_ABSTRACT_DD)
         dd_type = input("Enter the dd type: ")
         dd_type = dd_type.strip().lower()
-        if dd_type not in VALID_DD:
+        if dd_type not in VALID_ABSTRACT_DD:
             print("Invalid dd type")
             return
         if dd_type == "abstraction_dDNNF":
