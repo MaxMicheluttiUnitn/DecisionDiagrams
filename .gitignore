@@ -29,6 +29,7 @@ fix_ddnnf.py
 out.txt
 tmp.txt
 tmp_data.txt
+options.txt
 
 mathsat
 c2d_linux
