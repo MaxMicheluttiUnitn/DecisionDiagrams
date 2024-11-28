@@ -71,12 +71,13 @@ class TabularSMTSolver:
 
         normal_phi = get_normalized(phi, self.get_converter())
 
-        phi_tsetsin = PolarityCNFizer(
-            nnf=True, mutex_nnf_labels=True).convert_as_formula(normal_phi)
+        # cannot use CNF-ization because it changes the important atoms of the formula
+        # phi_tsetsin = PolarityCNFizer(nnf=True, mutex_nnf_labels=True).convert_as_formula(normal_phi)
 
         # save normalized phi on temporary smt file
         phi_file = "temp_phi.smt"
-        save_phi(phi_tsetsin, phi_file)
+        #save_phi(phi_tsetsin, phi_file)
+        save_phi(normal_phi, phi_file)
 
         if self._is_partial:
             minimize_models = "true"
