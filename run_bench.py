@@ -219,23 +219,23 @@ def main() -> None:
             result = 0
             tmp_lemma_file = input_file.replace("data", tmp_folder)
             tmp_json_file = tmp_lemma_file.replace(".smt2", ".json")
-            output_file = input_file.replace("data", output_folder)
+            output_file_path = input_file.replace("data", output_folder)
             print(f"Running DD compilation on {input_file}...")
 
             # check if allsmt timed out
             if not os.path.exists(tmp_json_file):
                 print(f"{tmp_json_file} does not exist. AllSMT ended in timeout.")
-                with open(output_file, "w", encoding='utf8') as f:
+                with open(output_file_path, "w", encoding='utf8') as f:
                     f.write("{\"timeout\": \"ALL SMT\"}")
                 continue
 
             if dd_type == "tbdd":
-                result = os.system(f"timeout 3600s python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tbdd --count_nodes --count_models -d {output_file}")
+                result = os.system(f"timeout 3600s python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tbdd --count_nodes --count_models -d {output_file_path}")
             elif dd_type == "tsdd":
-                result = os.system(f"timeout 3600s python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file}  --tsdd --count_nodes --count_models -d {output_file} --tvtree balanced")
+                result = os.system(f"timeout 3600s python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file}  --tsdd --count_nodes --count_models -d {output_file_path} --tvtree balanced")
             elif dd_type == "tdDNNF":
                 tmp_ddnnf_folder = tmp_lemma_file.replace(".smt2", "_c2d")
-                os.system(f"python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tdDNNF -d {output_file} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_ddnnf_folder}")
+                os.system(f"python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tdDNNF -d {output_file_path} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_ddnnf_folder}")
 
             if result != 0:
                 print(f"DD compilation timed out for {input_file}")
