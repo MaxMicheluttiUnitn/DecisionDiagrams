@@ -220,6 +220,7 @@ def main() -> None:
             tmp_lemma_file = input_file.replace("data", tmp_folder)
             tmp_json_file = tmp_lemma_file.replace(".smt2", ".json")
             output_file_path = input_file.replace("data", output_folder)
+            output_file_path = output_file_path.replace(".smt2", ".json")
             print(f"Running DD compilation on {input_file}...")
 
             # check if allsmt timed out
