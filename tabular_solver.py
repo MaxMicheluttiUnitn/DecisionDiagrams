@@ -6,7 +6,7 @@ import subprocess
 import sys
 from typing import List, Dict
 from pysmt.fnode import FNode
-from allsat_cnf.polarity_cnfizer import PolarityCNFizer
+#from allsat_cnf.polarity_cnfizer import PolarityCNFizer
 from theorydd.constants import SAT, UNSAT
 from theorydd.smt_solver import SMTSolver as _SMTSolver
 from theorydd.formula import get_normalized, save_phi, read_phi

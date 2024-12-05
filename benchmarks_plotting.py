@@ -412,7 +412,6 @@ def get_dd_time_points(
                 break
     return (theory_list, abstraction_list, edge)
 
-
 def get_lemmas_points(
         theory_points: List[Point],
         abstraction_points: List[Point]) -> Tuple[List[float], List[float], int]:
@@ -847,13 +846,14 @@ def main() -> None:
         "NoDD", "benchmarks/ldd_randgen/tmp_total")
     ldd_randgen_allsmt_partial_points = get_ldd_randgen_bench_data(
         "NoDD", "benchmarks/ldd_randgen/tmp_full_partial")
+    ldd_randgen_allsmt_tabular_total_points = get_ldd_randgen_bench_data(
+        "NoDD", "benchmarks/ldd_randgen/tmp_tabular_total")
 
     # allsmt time total vs partial
     allsmt_points = get_allsmt_time_points(
-        ldd_randgen_allsmt_total_points, ldd_randgen_allsmt_partial_points)
-    build_time_graph(allsmt_points, "Total All-SMT", "Partial All-SMT",
-                     "plots/ldd_randgen/allsmt_partial_vs_total_time.pdf")
-
+        ldd_randgen_allsmt_total_points, ldd_randgen_allsmt_tabular_total_points)
+    build_time_graph(allsmt_points, "MathSAT", "Tabular",
+                     "plots/ldd_randgen/allsmt_mathsat_vs_tabular_time.pdf")
     # dDNNF
     # dDNNF partial vs total
     # time_points = get_time_points(
@@ -1036,16 +1036,33 @@ def main() -> None:
     randgen_sdd_fp_points = get_randgen_bench_data(
         "T-SDD", "benchmarks/randgen/output_sdd_fp")
     print("Timeouts of T-SDDs full partial on randgen: ", timeout_to_str(randgen_sdd_fp_points))
+    
     randgen_allsmt_total_points = get_ldd_randgen_bench_data(
         "NoDD", "benchmarks/randgen/tmp_total")
     randgen_allsmt_partial_points = get_ldd_randgen_bench_data(
         "NoDD", "benchmarks/randgen/tmp_fp")
+    randgen_allsmt_tabular_total_points = get_ldd_randgen_bench_data(
+        "NoDD", "benchmarks/randgen/tmp_tabular_total")
+    old_randgen_allsmt_total_points = get_ldd_randgen_bench_data(
+        "NoDD", "benchmarks/randgen/old_tmp_total")
+    old_randgen_allsmt_total_partial_points = get_ldd_randgen_bench_data(
+        "NoDD", "benchmarks/randgen/old_tmp_partial")
+
+    tlemmas_points = get_lemmas_points(
+        old_randgen_allsmt_total_points, old_randgen_allsmt_total_partial_points)
+    build_lemmas_graph(tlemmas_points, "Old Total", "Old Extended Partial",
+                        "plots/randgen/old_vs_new_lemmas.pdf")
+    tlemmas_points = get_lemmas_points(
+        old_randgen_allsmt_total_points, randgen_allsmt_tabular_total_points)
+    build_lemmas_graph(tlemmas_points, "Old Total", "Tabular",
+                        "plots/randgen/old_total_vs_tabular_lemmas.pdf")
 
     # allsmt time total vs partial
     allsmt_points = get_allsmt_time_points(
-        randgen_allsmt_total_points, randgen_allsmt_partial_points)
-    build_time_graph(allsmt_points, "Total All-SMT", "Partial All-SMT",
-                     "plots/randgen/allsmt_partial_vs_total_time.pdf")
+        randgen_allsmt_total_points, randgen_allsmt_tabular_total_points)
+    build_time_graph(allsmt_points, "MathSAT", "Tabular",
+                     "plots/randgen/allsmt_mathsat_vs_tabular_time.pdf")
+    
 
     # allsmt_points = get_allsmt_time_points(
     #     randgen_ddnnf_points, randgen_ddnnf_total_points)

@@ -16,6 +16,7 @@ from pysmt.shortcuts import (
 )
 from pysmt.fnode import FNode
 from allsat_cnf.label_cnfizer import LabelCNFizer
+from theorydd.formula import save_mapping, load_mapping
 
 # load c2d executable location from dotenv
 from dotenv import load_dotenv as _load_env
@@ -245,39 +246,6 @@ def from_c2d_nnf_to_smtlib(
     write_smtlib(phi, smtlib_file)
 
 
-def save_mapping(mapping: Dict[int, FNode], mapping_path: str) -> None:
-    """
-    Saves a mapping from integers to pysmt atoms in a file
-
-    Args:
-        mapping (Dict[int,FNode]) -> a mapping that associates to integers a pysmt atom
-        mapping_path (str) -> the path to the folder where the mapping files will be saved
-    """
-    for k, v in mapping.items():
-        write_smtlib(v, f"{mapping_path}/{k}.smt2")
-        # with open(f"{mapping_path}/{k}.smt2", "w", encoding="utf8") as mapping_out:
-        #     mapping_out.write(f"{k}\n{v.serialize()}\n")
-
-
-def load_mapping(mapping_path: str) -> Dict[int, FNode]:
-    """
-    Loads a mapping from integers to pysmt atoms from a file
-
-    Args:
-        mapping_path (str) -> the path to the folder where the mapping is saved
-
-    Returns:
-        (Dict[int,FNode]) -> a mapping that associates to integers a pysmt atom
-    """
-    mapping = {}
-    for filename in os.listdir(mapping_path):
-        if filename.endswith(".smt2"):
-            k = int(filename.split(".")[0])
-            v = read_smtlib(f"{mapping_path}/{filename}")
-            mapping[k] = v
-    return mapping
-
-
 def compile_dDNNF(
         phi: FNode,
         keep_temp: bool = False,
@@ -305,17 +273,25 @@ def compile_dDNNF(
         (int) -> the number of nodes in the dDNNF
         (int) -> the number of edges in the dDNNF
     """
+    # check if c2d is available and executable
     if _C2D_EXECUTABLE is None or not os.path.isfile(_C2D_EXECUTABLE):
-        raise FileNotFoundError("The binary for the c2d compiler is missing. Please check the installation path and update the .env file.")
+        raise FileNotFoundError(
+            "The binary for the c2d compiler is missing. Please check the installation path and update the .env file.")
     if not os.access(_C2D_EXECUTABLE, os.X_OK):
-        raise PermissionError("The c2d binary is not executable. Please check the permissions for the file and grant execution rights.")
+        raise PermissionError(
+            "The c2d binary is not executable. Please check the permissions for the file and grant execution rights.")
+
+    # failsafe for computation_logger
     if computation_logger is None:
         computation_logger = {}
+
+    # choose temporary folder
     if tmp_path is None:
         tmp_folder = "temp_" + str(random.randint(0, 9223372036854775807))
     else:
         tmp_folder = tmp_path
-    # translate to CNF
+
+    # translate to CNF DIMACS and get mapping used for translation
     if not os.path.exists(tmp_folder):
         os.mkdir(tmp_folder)
     start_time = time.time()
@@ -328,17 +304,19 @@ def compile_dDNNF(
     computation_logger["DIMACS translation time"] = elapsed_time
     if verbose:
         print(f"DIMACS translation completed in {elapsed_time} seconds")
+    # compute reverse mapping to translate back to pysmt (REFINEMENT)
     reverse_mapping = {v: k for k, v in mapping.items()}
-    # mapping is temporarily disabled due to high disk usage
-    # if not os.path.exists(f"{tmp_folder}/mapping"):
-    #     os.mkdir(f"{tmp_folder}/mapping")
-    # if verbose:
-    #     print("Saving mapping...")
-    # # TEMPORARILY DISABLED DUE TO DISK MEMORY ISSUES
-    # # save_mapping(reverse_mapping, f"{tmp_folder}/mapping")
-    # if verbose:
-    #     print("Mapping saved")
-    # call c2d
+
+    # save mapping for refinement
+    if not os.path.exists(f"{tmp_folder}/mapping"):
+        os.mkdir(f"{tmp_folder}/mapping")
+    if verbose:
+        print("Saving mapping...")
+    save_mapping(reverse_mapping, f"{tmp_folder}/mapping")
+    if verbose:
+        print("Mapping saved")
+
+    # call c2d for compilation
     # output should be in file temp_folder/test_dimacs.cnf.nnf
     start_time = time.time()
     if verbose:
@@ -352,11 +330,18 @@ def compile_dDNNF(
     computation_logger["dDNNF compilation time"] = elapsed_time
     if verbose:
         print(f"dDNNF compilation completed in {elapsed_time} seconds")
-    # reverse_mapping = load_mapping(f"{tmp_folder}/mapping")
+
+    # counting size
     nodes, edges = count_nodes_and_edges_from_c2d_nnf(
         f"{tmp_folder}/dimacs.cnf.nnf")
+
+    # return if not back to fnode
     if not back_to_fnode:
         return None, nodes, edges
+
+    # loading saved mapping
+    # reverse_mapping = load_mapping(f"{tmp_folder}/mapping/mapping.json")
+
     # translate to pysmt
     start_time = time.time()
     if verbose:
@@ -370,6 +355,22 @@ def compile_dDNNF(
     if verbose:
         print(f"pysmt translation completed in {elapsed_time} seconds")
     return result, nodes, edges
+
+
+def load_dDNNF(nnf_path: str, mapping_path: str) -> FNode:
+    """
+    Load a dDNNF from file and translate it to pysmt
+
+    Args:
+        nnf_path (str) ->       the path to the file containing the dDNNF in 
+                                NNF format provided by the c2d compiler
+        mapping_path (str) ->   the path to the file containing the mapping
+
+    Returns:
+        (FNode) -> the pysmt formula translated from the dDNNF
+    """
+    mapping = load_mapping(mapping_path)
+    return from_c2d_nnf_to_pysmt(nnf_path, mapping)
 
 
 if __name__ == "__main__":

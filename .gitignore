@@ -25,6 +25,7 @@
 
 fix_tsetsin.py
 fix_ddnnf.py
+fix_extension.py
 
 out.txt
 tmp.txt
