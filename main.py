@@ -1,5 +1,5 @@
 '''Main module for the TheoryDD Tool'''
-# ADD these lines to .local/lib/python3.10/site-packages/pysmt/smtlib/parser/__init__.py
+# ADD these lines to /lib/python3.10/site-packages/pysmt/smtlib/parser/__init__.py
 # to hide cython DeprecationWarning when importing module imp
 #
 # import warnings
@@ -123,7 +123,7 @@ def smt_phase(phi: FNode, args: Options, logger: Dict):
             phi,
             smt_solver,
             verbose=args.verbose,
-            use_boolean_mapping=(~ args.no_boolean_mapping),
+            use_boolean_mapping=(not args.no_boolean_mapping),
             computation_logger=logger)
 
         if args.count_models:
