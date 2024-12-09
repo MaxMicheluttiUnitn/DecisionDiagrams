@@ -74,8 +74,7 @@ class D4Node:
                 children_pysmts.append(graph[dst].to_pysmt(mapping, graph))
             if len(children_pysmts) == 0:
                 raise ValueError("AND node with no children")
-            else:
-                self.memo = And(*children_pysmts)
+            self.memo = And(*children_pysmts)
         elif self.node_type == _D4_OR_NODE:
             children_pysmts = []
             for dst, label in self.edges.items():
