@@ -65,9 +65,9 @@ class D4Node:
         if self.is_ready():
             return self.memo
         if self.node_type == _D4_TRUE_NODE:
-            return TRUE()
+            self.memo = TRUE()
         elif self.node_type == _D4_FALSE_NODE:
-            return FALSE()
+            self.memo = FALSE()
         elif self.node_type == _D4_AND_NODE:
             children_pysmts = []
             for dst in self.edges.keys():
@@ -76,7 +76,6 @@ class D4Node:
                 raise ValueError("AND node with no children")
             else:
                 self.memo = And(*children_pysmts)
-            return self.memo
         elif self.node_type == _D4_OR_NODE:
             children_pysmts = []
             for dst, label in self.edges.items():
@@ -93,9 +92,8 @@ class D4Node:
                     children_pysmts.append(And(*var_pysmts, child_translation))
             if len(children_pysmts) == 0:
                 raise ValueError("OR node with no children")
-            else:
-                self.memo = Or(*children_pysmts)
-            return self.memo
+            self.memo = Or(*children_pysmts)
+        return self.memo
 
 
 _RE_NNF_EDGE = re.compile(r"(\d+) (\d+)( .+)? 0")
