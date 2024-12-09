@@ -73,6 +73,18 @@ def from_smtlib_to_dimacs_file(
         mapping[atom] = count
         count += 1
 
+    # check if formula is top
+    if phi_cnf.is_true():
+        with open(dimacs_file, "w", encoding="utf8") as dimacs_out:
+            dimacs_out.write("p cnf 1 1\n1 -1 0\n")
+        return mapping
+
+    # check if formula is bottom
+    if phi_cnf.is_false():
+        with open(dimacs_file, "w", encoding="utf8") as dimacs_out:
+            dimacs_out.write("p cnf 1 2\n1 0\n-1 0\n")
+        return mapping
+
     # CONVERTNG IN DIMACS FORMAT AND SAVING ON FILE
     total_variables = len(mapping.keys())
     clauses: List[FNode] = phi_cnf.args()
@@ -284,6 +296,8 @@ def compile_dDNNF(
     # failsafe for computation_logger
     if computation_logger is None:
         computation_logger = {}
+
+    computation_logger["dDNNF compiler"] = "c2d"
 
     # choose temporary folder
     if tmp_path is None:

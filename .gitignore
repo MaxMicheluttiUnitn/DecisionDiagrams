@@ -10,6 +10,8 @@
 /tabular_allsmt
 /temp_*
 
+tmp*
+
 *.smt
 *.smt2
 *.dot
@@ -31,6 +33,8 @@ out.txt
 tmp.txt
 tmp_data.txt
 options.txt
+d4_options.txt
 
 mathsat
 c2d_linux
+d4

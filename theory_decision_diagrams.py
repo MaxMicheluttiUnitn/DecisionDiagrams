@@ -11,40 +11,55 @@ from theorydd.smt_solver_partial import PartialSMTSolver
 import theorydd.formula as formula
 
 from commands import Options
-from pysmt_c2d_middleware import compile_dDNNF
+from pysmt_c2d_middleware import compile_dDNNF as compile_dDNNF_c2d
+from pysmt_d4_middleware import compile_dDNNF as compile_dDNNF_d4
+
 
 
 def theory_ddnnf(phi,
                  args: Options,
                  logger: Dict,
                  solver: SMTSolver | PartialSMTSolver,
-                 tlemmas: List[FNode]):
+                 tlemmas: List[FNode],
+                 ddnnf_compiler:str = "c2d"):
     """theory dDNNF"""
     # THEORY dDNNF
     start_time = time.time()
     logger["T-dDNNF"] = {}
     if args.verbose:
         print("T-dDNNF computation starting...")
-    if tlemmas is not None:
-        phi_and_lemmas = formula.get_phi_and_lemmas(phi, tlemmas)
+    if ddnnf_compiler == "c2d":
+        if tlemmas is not None:
+            phi_and_lemmas = formula.get_phi_and_lemmas(phi, tlemmas)
+        else:
+            tlemmas_big_and = formula.read_phi(args.load_lemmas)
+            phi_and_lemmas = formula.get_phi_and_lemmas(phi, [tlemmas_big_and])
+        phi_and_lemmas = formula.get_normalized(
+            phi_and_lemmas, solver.get_converter())
+        try:
+            tddnnf, nodes, edges = compile_dDNNF_c2d(phi_and_lemmas,
+                                                keep_temp=(
+                                                    args.keep_c2d_temp is not None),
+                                                verbose=args.verbose,
+                                                computation_logger=logger["T-dDNNF"],
+                                                tmp_path=args.keep_c2d_temp,
+                                                back_to_fnode=(not args.no_dDNNF_to_pysmt))
+        except TimeoutError:
+            if args.verbose:
+                print("Timeout error in dDNNF computation")
+            logger["timeout"] = "dDNNF"
+            return
+    elif ddnnf_compiler == "d4":
+        tddnnf, nodes, edges = compile_dDNNF_d4(phi,
+                                                tlemmas,
+                                                keep_temp=(
+                                                    args.keep_c2d_temp is not None),
+                                                verbose=args.verbose,
+                                                computation_logger=logger["T-dDNNF"],
+                                                tmp_path=args.keep_c2d_temp,
+                                                back_to_fnode=(not args.no_dDNNF_to_pysmt))
     else:
-        tlemmas_big_and = formula.read_phi(args.load_lemmas)
-        phi_and_lemmas = formula.get_phi_and_lemmas(phi, [tlemmas_big_and])
-    phi_and_lemmas = formula.get_normalized(
-        phi_and_lemmas, solver.get_converter())
-    try:
-        tddnnf, nodes, edges = compile_dDNNF(phi_and_lemmas,
-                                             keep_temp=(
-                                                 args.keep_c2d_temp is not None),
-                                             verbose=args.verbose,
-                                             computation_logger=logger["T-dDNNF"],
-                                             tmp_path=args.keep_c2d_temp,
-                                             back_to_fnode=(not args.no_dDNNF_to_pysmt))
-    except TimeoutError:
-        if args.verbose:
-            print("Timeout error in dDNNF computation")
-        logger["timeout"] = "dDNNF"
-        return
+        raise ValueError("Invalid ddnnf compiler")
     if args.count_nodes:
         if args.verbose:
             print("T-dDNNF Nodes: ", nodes)
