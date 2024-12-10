@@ -246,6 +246,15 @@ def main() -> None:
 
         print(f"Finished running {input_file}")
 
+    print("ALL  RUNS COMPLETED")
+    print("\n\n\nSUMMARY")
+    print("Benchmark source:", bench_source)
+    print("Run type:", run_type)
+    print("Solver type:", solver_type)
+    print("DD type:", dd_type)
+    print("Temporary folder:", tmp_folder)
+    print("Output folder:", output_folder)
+
 
 if __name__ == "__main__":
     main()
