@@ -154,7 +154,7 @@ def from_smtlib_to_dimacs_file(
             important_atoms_labels.append(count)
         mapping[atom] = count
         count += 1
-        print(atom, ": ", mapping[atom])
+        #print(atom, ": ", mapping[atom])
 
     # check if formula is top
     if phi_cnf.is_true():
