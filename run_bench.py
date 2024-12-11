@@ -139,7 +139,7 @@ def main() -> None:
             print("Invalid dd type")
             return
         output_folder = input("Enter the output folder name: ")
-        if dd_type == "tdDNNF":
+        if dd_type == "tddnnf":
             ddnnf_compiler = input("Select a tdDNNF compiler: ")
             if ddnnf_compiler not in VALID_DDNNF_COMPILER:
                 print("Invalid dDNNF compiler")
@@ -151,7 +151,7 @@ def main() -> None:
         if dd_type not in VALID_ABSTRACT_DD:
             print("Invalid dd type")
             return
-        if dd_type == "abstraction_dDNNF":
+        if dd_type == "abstraction_ddnnf":
             tmp_folder = input("Enter the tmp folder name: ")
             ddnnf_compiler = input("Select a tdDNNF compiler: ")
             if ddnnf_compiler not in VALID_DDNNF_COMPILER:
