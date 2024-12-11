@@ -8,6 +8,7 @@ VALID_LDD_THEORY = ["TVPI", "TVPIZ", "UTVPIZ", "BOX", "BOXZ"]
 
 VALID_SOLVER = ["partial", "total", "full_partial", "tabular_total", "tabular_partial"]
 
+VALID_DDNNF_COMPILER = ["c2d","d4"]
 
 @dataclass
 class Options:
@@ -49,6 +50,7 @@ class Options:
     tdDNNF_output: str | None
     keep_c2d_temp: bool
     no_dDNNF_to_pysmt: bool
+    dDNNF_compiler: str
 
     def __init__(self, args: argparse.Namespace):
         self.tsdd = args.tsdd
@@ -88,6 +90,7 @@ class Options:
         self.tdDNNF_output = args.tdDNNF_output
         self.keep_c2d_temp = args.keep_c2d_temp
         self.no_dDNNF_to_pysmt = args.no_dDNNF_to_pysmt
+        self.dDNNF_compiler = args.dDNNF_compiler
 
 
 def get_args() -> Options:
@@ -254,6 +257,12 @@ def get_args() -> Options:
         "--no_dDNNF_to_pysmt",
         help="Do not convert the dDNNF to pysmt formula",
         action="store_true")
+    parser.add_argument(
+        "--dDNNF_compiler",
+        help=f"Select the compiler to use for dDNNF compilation among {VALID_DDNNF_COMPILER}. Default: c2d",
+        type=str,
+        choices=VALID_DDNNF_COMPILER,
+        default="c2d")
     # parser.add_argument(
     #     "--check_eq",
     #     help="Check the T-equivalence of the T-agnostic DD with the T-formula phi",

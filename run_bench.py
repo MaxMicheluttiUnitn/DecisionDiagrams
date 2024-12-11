@@ -9,7 +9,7 @@ VALID_SOLVERS = ["total", "partial", "full_partial",
 VALID_DD = ["tbdd", "tsdd", "tdDNNF"]
 VALID_ABSTRACT_DD = ["abstraction_bdd",
                      "abstraction_sdd", "abstraction_dDNNF", "ldd"]
-
+VALID_DDNNF_COMPILER = ["c2d","d4"]
 
 def prepare_paths_ldd_randgen(output_folder: str, tmp_folder: str) -> List[str]:
     """prepare the paths for the ldd_randgen benchmark
@@ -121,6 +121,7 @@ def main() -> None:
     dd_type = None
     tmp_folder = None
     output_folder = None
+    ddnnf_compiler = None
     if run_type != "abstraction":
         tmp_folder = input("Enter the temporary folder name: ")
     if run_type == "allsmt" or run_type == "both":
@@ -138,6 +139,11 @@ def main() -> None:
             print("Invalid dd type")
             return
         output_folder = input("Enter the output folder name: ")
+        if dd_type == "tdDNNF":
+            ddnnf_compiler = input("Select a tdDNNF compiler: ")
+            if ddnnf_compiler not in VALID_DDNNF_COMPILER:
+                print("Invalid dDNNF compiler")
+                return
     if run_type == "abstraction":
         print(VALID_ABSTRACT_DD)
         dd_type = input("Enter the dd type: ")
@@ -147,6 +153,10 @@ def main() -> None:
             return
         if dd_type == "abstraction_dDNNF":
             tmp_folder = input("Enter the tmp folder name: ")
+            ddnnf_compiler = input("Select a tdDNNF compiler: ")
+            if ddnnf_compiler not in VALID_DDNNF_COMPILER:
+                print("Invalid dDNNF compiler")
+                return
         output_folder = input("Enter the output folder name: ")
 
     # print a summary of selected options
@@ -157,6 +167,7 @@ def main() -> None:
     print("DD type:", dd_type)
     print("Temporary folder:", tmp_folder)
     print("Output folder:", output_folder)
+    print("dDNNF compiler: ", ddnnf_compiler)
     # ask confirmation
     is_ok = input("Is this correct? (y/n): ")
     is_ok = is_ok.strip().lower()
@@ -193,7 +204,7 @@ def main() -> None:
                 tmp_file = input_file.replace("data", tmp_folder)
                 tmp_folder_path = tmp_file.replace(".smt2", "_c2d")
                 os.system(
-                    f"python main.py -v -i {input_file} --abstraction_dDNNF -d {output_file_path} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_folder_path}")
+                    f"python main.py -v -i {input_file} --abstraction_dDNNF -d {output_file_path} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_folder_path} --dDNNF_compiler {ddnnf_compiler}")
             elif dd_type == "ldd":
                 result = os.system(
                     f"timeout 3600s python main.py -v -i {input_file} --ldd --ldd_theory TVPI --count_models --count_nodes -d {output_file_path}")
@@ -236,7 +247,7 @@ def main() -> None:
                 result = os.system(f"timeout 3600s python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file}  --tsdd --count_nodes --count_models -d {output_file_path} --tvtree balanced")
             elif dd_type == "tdDNNF":
                 tmp_ddnnf_folder = tmp_lemma_file.replace(".smt2", "_c2d")
-                os.system(f"python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tdDNNF -d {output_file_path} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_ddnnf_folder}")
+                os.system(f"python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tdDNNF -d {output_file_path} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_ddnnf_folder} --dDNNF_compiler {ddnnf_compiler}")
 
             if result != 0:
                 print(f"DD compilation timed out for {input_file}")

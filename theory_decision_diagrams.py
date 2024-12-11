@@ -20,12 +20,12 @@ def theory_ddnnf(phi,
                  args: Options,
                  logger: Dict,
                  solver: SMTSolver | PartialSMTSolver,
-                 tlemmas: List[FNode],
-                 ddnnf_compiler:str = "c2d"):
+                 tlemmas: List[FNode]):
     """theory dDNNF"""
     # THEORY dDNNF
     start_time = time.time()
     logger["T-dDNNF"] = {}
+    ddnnf_compiler:str = args.dDNNF_compiler
     if args.verbose:
         print("T-dDNNF computation starting...")
     if ddnnf_compiler == "c2d":
@@ -59,7 +59,7 @@ def theory_ddnnf(phi,
                                                 tmp_path=args.keep_c2d_temp,
                                                 back_to_fnode=(not args.no_dDNNF_to_pysmt))
     else:
-        raise ValueError("Invalid ddnnf compiler")
+        raise ValueError("Invalid dDNNF compiler")
     if args.count_nodes:
         if args.verbose:
             print("T-dDNNF Nodes: ", nodes)

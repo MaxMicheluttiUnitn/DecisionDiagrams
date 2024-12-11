@@ -10,7 +10,8 @@ from theorydd.abstraction_bdd import AbstractionBDD
 from theorydd.abstraction_sdd import AbstractionSDD
 
 from commands import Options
-from pysmt_c2d_middleware import compile_dDNNF
+from pysmt_c2d_middleware import compile_dDNNF as compile_dDNNF_c2d
+from pysmt_d4_middleware import compile_dDNNF as compile_dDNNF_d4
 
 
 def abstr_ddnnf(phi, args: Options, logger: Dict):
@@ -18,16 +19,30 @@ def abstr_ddnnf(phi, args: Options, logger: Dict):
     # ABSTRACTION dDNNF
     start_time = time.time()
     logger["Abstraction dDNNF"] = {}
+    ddnnf_compiler:str = args.dDNNF_compiler
     if args.verbose:
         print("Abstraction dDNNF computation starting...")
     try:
-        abs_ddnnf, nodes, edges = compile_dDNNF(phi,
+        if ddnnf_compiler == "c2d":
+            abs_ddnnf, nodes, edges = compile_dDNNF_c2d(phi,
                                                 keep_temp=(
                                                     args.keep_c2d_temp is not None),
                                                 verbose=args.verbose,
                                                 computation_logger=logger["Abstraction dDNNF"],
                                                 tmp_path=args.keep_c2d_temp,
                                                 back_to_fnode=(not args.no_dDNNF_to_pysmt))
+        elif ddnnf_compiler == "d4":
+            abs_ddnnf, nodes, edges = compile_dDNNF_d4(
+                phi,
+                tlemmas=[],
+                keep_temp=(args.keep_c2d_temp is not None),
+                verbose=args.verbose,
+                computation_logger=logger["Abstraction dDNNF"],
+                tmp_path=args.keep_c2d_temp,
+                back_to_fnode=(not args.no_dDNNF_to_pysmt)
+            )
+        else:
+            raise ValueError("Invalid dDNNF compiler")
     except TimeoutError:
         if args.verbose:
             print("Timeout error in dDNNF computation")
