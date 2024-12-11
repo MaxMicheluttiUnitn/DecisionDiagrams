@@ -202,7 +202,7 @@ def main() -> None:
                     f"timeout 3600s python main.py -v -i {input_file} --abstraction_sdd --count_nodes --count_models -d {output_file_path} --abstraction_vtree balanced")
             elif dd_type == "abstraction_ddnnf":
                 tmp_file = input_file.replace("data", tmp_folder)
-                tmp_folder_path = tmp_file.replace(".smt2", "_c2d")
+                tmp_folder_path = tmp_file.replace(".smt2", f"_{ddnnf_compiler}")
                 os.system(
                     f"python main.py -v -i {input_file} --abstraction_dDNNF -d {output_file_path} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_folder_path} --dDNNF_compiler {ddnnf_compiler}")
             elif dd_type == "ldd":
@@ -246,7 +246,7 @@ def main() -> None:
             elif dd_type == "tsdd":
                 result = os.system(f"timeout 3600s python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file}  --tsdd --count_nodes --count_models -d {output_file_path} --tvtree balanced")
             elif dd_type == "tddnnf":
-                tmp_ddnnf_folder = tmp_lemma_file.replace(".smt2", "_c2d")
+                tmp_ddnnf_folder = tmp_lemma_file.replace(".smt2", f"_{ddnnf_compiler}")
                 os.system(f"python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tdDNNF -d {output_file_path} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_ddnnf_folder} --dDNNF_compiler {ddnnf_compiler}")
 
             if result != 0:
