@@ -6,9 +6,9 @@ VALID_BENCHS = ["ldd_randgen", "randgen", "qfrdl"]
 RUN_TYPES = ["allsmt", "dd", "both", "abstraction"]
 VALID_SOLVERS = ["total", "partial", "full_partial",
                  "tabular_total", "tabular_partial"]
-VALID_DD = ["tbdd", "tsdd", "tdDNNF"]
+VALID_DD = ["tbdd", "tsdd", "tddnnf"]
 VALID_ABSTRACT_DD = ["abstraction_bdd",
-                     "abstraction_sdd", "abstraction_dDNNF", "ldd"]
+                     "abstraction_sdd", "abstraction_ddnnf", "ldd"]
 VALID_DDNNF_COMPILER = ["c2d","d4"]
 
 def prepare_paths_ldd_randgen(output_folder: str, tmp_folder: str) -> List[str]:
