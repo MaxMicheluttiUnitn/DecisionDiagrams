@@ -92,6 +92,7 @@ class TabularSMTSolver:
             output_data = subprocess.check_output(command, shell=True, text=True)
         except subprocess.CalledProcessError as e:
             result = e.returncode
+            _clear_tlemmas()
             if result == 124:
                 print("Timeout")
                 sys.exit(124)
@@ -179,6 +180,6 @@ def _clear_tlemmas():
 
 if __name__ == "__main__":
     _clear_tlemmas()
-    phi_test = read_phi("input/example.smt")
-    solver = TabularSMTSolver()
-    print(solver.check_all_sat(phi_test))
+    # phi_test = read_phi("input/example.smt")
+    # solver = TabularSMTSolver()
+    # print(solver.check_all_sat(phi_test))
