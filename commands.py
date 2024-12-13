@@ -6,9 +6,11 @@ VALID_VTREE = ["left", "right", "balanced", "vertical", "random"]
 
 VALID_LDD_THEORY = ["TVPI", "TVPIZ", "UTVPIZ", "BOX", "BOXZ"]
 
-VALID_SOLVER = ["partial", "total", "full_partial", "tabular_total", "tabular_partial"]
+VALID_SOLVER = ["partial", "total", "full_partial",
+                "tabular_total", "tabular_partial"]
 
-VALID_DDNNF_COMPILER = ["c2d","d4"]
+VALID_DDNNF_COMPILER = ["c2d", "d4"]
+
 
 @dataclass
 class Options:
@@ -52,6 +54,7 @@ class Options:
     no_dDNNF_to_pysmt: bool
     dDNNF_compiler: str
     save_tbdd: str | None
+    save_abstraction_bdd: str | None
 
     def __init__(self, args: argparse.Namespace):
         self.tsdd = args.tsdd
@@ -93,6 +96,7 @@ class Options:
         self.no_dDNNF_to_pysmt = args.no_dDNNF_to_pysmt
         self.dDNNF_compiler = args.dDNNF_compiler
         self.save_tbdd = args.save_tbdd
+        self.save_abstraction_bdd = args.save_abstraction_bdd
 
 
 def get_args() -> Options:
@@ -268,6 +272,10 @@ def get_args() -> Options:
     parser.add_argument(
         "--save_tbdd",
         help="Save the T-BDD data inside the specified folder",
+        type=str)
+    parser.add_argument(
+        "--save_abstraction_bdd",
+        help="Save the Abstraction-BDD data inside the specified folder",
         type=str)
     # parser.add_argument(
     #     "--check_eq",

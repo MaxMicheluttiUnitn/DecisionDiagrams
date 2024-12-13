@@ -79,8 +79,9 @@ def abstr_bdd(phi, args: Options, logger: Dict):
     logger["Abstraction BDD"] = {}
     if args.verbose:
         print("Abstraction BDD computation starting...")
-
     abdd = AbstractionBDD(phi, computation_logger=logger, verbose=args.verbose)
+    if args.save_abstraction_bdd is not None:
+        abdd.save_to_folder(args.save_abstraction_bdd)
     if args.count_nodes:
         nodes = abdd.count_nodes()
         if args.verbose:
