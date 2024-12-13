@@ -16,7 +16,7 @@ from pysmt.shortcuts import (
 )
 from pysmt.fnode import FNode
 from allsat_cnf.label_cnfizer import LabelCNFizer
-from theorydd.formula import save_mapping, load_mapping
+from theorydd.formula import save_refinement,load_refinement
 
 # load c2d executable location from dotenv
 from dotenv import load_dotenv as _load_env
@@ -326,7 +326,7 @@ def compile_dDNNF(
         os.mkdir(f"{tmp_folder}/mapping")
     if verbose:
         print("Saving mapping...")
-    save_mapping(reverse_mapping, f"{tmp_folder}/mapping")
+    save_refinement(reverse_mapping, f"{tmp_folder}/mapping/mapping.json")
     if verbose:
         print("Mapping saved")
 
@@ -383,7 +383,7 @@ def load_dDNNF(nnf_path: str, mapping_path: str) -> FNode:
     Returns:
         (FNode) -> the pysmt formula translated from the dDNNF
     """
-    mapping = load_mapping(mapping_path)
+    mapping = load_refinement(mapping_path)
     return from_c2d_nnf_to_pysmt(nnf_path, mapping)
 
 

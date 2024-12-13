@@ -23,6 +23,8 @@ tmp*
 *.cnf
 *.nnf
 *.exist
+*.dddmp
+*.pickle
 .env
 
 fix_tsetsin.py
