@@ -9,7 +9,8 @@ VALID_SOLVERS = ["total", "partial", "full_partial",
 VALID_DD = ["tbdd", "tsdd", "tddnnf"]
 VALID_ABSTRACT_DD = ["abstraction_bdd",
                      "abstraction_sdd", "abstraction_ddnnf", "ldd"]
-VALID_DDNNF_COMPILER = ["c2d","d4"]
+VALID_DDNNF_COMPILER = ["c2d", "d4"]
+
 
 def prepare_paths_ldd_randgen(output_folder: str, tmp_folder: str) -> List[str]:
     """prepare the paths for the ldd_randgen benchmark
@@ -122,6 +123,7 @@ def main() -> None:
     tmp_folder = None
     output_folder = None
     ddnnf_compiler = None
+    save_dd = False
     if run_type != "abstraction":
         tmp_folder = input("Enter the temporary folder name: ")
     if run_type == "allsmt" or run_type == "both":
@@ -139,6 +141,12 @@ def main() -> None:
             print("Invalid dd type")
             return
         output_folder = input("Enter the output folder name: ")
+        if dd_type == "tbdd":
+            answer = input(
+                "Do you want to serialize the generated DDs? (y/n): ")
+            answer = answer.strip().lower()
+            if answer == "y":
+                save_dd = True
         if dd_type == "tddnnf":
             print(VALID_DDNNF_COMPILER)
             ddnnf_compiler = input("Select a tdDNNF compiler: ")
@@ -152,6 +160,12 @@ def main() -> None:
         if dd_type not in VALID_ABSTRACT_DD:
             print("Invalid dd type")
             return
+        if dd_type == "abstraction_bdd":
+            answer = input(
+                "Do you want to serialize the generated DDs? (y/n): ")
+            answer = answer.strip().lower()
+            if answer == "y":
+                save_dd = True
         if dd_type == "abstraction_ddnnf":
             tmp_folder = input("Enter the tmp folder name: ")
             print(VALID_DDNNF_COMPILER)
@@ -170,6 +184,7 @@ def main() -> None:
     print("Temporary folder:", tmp_folder)
     print("Output folder:", output_folder)
     print("dDNNF compiler: ", ddnnf_compiler)
+    print("Save DDs: ", save_dd)
     # ask confirmation
     is_ok = input("Is this correct? (y/n): ")
     is_ok = is_ok.strip().lower()
@@ -192,27 +207,33 @@ def main() -> None:
         # abstraction
         if run_type == "abstraction":
             result = 0
-            output_file_path = input_file.replace("data", output_folder)
-            if os.path.exists(output_file_path):
-                print(f"{output_file_path} already exists. Skipping...")
+            output_folder_path = input_file.replace("data", output_folder)
+            output_file = output_folder_path.replace(".smt2", ".json")
+            save_dd_str = ""
+            if os.path.exists(output_file):
+                print(f"{output_file} already exists. Skipping...")
                 continue
             if dd_type == "abstraction_bdd":
+                if save_dd:
+                    save_dd_folder = output_folder_path.replace(".smt2", "")
+                    save_dd_str = f"--save_abstraction_bdd {save_dd_folder}_abstraction_bdd"
                 result = os.system(
-                    f"timeout 3600s python main.py -v -i {input_file} --count_nodes --count_models --abstraction_bdd -d {output_file_path}")
+                    f"timeout 3600s python main.py -v -i {input_file} --count_nodes --count_models --abstraction_bdd -d {output_file} {save_dd_str}")
             elif dd_type == "abstraction_sdd":
                 result = os.system(
-                    f"timeout 3600s python main.py -v -i {input_file} --abstraction_sdd --count_nodes --count_models -d {output_file_path} --abstraction_vtree balanced")
+                    f"timeout 3600s python main.py -v -i {input_file} --abstraction_sdd --count_nodes --count_models -d {output_file} --abstraction_vtree balanced")
             elif dd_type == "abstraction_ddnnf":
                 tmp_file = input_file.replace("data", tmp_folder)
-                tmp_folder_path = tmp_file.replace(".smt2", f"_{ddnnf_compiler}")
+                tmp_folder_path = tmp_file.replace(
+                    ".smt2", f"_{ddnnf_compiler}")
                 os.system(
-                    f"python main.py -v -i {input_file} --abstraction_dDNNF -d {output_file_path} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_folder_path} --dDNNF_compiler {ddnnf_compiler}")
+                    f"python main.py -v -i {input_file} --abstraction_dDNNF -d {output_file} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_folder_path} --dDNNF_compiler {ddnnf_compiler}")
             elif dd_type == "ldd":
                 result = os.system(
-                    f"timeout 3600s python main.py -v -i {input_file} --ldd --ldd_theory TVPI --count_models --count_nodes -d {output_file_path}")
+                    f"timeout 3600s python main.py -v -i {input_file} --ldd --ldd_theory TVPI --count_models --count_nodes -d {output_file}")
             if result != 0:
                 print(f"Abstraction DD compilation timed out for {input_file}")
-                with open(output_file_path, "w", encoding='utf8') as f:
+                with open(output_file, "w", encoding='utf8') as f:
                     f.write("{\"timeout\": \"DD\"}")
                 continue
 
@@ -232,28 +253,36 @@ def main() -> None:
             result = 0
             tmp_lemma_file = input_file.replace("data", tmp_folder)
             tmp_json_file = tmp_lemma_file.replace(".smt2", ".json")
-            output_file_path = input_file.replace("data", output_folder)
-            output_file_path = output_file_path.replace(".smt2", ".json")
+            output_folder_path = input_file.replace("data", output_folder)
+            output_file = output_folder.replace(".smt2", ".json")
+            save_dd_str = ""
             print(f"Running DD compilation on {input_file}...")
 
             # check if allsmt timed out
             if not os.path.exists(tmp_json_file):
                 print(f"{tmp_json_file} does not exist. AllSMT ended in timeout.")
-                with open(output_file_path, "w", encoding='utf8') as f:
+                with open(output_file, "w", encoding='utf8') as f:
                     f.write("{\"timeout\": \"ALL SMT\"}")
                 continue
 
             if dd_type == "tbdd":
-                result = os.system(f"timeout 3600s python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tbdd --count_nodes --count_models -d {output_file_path}")
+                if save_dd:
+                    save_dd_folder = output_folder_path.replace(".smt2", "")
+                    save_dd_str = f"--save_tbdd {save_dd_folder}_tbdd"
+                result = os.system(
+                    f"timeout 3600s python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tbdd --count_nodes --count_models -d {output_file} {save_dd_str}")
             elif dd_type == "tsdd":
-                result = os.system(f"timeout 3600s python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file}  --tsdd --count_nodes --count_models -d {output_file_path} --tvtree balanced")
+                result = os.system(
+                    f"timeout 3600s python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file}  --tsdd --count_nodes --count_models -d {output_file} --tvtree balanced")
             elif dd_type == "tddnnf":
-                tmp_ddnnf_folder = tmp_lemma_file.replace(".smt2", f"_{ddnnf_compiler}")
-                os.system(f"python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tdDNNF -d {output_file_path} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_ddnnf_folder} --dDNNF_compiler {ddnnf_compiler}")
+                tmp_ddnnf_folder = tmp_lemma_file.replace(
+                    ".smt2", f"_{ddnnf_compiler}")
+                os.system(
+                    f"python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tdDNNF -d {output_file} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_ddnnf_folder} --dDNNF_compiler {ddnnf_compiler}")
 
             if result != 0:
                 print(f"DD compilation timed out for {input_file}")
-                with open(output_file_path, "w", encoding='utf8') as f:
+                with open(output_file, "w", encoding='utf8') as f:
                     f.write("{\"timeout\": \"DD\"}")
                 continue
 
