@@ -25,6 +25,8 @@ tmp*
 *.exist
 *.dddmp
 *.pickle
+*.qvars
+
 .env
 
 fix_tsetsin.py
