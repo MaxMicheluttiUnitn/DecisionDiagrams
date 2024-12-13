@@ -51,6 +51,7 @@ class Options:
     keep_c2d_temp: bool
     no_dDNNF_to_pysmt: bool
     dDNNF_compiler: str
+    save_tbdd: str | None
 
     def __init__(self, args: argparse.Namespace):
         self.tsdd = args.tsdd
@@ -91,6 +92,7 @@ class Options:
         self.keep_c2d_temp = args.keep_c2d_temp
         self.no_dDNNF_to_pysmt = args.no_dDNNF_to_pysmt
         self.dDNNF_compiler = args.dDNNF_compiler
+        self.save_tbdd = args.save_tbdd
 
 
 def get_args() -> Options:
@@ -263,6 +265,10 @@ def get_args() -> Options:
         type=str,
         choices=VALID_DDNNF_COMPILER,
         default="c2d")
+    parser.add_argument(
+        "--save_tbdd",
+        help="Save the T-BDD data inside the specified folder",
+        type=str)
     # parser.add_argument(
     #     "--check_eq",
     #     help="Check the T-equivalence of the T-agnostic DD with the T-formula phi",

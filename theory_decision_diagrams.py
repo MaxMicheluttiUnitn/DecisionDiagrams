@@ -100,6 +100,16 @@ def theory_bdd(phi,
                      verbose=args.verbose,
                      tlemmas=tlemmas,
                      load_lemmas=args.load_lemmas)
+    if args.save_tbdd is not None:
+        start_time = time.time()
+        if args.verbose:
+            print("Serializing T-BDD inside ", args.save_tbdd)
+        tbdd.save_to_folder(args.save_tbdd)
+        elapsed_time = time.time() - start_time
+        logger["T-BDD"]["serialization time"] = elapsed_time
+        if args.verbose:
+            print("T-BDD serialization completed in ",
+                  elapsed_time, " seconds")
     if args.count_nodes:
         nodes = tbdd.count_nodes()
         if args.verbose:
