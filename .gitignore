@@ -26,6 +26,8 @@ tmp*
 *.dddmp
 *.pickle
 *.qvars
+*.sdd
+*.vtree
 
 .env
 

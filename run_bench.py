@@ -141,7 +141,7 @@ def main() -> None:
             print("Invalid dd type")
             return
         output_folder = input("Enter the output folder name: ")
-        if dd_type == "tbdd":
+        if dd_type == "tbdd" or dd_type == "tsdd":
             answer = input(
                 "Do you want to serialize the generated DDs? (y/n): ")
             answer = answer.strip().lower()
@@ -160,7 +160,7 @@ def main() -> None:
         if dd_type not in VALID_ABSTRACT_DD:
             print("Invalid dd type")
             return
-        if dd_type == "abstraction_bdd":
+        if dd_type == "abstraction_bdd" or dd_type == "abstraction_sdd":
             answer = input(
                 "Do you want to serialize the generated DDs? (y/n): ")
             answer = answer.strip().lower()
@@ -220,8 +220,11 @@ def main() -> None:
                 result = os.system(
                     f"timeout 3600s python main.py -v -i {input_file} --count_nodes --count_models --abstraction_bdd -d {output_file} {save_dd_str}")
             elif dd_type == "abstraction_sdd":
+                if save_dd:
+                    save_dd_folder = output_folder_path.replace(".smt2", "")
+                    save_dd_str = f"--save_abstraction_sdd {save_dd_folder}_abstraction_sdd"
                 result = os.system(
-                    f"timeout 3600s python main.py -v -i {input_file} --abstraction_sdd --count_nodes --count_models -d {output_file} --abstraction_vtree balanced")
+                    f"timeout 3600s python main.py -v -i {input_file} --abstraction_sdd --count_nodes --count_models -d {output_file} --abstraction_vtree balanced {save_dd_str}")
             elif dd_type == "abstraction_ddnnf":
                 tmp_file = input_file.replace("data", tmp_folder)
                 tmp_folder_path = tmp_file.replace(
@@ -272,8 +275,11 @@ def main() -> None:
                 result = os.system(
                     f"timeout 3600s python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tbdd --count_nodes --count_models -d {output_file} {save_dd_str}")
             elif dd_type == "tsdd":
+                if save_dd:
+                    save_dd_folder = output_folder_path.replace(".smt2", "")
+                    save_dd_str = f"--save_tbdd {save_dd_folder}_tsdd"
                 result = os.system(
-                    f"timeout 3600s python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file}  --tsdd --count_nodes --count_models -d {output_file} --tvtree balanced")
+                    f"timeout 3600s python main.py -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file}  --tsdd --count_nodes --count_models -d {output_file} --tvtree balanced {save_dd_str}")
             elif dd_type == "tddnnf":
                 tmp_ddnnf_folder = tmp_lemma_file.replace(
                     ".smt2", f"_{ddnnf_compiler}")

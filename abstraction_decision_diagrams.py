@@ -118,6 +118,8 @@ def abstr_sdd(phi, args: Options, logger: Dict):
 
     asdd = AbstractionSDD(phi, computation_logger=logger,
                           verbose=args.verbose, vtree_type=args.abstraction_vtree)
+    if args.save_abstraction_sdd is not None:
+        asdd.save_to_folder(args.save_abstraction_sdd)
     if args.count_nodes:
         nodes = asdd.count_nodes()
         if args.verbose:

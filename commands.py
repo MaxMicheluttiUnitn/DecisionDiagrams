@@ -55,6 +55,8 @@ class Options:
     dDNNF_compiler: str
     save_tbdd: str | None
     save_abstraction_bdd: str | None
+    save_tsdd: str | None
+    save_abstraction_sdd: str | None
 
     def __init__(self, args: argparse.Namespace):
         self.tsdd = args.tsdd
@@ -97,6 +99,8 @@ class Options:
         self.dDNNF_compiler = args.dDNNF_compiler
         self.save_tbdd = args.save_tbdd
         self.save_abstraction_bdd = args.save_abstraction_bdd
+        self.save_tsdd = args.save_tsdd
+        self.save_abstraction_sdd = args.save_abstraction_sdd
 
 
 def get_args() -> Options:
@@ -276,6 +280,14 @@ def get_args() -> Options:
     parser.add_argument(
         "--save_abstraction_bdd",
         help="Save the Abstraction-BDD data inside the specified folder",
+        type=str)
+    parser.add_argument(
+        "--save_tsdd",
+        help="Save the T-SDD data inside the specified folder",
+        type=str)
+    parser.add_argument(
+        "--save_abstraction_sdd",
+        help="Save the Abstraction-SDD data inside the specified folder",
         type=str)
     # parser.add_argument(
     #     "--check_eq",

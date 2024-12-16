@@ -149,7 +149,6 @@ def theory_sdd(phi,
     logger["T-SDD"] = {}
     if args.verbose:
         print("T-SDD computation starting...")
-
     tsdd = TheorySDD(phi,
                      solver=solver,
                      computation_logger=logger,
@@ -157,6 +156,16 @@ def theory_sdd(phi,
                      vtree_type=args.tvtree,
                      tlemmas=tlemmas,
                      load_lemmas=args.load_lemmas)
+    if args.save_tsdd is not None:
+        start_time = time.time()
+        if args.verbose:
+            print("Serializing T-BDD inside ", args.save_tsdd)
+        tsdd.save_to_folder(args.save_tsdd)
+        elapsed_time = time.time() - start_time
+        logger["T-BDD"]["serialization time"] = elapsed_time
+        if args.verbose:
+            print("T-BDD serialization completed in ",
+                  elapsed_time, " seconds")
     if args.count_nodes:
         nodes = tsdd.count_nodes()
         if args.verbose:
