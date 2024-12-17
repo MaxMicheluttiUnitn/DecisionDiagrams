@@ -150,7 +150,7 @@ def from_smtlib_to_dimacs_file(
     count = 1
     mapping = {}
     for atom in phi_cnf_atoms:
-        if atom in fresh_atoms:
+        if atom not in fresh_atoms:
             important_atoms_labels.append(count)
         mapping[atom] = count
         count += 1
