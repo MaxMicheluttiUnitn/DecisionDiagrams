@@ -39,7 +39,7 @@ Finally install the Mathsat SMT-solver from the pysmt package
 
 ## Compiling to dDNNF
 
-The tool supports both abstraction based and theory consistent compilation in dDNNF. However, in order to compile to this language you will need to download the dDNNF compiler [c2d](http://reasoning.cs.ucla.edu/c2d/) or the [d4]() dDNNF compiler. Download and compile the binaries and update your .env to point to the correct paths. Remember to grant the compilers permission to execute.
+The tool supports both abstraction based and theory consistent compilation in dDNNF. However, in order to compile to this language you will need to download the dDNNF compiler [c2d](http://reasoning.cs.ucla.edu/c2d/) or the [d4](https://github.com/crillab/d4) dDNNF compiler. Download and compile the binaries and update your .env to point to the correct paths. Remember to grant the compilers permission to execute.
 
 Compilation in dDNNF is currently not supported by the tool for OSs other than Linux.
 
