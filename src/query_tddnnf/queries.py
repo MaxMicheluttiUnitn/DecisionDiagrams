@@ -97,7 +97,7 @@ def check_implicant(
         phi_atoms.add(get_atoms(value))
     phi_atoms = frozenset(phi_atoms)
     term_atom = get_atoms(term)[0]
-    if term_atom in phi_atoms:
+    if term_atom not in phi_atoms:
         raise ValueError(
             "The clause must be on the same atoms as the encoded formula")
 
