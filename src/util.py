@@ -29,8 +29,11 @@ def is_tddnnf_loading_folder_correct(folder: str) -> bool:
     # check that the mapping subfolder has a mapping.json file
     if not os.path.exists(os.path.join(folder, "/mapping/mapping.json")):
         return False
-    # check that the file dimacs.cnf.nnf exists
-    if not os.path.exists(os.path.join(folder, "/dimacs.cnf.nnf")):
+    # check that the mapping subfolder has a important_labels.json file
+    if not os.path.exists(os.path.join(folder, "/mapping/import_labels.json")):
+        return False
+    # check that the file compilation_output.nnf exists
+    if not os.path.exists(os.path.join(folder, "/compilation_output.nnf")):
         return False
     return True
 

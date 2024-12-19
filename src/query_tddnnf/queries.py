@@ -52,7 +52,7 @@ def check_entail_clause(
 
     # check that the clause is on the same atoms as phi
     phi_atoms = set()
-    for value in refinement_mapping.values():
+    for value in abstraction_mapping.keys():
         phi_atoms.add(get_atoms(value))
     phi_atoms = frozenset(phi_atoms)
     clause_atoms = frozenset(get_atoms(clause))
@@ -93,7 +93,7 @@ def check_implicant(
 
     # check that the term is on the same atoms as phi
     phi_atoms = set()
-    for value in refinement_mapping.values():
+    for value in abstraction_mapping.keys():
         phi_atoms.add(get_atoms(value))
     phi_atoms = frozenset(phi_atoms)
     term_atom = get_atoms(term)[0]
@@ -159,7 +159,7 @@ def condition_tddnnf(
 
     # check that alpha is on the same atoms as phi
     phi_atoms = set()
-    for value in refinement_mapping.values():
+    for value in abstraction_mapping.keys():
         phi_atoms.add(get_atoms(value))
     phi_atoms = frozenset(phi_atoms)
     alpha_atoms = frozenset(get_atoms(alpha))

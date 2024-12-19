@@ -1,6 +1,7 @@
 """midddleware for pysmt-d4 compatibility"""
 
 
+import json
 import random
 import os
 import time
@@ -201,8 +202,9 @@ def from_smtlib_to_dimacs_file(
                 line = str(mapping[clause])
             dimacs_out.write(line)
             dimacs_out.write(" 0\n")
-    # RETURN MAPPING AND SET OF FRESH ATOMS
-    return mapping
+    
+    # RETURN MAPPING AND LIST OF IMPORTANT LABELS
+    return mapping, important_atoms_labels
 
 
 def from_d4_nnf_to_pysmt(d4_file: str, mapping: Dict[int, FNode]) -> Tuple[FNode, int, int]:
@@ -379,7 +381,7 @@ def compile_dDNNF(
     start_time = time.time()
     if verbose:
         print("Translating to DIMACS...")
-    mapping = from_smtlib_to_dimacs_file(
+    mapping, important_labels = from_smtlib_to_dimacs_file(
         phi, f"{tmp_folder}/dimacs.cnf", tlemmas
     )
     elapsed_time = time.time() - start_time
@@ -395,6 +397,8 @@ def compile_dDNNF(
     if verbose:
         print("Saving mapping...")
     save_refinement(reverse_mapping, f"{tmp_folder}/mapping/mapping.json")
+    with open(f"{tmp_folder}/mapping/important_labels.json", "w", encoding="utf8") as f:
+        json.dump(important_labels, f)
     if verbose:
         print("Mapping saved")
 

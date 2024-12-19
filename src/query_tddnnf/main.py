@@ -1,5 +1,6 @@
 """main module to query dDNNF formulas"""
 
+import json
 from theorydd.formula import load_refinement
 from theorydd.smt_solver import SMTSolver
 
@@ -18,12 +19,27 @@ def main():
 
     normalizer_solver = SMTSolver()
 
+    # load the important labels
+    with open(args.load_tddnnf + "/mapping/import_labels.json", "r", encoding='utf8') as file:
+        important_labels = json.load(file)
+
+    # load refinement funvtion as a mapping
     refinement_mapping = load_refinement(
         args.load_tddnnf + "/mapping/mapping.json")
+    
+    # remove non important items from the mapping
+    keys_to_remove = set()
+    for key in refinement_mapping.keys():
+        if key not in important_labels:
+            keys_to_remove.add(key)
+    for key in keys_to_remove:
+        del refinement_mapping[key]
 
+    # normalize atoms in the mapping
     refinement_mapping = normalize_mapping(
         refinement_mapping, normalizer_solver)
     
+    # compute reverse mapping to generate the abstraction funciton
     abstraction_mapping = {v: k for k, v in refinement_mapping.items()}
 
     if args.consistency:
