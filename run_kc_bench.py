@@ -261,7 +261,7 @@ def main() -> None:
             tmp_lemma_file = input_file.replace("data", tmp_folder)
             tmp_json_file = tmp_lemma_file.replace(".smt2", ".json")
             output_folder_path = input_file.replace("data", output_folder)
-            output_file = output_folder.replace(".smt2", ".json")
+            output_file = output_folder_path.replace(".smt2", ".json")
             save_dd_str = ""
             print(f"Running DD compilation on {input_file}...")
 
