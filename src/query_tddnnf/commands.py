@@ -2,7 +2,6 @@
 import argparse
 from dataclasses import dataclass
 
-
 @dataclass
 class TDDNNFQueryOptions:
     """dataclass that holds options for the tool"""
@@ -61,7 +60,7 @@ def get_args() -> TDDNNFQueryOptions:
         action="store_true")
     parser.add_argument(
         "--condition",
-        help="Transform the T-dDNNF in T-dDNNF | alpha, where alpha is a literal or a conjuction of literals specified in the provided .smt2 file",
+        help="Transform the T-dDNNF in T-dDNNF | alpha, where alpha is a literal or a cube specified in the provided .smt2 file",
         type=str)
     parser.add_argument(
         "--save_conditioned",
