@@ -113,7 +113,7 @@ def from_smtlib_to_dimacs_file(
     smt_data: str | FNode,
     dimacs_file: str,
     tlemmas: List[FNode] | None = None,
-) -> Tuple[Dict[FNode, int], Set[FNode]]:
+) -> Dict[FNode, int]:
     """
     translates an SMT formula in DIMACS format and saves it on file.
     All fresh variables are saved inside quantification_file.
@@ -201,9 +201,8 @@ def from_smtlib_to_dimacs_file(
                 line = str(mapping[clause])
             dimacs_out.write(line)
             dimacs_out.write(" 0\n")
-
     # RETURN MAPPING AND SET OF FRESH ATOMS
-    return mapping, fresh_atoms
+    return mapping
 
 
 def from_d4_nnf_to_pysmt(d4_file: str, mapping: Dict[int, FNode]) -> Tuple[FNode, int, int]:
@@ -380,7 +379,7 @@ def compile_dDNNF(
     start_time = time.time()
     if verbose:
         print("Translating to DIMACS...")
-    mapping, quantified_vars = from_smtlib_to_dimacs_file(
+    mapping = from_smtlib_to_dimacs_file(
         phi, f"{tmp_folder}/dimacs.cnf", tlemmas
     )
     elapsed_time = time.time() - start_time
@@ -416,7 +415,7 @@ def compile_dDNNF(
 
     # fix output
     _fix_ddnnf(f"{tmp_folder}/compilation_output.nnf",
-               mapping, quantified_vars)
+               mapping, get_atoms(phi))
 
     # counting size
     nodes, edges = count_nodes_and_edges_from_d4_nnf(
@@ -470,13 +469,12 @@ def _fix_ddnnf(nnf_file: str, var_map: dict[FNode, int], projected_vars: set[FNo
     Args:
         nnf_file (str) -> the path to the nnf file where the ddnnf is stored
         var_map (Dict[FNode,int]) -> a mapping between nodes and integers
-        projected_vars (Set[Fnode]) -> the set of variables that have to be removed
+        projected_vars (Set[Fnode]) -> the set of variables that have to be kept
     """
     with open(nnf_file, "r", encoding='utf8') as f:
         lines = f.readlines()
-
-    projected_ids = {var_map[v] for v in projected_vars}
-    ids_map = {v: i for i, v in enumerate(projected_ids, start=1)}
+        
+    projected_ids: Set[int] = {var_map[v] for v in projected_vars}
 
     with open(nnf_file, "w", encoding='utf8') as f:
         for line in lines:
@@ -488,7 +486,7 @@ def _fix_ddnnf(nnf_file: str, var_map: dict[FNode, int], projected_vars: set[FNo
                     a = abs(i)
                     s = 1 if i > 0 else -1
                     if a in projected_ids:
-                        f.write(f" {s * ids_map[a]}")
+                        f.write(f" {s * a}")
                 f.write(" 0\n")
             else:
                 f.write(line)

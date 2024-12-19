@@ -9,9 +9,9 @@ from theorydd.theory_xsdd import TheoryXSDD
 from theorydd.abstraction_bdd import AbstractionBDD
 from theorydd.abstraction_sdd import AbstractionSDD
 
-from commands import Options
-from pysmt_c2d_middleware import compile_dDNNF as compile_dDNNF_c2d
-from pysmt_d4_middleware import compile_dDNNF as compile_dDNNF_d4
+from src.kc.commands import Options
+from src.kc.pysmt_c2d_middleware import compile_dDNNF as compile_dDNNF_c2d
+from src.kc.pysmt_d4_middleware import compile_dDNNF as compile_dDNNF_d4
 
 
 def abstr_ddnnf(phi, args: Options, logger: Dict):

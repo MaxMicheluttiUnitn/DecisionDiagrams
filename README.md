@@ -6,7 +6,7 @@ This is the implementation of the code for my project course with professor R. S
 To try out the code just type in the project folder:
 
 ```
-    python3 main.py
+    python3 knowledge_compiler.py
 ```
 
 ## Installation
@@ -39,9 +39,9 @@ Finally install the Mathsat SMT-solver from the pysmt package
 
 ## Compiling to dDNNF
 
-The tool supports both abstraction based and theory consistent compilation in dDNNF. However, in order to compile to this language you will need to download the dDNNF compiler [c2d](http://reasoning.cs.ucla.edu/c2d/). Download the binary and update your .env to point to the path of the binary. Remember to grant the binary execution permission.
+The tool supports both abstraction based and theory consistent compilation in dDNNF. However, in order to compile to this language you will need to download the dDNNF compiler [c2d](http://reasoning.cs.ucla.edu/c2d/) or the [d4]() dDNNF compiler. Download and compile the binaries and update your .env to point to the correct paths. Remember to grant the compilers permission to execute.
 
-Compilation in dDNNF is currently not supported by the tool for other operative systems.
+Compilation in dDNNF is currently not supported by the tool for OSs other than Linux.
 
 ## Using the Tabular AllSMT solver
 

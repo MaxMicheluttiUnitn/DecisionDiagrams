@@ -10,9 +10,9 @@ from theorydd.smt_solver import SMTSolver
 from theorydd.smt_solver_partial import PartialSMTSolver
 import theorydd.formula as formula
 
-from commands import Options
-from pysmt_c2d_middleware import compile_dDNNF as compile_dDNNF_c2d
-from pysmt_d4_middleware import compile_dDNNF as compile_dDNNF_d4
+from src.kc.commands import Options
+from src.kc.pysmt_c2d_middleware import compile_dDNNF as compile_dDNNF_c2d
+from src.kc.pysmt_d4_middleware import compile_dDNNF as compile_dDNNF_d4
 
 
 

@@ -15,10 +15,10 @@ from theorydd.smt_solver_partial import PartialSMTSolver
 from theorydd.smt_solver_full_partial import FullPartialSMTSolver
 from theorydd.lemma_extractor import extract
 
-import abstraction_decision_diagrams as add
-import theory_decision_diagrams as tdd
-import tabular_solver as tabular
-from commands import Options, get_args
+import src.kc.abstraction_decision_diagrams as add
+import src.kc.theory_decision_diagrams as tdd
+import src.kc.tabular_solver as tabular
+from src.kc.commands import Options, get_args
 
 def print_models(models, boolean_mapping) -> None:
     """prints the models from allSMT computation on screen"""
