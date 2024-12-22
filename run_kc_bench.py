@@ -280,7 +280,7 @@ def main() -> None:
             elif dd_type == "tsdd":
                 if save_dd:
                     save_dd_folder = output_folder_path.replace(".smt2", "")
-                    save_dd_str = f"--save_tbdd {save_dd_folder}_tsdd"
+                    save_dd_str = f"--save_tsdd {save_dd_folder}_tsdd"
                 result = os.system(
                     f"timeout 3600s {PYTHON_COMMAND} {COMPILER_FILE} -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file}  --tsdd --count_nodes --count_models -d {output_file} --tvtree balanced {save_dd_str}")
             elif dd_type == "tddnnf":
