@@ -4,7 +4,7 @@ from typing import List
 
 VALID_BENCHS = ["ldd_randgen", "randgen", "qfrdl"]
 RUN_TYPES = ["allsmt", "dd", "both", "abstraction"]
-VALID_SOLVERS = ["total", "partial", "full_partial",
+VALID_SOLVERS = ["total", "partial", "extended_partial",
                  "tabular_total", "tabular_partial"]
 VALID_DD = ["tbdd", "tsdd", "tddnnf"]
 VALID_ABSTRACT_DD = ["abstraction_bdd",

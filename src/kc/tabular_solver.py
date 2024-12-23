@@ -8,7 +8,7 @@ from typing import List, Dict
 from pysmt.fnode import FNode
 #from allsat_cnf.polarity_cnfizer import PolarityCNFizer
 from theorydd.constants import SAT, UNSAT
-from theorydd.smt_solver import SMTSolver as _SMTSolver
+from theorydd.solvers.mathsat_total import MathSATTotalEnumerator as _Enumerator
 from theorydd.formula import get_normalized, save_phi, read_phi
 from dotenv import load_dotenv as _load_env
 
@@ -35,7 +35,7 @@ class TabularSMTSolver:
     """
 
     def __init__(self, is_partial: bool = False) -> None:
-        self.normalizer_solver = _SMTSolver()
+        self.normalizer_solver = _Enumerator()
         self._tlemmas = []
         self._models = []
         self._converter = self.normalizer_solver.get_converter()

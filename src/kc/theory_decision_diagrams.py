@@ -4,10 +4,9 @@ from typing import Dict, List
 
 from pysmt.fnode import FNode
 from pysmt.shortcuts import write_smtlib
-from theorydd.theory_bdd import TheoryBDD
-from theorydd.theory_sdd import TheorySDD
-from theorydd.smt_solver import SMTSolver
-from theorydd.smt_solver_partial import PartialSMTSolver
+from theorydd.tdd.theory_bdd import TheoryBDD
+from theorydd.tdd.theory_sdd import TheorySDD
+from theorydd.solvers.solver import SMTEnumerator
 import theorydd.formula as formula
 
 from src.kc.commands import Options
@@ -19,7 +18,7 @@ from src.kc.pysmt_d4_middleware import compile_dDNNF as compile_dDNNF_d4
 def theory_ddnnf(phi,
                  args: Options,
                  logger: Dict,
-                 solver: SMTSolver | PartialSMTSolver,
+                 solver: SMTEnumerator,
                  tlemmas: List[FNode]):
     """theory dDNNF"""
     # THEORY dDNNF
@@ -85,7 +84,7 @@ def theory_ddnnf(phi,
 def theory_bdd(phi,
                args: Options,
                logger: Dict,
-               solver: SMTSolver | PartialSMTSolver,
+               solver: SMTEnumerator,
                tlemmas: None | List[FNode]):
     """theory bdd"""
     # THEORY BDD
@@ -126,7 +125,7 @@ def theory_bdd(phi,
             print("Models: ", models)
         logger["T-BDD"]["DD models"] = models
     if args.tbdd_output is not None:
-        tbdd.dump(args.tbdd_output, dump_abstraction=args.dump_abstraction)
+        tbdd.graphic_dump(args.tbdd_output, dump_abstraction=args.dump_abstraction)
     if args.print_mapping:
         print(tbdd.get_mapping())
     del tbdd
@@ -141,7 +140,7 @@ def theory_bdd(phi,
 def theory_sdd(phi,
                args: Options,
                logger: Dict,
-               solver: SMTSolver | PartialSMTSolver,
+               solver: SMTEnumerator,
                tlemmas: None | List[FNode]):
     """theory sdd"""
     # THEORY SDD
@@ -182,9 +181,9 @@ def theory_sdd(phi,
             print("Models: ", models)
         logger["T-SDD"]["DD models"] = models
     if args.tsdd_output is not None:
-        tsdd.dump(args.tsdd_output, dump_abstraction=args.dump_abstraction)
+        tsdd.graphic_dump(args.tsdd_output, dump_abstraction=args.dump_abstraction)
     if args.tvtree_output is not None:
-        tsdd.dump(args.tvtree_output)
+        tsdd.graphic_dump_vtree(args.tvtree_output)
     if args.print_mapping:
         print(tsdd.get_mapping())
     del tsdd

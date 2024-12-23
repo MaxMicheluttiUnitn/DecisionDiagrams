@@ -10,10 +10,11 @@ from typing import Dict, List
 import theorydd.formula as formula
 from pysmt.fnode import FNode
 
-from theorydd.smt_solver import SMTSolver
-from theorydd.smt_solver_partial import PartialSMTSolver
-from theorydd.smt_solver_full_partial import FullPartialSMTSolver
-from theorydd.lemma_extractor import extract
+from theorydd.solvers.solver import SMTEnumerator
+from theorydd.solvers.mathsat_total import MathSATTotalEnumerator
+from theorydd.solvers.mathsat_partial_extended import MathSATExtendedPartialEnumerator
+from theorydd.solvers.mathsat_partial import MathSATPartialEnumerator
+from theorydd.solvers.lemma_extractor import extract
 
 import src.kc.abstraction_decision_diagrams as add
 import src.kc.theory_decision_diagrams as tdd
@@ -90,21 +91,21 @@ def load_details(args: Options) -> Dict:
     return logger
 
 
-def get_solver(args: Options) -> SMTSolver | PartialSMTSolver | FullPartialSMTSolver:
+def get_solver(args: Options) -> SMTEnumerator:
     """returns the solver chosen by the user"""
     if args.solver == "total":
-        return SMTSolver()
+        return MathSATTotalEnumerator()
     elif args.solver == "partial":
-        return PartialSMTSolver()
-    elif args.solver == "full_partial":
-        return FullPartialSMTSolver()
+        return MathSATExtendedPartialEnumerator()
+    elif args.solver == "extended_partial":
+        return MathSATPartialEnumerator()
     elif args.solver == "tabular_total":
         return tabular.TabularSMTSolver(is_partial=False)
     elif args.solver == "tabular_partial":
         return tabular.TabularSMTSolver(is_partial=True)
     else:
         # default on total solver
-        return SMTSolver()
+        return MathSATTotalEnumerator()
 
 
 def is_smt_phase_necessary(args: Options):

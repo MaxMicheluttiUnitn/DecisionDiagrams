@@ -4,10 +4,10 @@ from typing import Dict
 
 from pysmt.shortcuts import write_smtlib
 
-from theorydd.theory_ldd import TheoryLDD
-from theorydd.theory_xsdd import TheoryXSDD
-from theorydd.abstraction_bdd import AbstractionBDD
-from theorydd.abstraction_sdd import AbstractionSDD
+from theorydd.abstractdd.ldd import LDD as TheoryLDD
+from theorydd.xsdd import TheoryXSDD
+from theorydd.abstractdd.abstraction_bdd import AbstractionBDD
+from theorydd.abstractdd.abstraction_sdd import AbstractionSDD
 
 from src.kc.commands import Options
 from src.kc.pysmt_c2d_middleware import compile_dDNNF as compile_dDNNF_c2d
@@ -98,7 +98,7 @@ def abstr_bdd(phi, args: Options, logger: Dict):
             print("Models: ", models)
         logger["Abstraction BDD"]["DD models"] = models
     if args.abstraction_bdd_output is not None:
-        abdd.dump(args.abstraction_bdd_output)
+        abdd.graphic_dump(args.abstraction_bdd_output)
     del abdd
 
     elapsed_time = time.time() - start_time
@@ -136,9 +136,9 @@ def abstr_sdd(phi, args: Options, logger: Dict):
             print("Models: ", models)
         logger["Abstraction SDD"]["DD models"] = models
     if args.abstraction_sdd_output is not None:
-        asdd.dump(args.abstraction_sdd_output)
+        asdd.graphic_dump(args.abstraction_sdd_output)
     if args.abstraction_vtree_output is not None:
-        asdd.dump(args.abstraction_vtree_output)
+        asdd.graphic_dump_vtree(args.abstraction_vtree_output)
     del asdd
 
     elapsed_time = time.time() - start_time
