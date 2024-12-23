@@ -264,7 +264,8 @@ def compile_dDNNF(
         tmp_path: str | None = None,
         computation_logger: Dict | None = None,
         verbose: bool = False,
-        back_to_fnode: bool = True) -> Tuple[FNode | None, int, int]:
+        back_to_fnode: bool = True,
+        timeout: int = 3600) -> Tuple[FNode | None, int, int]:
     """
     Compiles an FNode in dDNNF through the c2d compiler
 
@@ -335,8 +336,11 @@ def compile_dDNNF(
     start_time = time.time()
     if verbose:
         print("Compiling dDNNF...")
+    timeout_string = ""
+    if timeout > 0:
+        timeout_string = f"timeout {timeout}s "
     result = os.system(
-        f"timeout 3600s {_C2D_EXECUTABLE} -in {tmp_folder}/dimacs.cnf -exist {tmp_folder}/quantification.exist > /dev/null"
+        f"{timeout_string}{_C2D_EXECUTABLE} -in {tmp_folder}/dimacs.cnf -exist {tmp_folder}/quantification.exist > /dev/null"
     )
     if result != 0:
         raise TimeoutError("c2d compilation failed: timeout")

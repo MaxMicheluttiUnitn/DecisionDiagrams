@@ -52,6 +52,7 @@ class Options:
     save_abstraction_bdd: str | None
     save_tsdd: str | None
     save_abstraction_sdd: str | None
+    dDNNF_timeout: int
 
     def __init__(self, args: argparse.Namespace):
         self.tsdd = args.tsdd
@@ -96,6 +97,7 @@ class Options:
         self.save_abstraction_bdd = args.save_abstraction_bdd
         self.save_tsdd = args.save_tsdd
         self.save_abstraction_sdd = args.save_abstraction_sdd
+        self.dDNNF_timeout = args.dDNNF_timeout
 
 
 def get_args() -> Options:
@@ -284,9 +286,17 @@ def get_args() -> Options:
         "--save_abstraction_sdd",
         help="Save the Abstraction-SDD data inside the specified folder",
         type=str)
+    parser.add_argument(
+        "--dDNNF_timeout",
+        help="Specify the timeout (in seconds) for the dDNNF compiler, set to 0 for no timeout",
+        type=int,
+        default=3600)
     # parser.add_argument(
     #     "--check_eq",
     #     help="Check the T-equivalence of the T-agnostic DD with the T-formula phi",
     #     action="store_true")
     args = parser.parse_args()
+    # I have to check this value outside of argparse
+    if args.dDNNF_timeout < 0:
+        raise ValueError("Timeout must be a non-negative integer!")
     return Options(args)
