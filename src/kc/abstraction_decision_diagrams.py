@@ -26,19 +26,19 @@ def abstr_ddnnf(phi, args: Options, logger: Dict):
         if ddnnf_compiler == "c2d":
             abs_ddnnf, nodes, edges = compile_dDNNF_c2d(phi,
                                                 keep_temp=(
-                                                    args.keep_c2d_temp is not None),
+                                                    args.save_dDNNF is not None),
                                                 verbose=args.verbose,
                                                 computation_logger=logger["Abstraction dDNNF"],
-                                                tmp_path=args.keep_c2d_temp,
+                                                tmp_path=args.save_dDNNF,
                                                 back_to_fnode=(not args.no_dDNNF_to_pysmt))
         elif ddnnf_compiler == "d4":
             abs_ddnnf, nodes, edges = compile_dDNNF_d4(
                 phi,
                 tlemmas=[],
-                keep_temp=(args.keep_c2d_temp is not None),
+                keep_temp=(args.save_dDNNF is not None),
                 verbose=args.verbose,
                 computation_logger=logger["Abstraction dDNNF"],
-                tmp_path=args.keep_c2d_temp,
+                tmp_path=args.save_dDNNF,
                 back_to_fnode=(not args.no_dDNNF_to_pysmt)
             )
         else:

@@ -38,10 +38,10 @@ def theory_ddnnf(phi,
         try:
             tddnnf, nodes, edges = compile_dDNNF_c2d(phi_and_lemmas,
                                                 keep_temp=(
-                                                    args.keep_c2d_temp is not None),
+                                                    args.save_dDNNF is not None),
                                                 verbose=args.verbose,
                                                 computation_logger=logger["T-dDNNF"],
-                                                tmp_path=args.keep_c2d_temp,
+                                                tmp_path=args.save_dDNNF,
                                                 back_to_fnode=(not args.no_dDNNF_to_pysmt))
         except TimeoutError:
             if args.verbose:
@@ -52,10 +52,10 @@ def theory_ddnnf(phi,
         tddnnf, nodes, edges = compile_dDNNF_d4(phi,
                                                 tlemmas,
                                                 keep_temp=(
-                                                    args.keep_c2d_temp is not None),
+                                                    args.save_dDNNF is not None),
                                                 verbose=args.verbose,
                                                 computation_logger=logger["T-dDNNF"],
-                                                tmp_path=args.keep_c2d_temp,
+                                                tmp_path=args.save_dDNNF,
                                                 back_to_fnode=(not args.no_dDNNF_to_pysmt))
     else:
         raise ValueError("Invalid dDNNF compiler")

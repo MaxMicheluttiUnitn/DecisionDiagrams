@@ -233,7 +233,7 @@ def main() -> None:
                 tmp_folder_path = output_folder_path.replace(
                     ".smt2", f"_{ddnnf_compiler}")
                 os.system(
-                    f"{PYTHON_COMMAND} {COMPILER_FILE} -v -i {input_file} --abstraction_dDNNF -d {output_file} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_folder_path} --dDNNF_compiler {ddnnf_compiler}")
+                    f"{PYTHON_COMMAND} {COMPILER_FILE} -v -i {input_file} --abstraction_dDNNF -d {output_file} --no_dDNNF_to_pysmt --save_dDNNF {tmp_folder_path} --dDNNF_compiler {ddnnf_compiler}")
             elif dd_type == "ldd":
                 result = os.system(
                     f"timeout 3600s {PYTHON_COMMAND} {COMPILER_FILE} -v -i {input_file} --ldd --ldd_theory TVPI --count_models --count_nodes -d {output_file}")
@@ -287,7 +287,7 @@ def main() -> None:
                 tmp_ddnnf_folder = output_folder_path.replace(
                     ".smt2", f"_{ddnnf_compiler}")
                 os.system(
-                    f"{PYTHON_COMMAND} {COMPILER_FILE} -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tdDNNF -d {output_file} --no_dDNNF_to_pysmt --keep_c2d_temp {tmp_ddnnf_folder} --dDNNF_compiler {ddnnf_compiler}")
+                    f"{PYTHON_COMMAND} {COMPILER_FILE} -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tdDNNF -d {output_file} --no_dDNNF_to_pysmt --save_dDNNF {tmp_ddnnf_folder} --dDNNF_compiler {ddnnf_compiler}")
 
             if result != 0:
                 print(f"DD compilation timed out for {input_file}")
