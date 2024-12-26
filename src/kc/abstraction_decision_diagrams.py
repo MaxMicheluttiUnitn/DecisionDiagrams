@@ -10,8 +10,8 @@ from theorydd.abstractdd.abstraction_bdd import AbstractionBDD
 from theorydd.abstractdd.abstraction_sdd import AbstractionSDD
 
 from src.kc.commands import Options
-from src.kc.pysmt_c2d_middleware import compile_dDNNF as compile_dDNNF_c2d
-from src.kc.pysmt_d4_middleware import compile_dDNNF as compile_dDNNF_d4
+from src.kc.pysmt_c2d_middleware import C2DCompiler
+from src.kc.pysmt_d4_middleware import D4Compiler
 
 
 def abstr_ddnnf(phi, args: Options, logger: Dict):
@@ -22,27 +22,22 @@ def abstr_ddnnf(phi, args: Options, logger: Dict):
     ddnnf_compiler:str = args.dDNNF_compiler
     if args.verbose:
         print("Abstraction dDNNF computation starting...")
+    if ddnnf_compiler == "c2d":
+        compiler = C2DCompiler()
+    elif ddnnf_compiler == "d4":
+        compiler = D4Compiler()
+    else:
+        raise ValueError("Invalid dDNNF compiler")
     try:
-        if ddnnf_compiler == "c2d":
-            abs_ddnnf, nodes, edges = compile_dDNNF_c2d(phi,
-                                                keep_temp=(
-                                                    args.save_dDNNF is not None),
-                                                verbose=args.verbose,
-                                                computation_logger=logger["Abstraction dDNNF"],
-                                                tmp_path=args.save_dDNNF,
-                                                back_to_fnode=(not args.no_dDNNF_to_pysmt))
-        elif ddnnf_compiler == "d4":
-            abs_ddnnf, nodes, edges = compile_dDNNF_d4(
-                phi,
-                tlemmas=[],
-                keep_temp=(args.save_dDNNF is not None),
-                verbose=args.verbose,
-                computation_logger=logger["Abstraction dDNNF"],
-                tmp_path=args.save_dDNNF,
-                back_to_fnode=(not args.no_dDNNF_to_pysmt)
-            )
-        else:
-            raise ValueError("Invalid dDNNF compiler")
+        abs_ddnnf, nodes, edges = compiler.compile_dDNNF(
+            phi,
+            tlemmas=None,
+            save_path=args.save_dDNNF,
+            back_to_fnode=(not args.no_dDNNF_to_pysmt),
+            verbose=args.verbose,
+            computation_logger=logger["Abstraction dDNNF"],
+            timeout=args.dDNNF_timeout
+        )
     except TimeoutError:
         if args.verbose:
             print("Timeout error in dDNNF computation")
@@ -56,9 +51,7 @@ def abstr_ddnnf(phi, args: Options, logger: Dict):
         if args.verbose:
             print("T-dDNNF Vertices: ", edges)
         logger["T-dDNNF"]["edges"] = edges
-    if args.no_dDNNF_to_pysmt:
-        return
-    if args.abstraction_dDNNF_output is not None:
+    if args.abstraction_dDNNF_output is not None and abs_ddnnf is not None:
         if args.verbose:
             print("Saving abstraction dDNNF to ",
                   args.abstraction_dDNNF_output)

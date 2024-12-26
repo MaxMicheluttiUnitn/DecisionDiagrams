@@ -10,8 +10,8 @@ from theorydd.solvers.solver import SMTEnumerator
 import theorydd.formula as formula
 
 from src.kc.commands import Options
-from src.kc.pysmt_c2d_middleware import compile_dDNNF as compile_dDNNF_c2d
-from src.kc.pysmt_d4_middleware import compile_dDNNF as compile_dDNNF_d4
+from src.kc.pysmt_c2d_middleware import C2DCompiler
+from src.kc.pysmt_d4_middleware import D4Compiler
 
 
 
@@ -28,37 +28,26 @@ def theory_ddnnf(phi,
     if args.verbose:
         print("T-dDNNF computation starting...")
     if ddnnf_compiler == "c2d":
-        if tlemmas is not None:
-            phi_and_lemmas = formula.get_phi_and_lemmas(phi, tlemmas)
-        else:
-            tlemmas_big_and = formula.read_phi(args.load_lemmas)
-            phi_and_lemmas = formula.get_phi_and_lemmas(phi, [tlemmas_big_and])
-        phi_and_lemmas = formula.get_normalized(
-            phi_and_lemmas, solver.get_converter())
-        try:
-            tddnnf, nodes, edges = compile_dDNNF_c2d(phi_and_lemmas,
-                                                keep_temp=(
-                                                    args.save_dDNNF is not None),
-                                                verbose=args.verbose,
-                                                computation_logger=logger["T-dDNNF"],
-                                                tmp_path=args.save_dDNNF,
-                                                back_to_fnode=(not args.no_dDNNF_to_pysmt))
-        except TimeoutError:
-            if args.verbose:
-                print("Timeout error in dDNNF computation")
-            logger["timeout"] = "dDNNF"
-            return
+        compiler = C2DCompiler()
     elif ddnnf_compiler == "d4":
-        tddnnf, nodes, edges = compile_dDNNF_d4(phi,
-                                                tlemmas,
-                                                keep_temp=(
-                                                    args.save_dDNNF is not None),
-                                                verbose=args.verbose,
-                                                computation_logger=logger["T-dDNNF"],
-                                                tmp_path=args.save_dDNNF,
-                                                back_to_fnode=(not args.no_dDNNF_to_pysmt))
+        compiler = D4Compiler()
     else:
         raise ValueError("Invalid dDNNF compiler")
+    try:
+        tddnnf, nodes, edges = compiler.compile_dDNNF(
+            phi,
+            tlemmas,
+            save_path=args.save_dDNNF,
+            back_to_fnode=(not args.no_dDNNF_to_pysmt),
+            verbose=args.verbose,
+            computation_logger=logger["T-dDNNF"],
+            timeout=args.dDNNF_timeout
+        )
+    except TimeoutError:
+        if args.verbose:
+            print("Timeout error in dDNNF computation")
+        logger["timeout"] = "dDNNF"
+        return
     if args.count_nodes:
         if args.verbose:
             print("T-dDNNF Nodes: ", nodes)
@@ -71,7 +60,7 @@ def theory_ddnnf(phi,
         return
     elapsed_time = time.time() - start_time
     logger["T-dDNNF"]["total computation time"] = elapsed_time
-    if args.tdDNNF_output is not None:
+    if args.tdDNNF_output is not None and tddnnf is not None:
         if args.verbose:
             print("Saving T-dDNNF to ", args.tdDNNF_output)
         write_smtlib(tddnnf, args.tdDNNF_output)

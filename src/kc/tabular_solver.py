@@ -9,6 +9,7 @@ from pysmt.fnode import FNode
 #from allsat_cnf.polarity_cnfizer import PolarityCNFizer
 from theorydd.constants import SAT, UNSAT
 from theorydd.solvers.mathsat_total import MathSATTotalEnumerator as _Enumerator
+from theorydd.solvers.solver import SMTEnumerator
 from theorydd.formula import get_normalized, save_phi, read_phi
 from dotenv import load_dotenv as _load_env
 
@@ -26,7 +27,7 @@ if _TABULAR_ALLSMT_BINARY is not None and isinstance(_TABULAR_ALLSMT_BINARY,str)
 _TLEMMAS_FILE_REGEX = "tlemma_[0-9]+.smt2"
 
 
-class TabularSMTSolver:
+class TabularSMTSolver(SMTEnumerator):
     """A wrapper for the tabular T-solver
 
     is_partial: bool [False]:   if True, the solver will only compute partial assignments,
