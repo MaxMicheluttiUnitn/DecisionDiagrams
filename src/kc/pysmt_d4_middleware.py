@@ -10,7 +10,6 @@ from typing import Dict, List, Set, Tuple, TypeVar
 from dataclasses import dataclass
 from dotenv import load_dotenv as _load_env
 from pysmt.shortcuts import (
-    write_smtlib,
     And,
     Or,
     get_atoms,
@@ -293,8 +292,7 @@ class D4Compiler(DDNNFCompiler):
             timeout (int) = 3600 -> the maximum time in seconds the computation is allowed to run
 
         Returns:
-            Tuple[FNode,int,int] | None -> if back_to_fnode is set to True, the function returns:
-            (FNode) -> the input pysmt formula in dDNNF
+            (FNode | None) -> the input pysmt formula in dDNNF, or None if back_to_fnode is False
             (int) -> the number of nodes in the dDNNF
             (int) -> the number of edges in the dDNNF
         """

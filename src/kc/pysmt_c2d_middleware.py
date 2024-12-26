@@ -5,7 +5,6 @@ import os
 import time
 from typing import Dict, List, Tuple
 from pysmt.shortcuts import (
-    write_smtlib,
     read_smtlib,
     And,
     Or,
@@ -232,7 +231,6 @@ class C2DCompiler(DDNNFCompiler):
             timeout (int) -> the maximum time allowed for the computation
 
         Returns:
-            Tuple[FNode,int,int] | None -> if back_to_fnode is set to True, the function returns:
             (FNode | None) -> the input pysmt formula in dDNNF, or None if back_to_fnode is False
             (int) -> the number of nodes in the dDNNF
             (int) -> the number of edges in the dDNNF
