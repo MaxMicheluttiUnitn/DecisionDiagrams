@@ -157,6 +157,8 @@ def smt_phase(phi: FNode, args: Options, logger: Dict):
                 formula.save_phi(tlemmas[0], args.save_lemmas)
             else:
                 formula.save_phi(formula.top(), args.save_lemmas)
+    else:
+        tlemmas = formula.read_phi(args.load_lemmas)
 
     # T-dDNNF
     if args.tdDNNF:
