@@ -19,7 +19,8 @@ def theory_ddnnf(phi,
                  args: Options,
                  logger: Dict,
                  solver: SMTEnumerator,
-                 tlemmas: List[FNode]):
+                 tlemmas: List[FNode],
+                 sat_result: None | bool = None):
     """theory dDNNF"""
     # THEORY dDNNF
     start_time = time.time()
@@ -74,7 +75,8 @@ def theory_bdd(phi,
                args: Options,
                logger: Dict,
                solver: SMTEnumerator,
-               tlemmas: None | List[FNode]):
+               tlemmas: None | List[FNode],
+               sat_result: None | bool = None):
     """theory bdd"""
     # THEORY BDD
     start_time = time.time()
@@ -87,6 +89,7 @@ def theory_bdd(phi,
                      computation_logger=logger,
                      verbose=args.verbose,
                      tlemmas=tlemmas,
+                     sat_result=sat_result,
                      load_lemmas=args.load_lemmas)
     if args.save_tbdd is not None:
         start_time = time.time()
@@ -130,7 +133,8 @@ def theory_sdd(phi,
                args: Options,
                logger: Dict,
                solver: SMTEnumerator,
-               tlemmas: None | List[FNode]):
+               tlemmas: None | List[FNode],
+               sat_result: None | bool = None):
     """theory sdd"""
     # THEORY SDD
     start_time = time.time()
@@ -143,6 +147,7 @@ def theory_sdd(phi,
                      verbose=args.verbose,
                      vtree_type=args.tvtree,
                      tlemmas=tlemmas,
+                     sat_result=sat_result,
                      load_lemmas=args.load_lemmas)
     if args.save_tsdd is not None:
         start_time = time.time()

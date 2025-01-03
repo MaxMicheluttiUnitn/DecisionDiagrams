@@ -15,6 +15,7 @@ from theorydd.solvers.mathsat_total import MathSATTotalEnumerator
 from theorydd.solvers.mathsat_partial_extended import MathSATExtendedPartialEnumerator
 from theorydd.solvers.mathsat_partial import MathSATPartialEnumerator
 from theorydd.solvers.lemma_extractor import extract
+from theorydd.constants import SAT, UNSAT
 
 import src.kc.abstraction_decision_diagrams as add
 import src.kc.theory_decision_diagrams as tdd
@@ -41,7 +42,7 @@ def print_models(models, boolean_mapping) -> None:
         print("\n".join(map(str, models)))
 
 def get_phi(args: Options, logger: Dict) -> FNode:
-    """load the formula"""
+    """load the input formula"""
     start_time = time.time()
     if args.verbose:
         print("Loading phi...")
@@ -118,9 +119,10 @@ def smt_phase(phi: FNode, args: Options, logger: Dict):
     smt_solver = get_solver(args)
 
     tlemmas: List[FNode] | None = None
+    sat_result = None
     if args.load_lemmas is None:
         # COMPUTE LEMMAS IF NECESSARY
-        _sat, tlemmas, boolean_mapping = extract(
+        sat_result, tlemmas, boolean_mapping = extract(
             phi,
             smt_solver,
             verbose=args.verbose,
@@ -160,17 +162,25 @@ def smt_phase(phi: FNode, args: Options, logger: Dict):
     else:
         tlemmas = [formula.read_phi(args.load_lemmas)]
 
+    # laod sat result from logger if available
+    if "All-SMT result" in logger.keys():
+        sat_result_string = logger["All-SMT result"]
+        if sat_result_string == "SAT":
+            sat_result = SAT
+        else:
+            sat_result = UNSAT
+
     # T-dDNNF
     if args.tdDNNF:
-        tdd.theory_ddnnf(phi, args, logger, smt_solver, tlemmas)
+        tdd.theory_ddnnf(phi, args, logger, smt_solver, tlemmas, sat_result)
 
     # T-BDD
     if args.tbdd:
-        tdd.theory_bdd(phi, args, logger, smt_solver, tlemmas)
+        tdd.theory_bdd(phi, args, logger, smt_solver, tlemmas, sat_result)
 
     # T-SDD
     if args.tsdd:
-        tdd.theory_sdd(phi, args, logger, smt_solver, tlemmas)
+        tdd.theory_sdd(phi, args, logger, smt_solver, tlemmas, sat_result)
 
 
 def main() -> None:
