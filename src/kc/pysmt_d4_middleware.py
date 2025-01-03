@@ -20,6 +20,7 @@ from pysmt.shortcuts import (
 from pysmt.fnode import FNode
 from allsat_cnf.label_cnfizer import LabelCNFizer
 from theorydd.formula import save_refinement, load_refinement, get_phi_and_lemmas
+from theorydd.constants import UNSAT
 
 from src.kc.ddnnf_compiler import DDNNFCompiler
 
@@ -29,6 +30,7 @@ _D4_TRUE_NODE = 2
 _D4_FALSE_NODE = 3
 
 _SelfD4Node = TypeVar("SelfD4Node", bound="D4Node")
+
 
 @dataclass
 class D4Node:
@@ -108,6 +110,7 @@ if _D4_EXECUTABLE is not None and os.path.isfile(_D4_EXECUTABLE) and not _D4_EXE
     else:
         _D4_EXECUTABLE = f"./{_D4_EXECUTABLE}"
 
+
 class D4Compiler(DDNNFCompiler):
     """D4 compiler implementation for the DDNNFCompiler interface"""
 
@@ -120,6 +123,7 @@ class D4Compiler(DDNNFCompiler):
         phi: FNode,
         dimacs_file: str,
         tlemmas: List[FNode] | None = None,
+        sat_result: bool | None = None
     ) -> None:
         """
         translates an SMT formula in DIMACS format and saves it on file.
@@ -130,6 +134,7 @@ class D4Compiler(DDNNFCompiler):
             phi (FNode) -> the input formula
             dimacs_file (str) -> the path to the file where the dimacs output need to be saved
             tlemmas (List[FNode] | None) = None -> a list of theory lemmas to be added to the formula
+            sat_result (bool | None) = None -> the result of the SAT check on the formula
         """
         phi_atoms: frozenset = get_atoms(phi)
         if tlemmas is not None:
@@ -138,7 +143,8 @@ class D4Compiler(DDNNFCompiler):
             phi_and_lemmas = phi
         phi_cnf: FNode = LabelCNFizer().convert_as_formula(phi_and_lemmas)
         phi_cnf_atoms: frozenset = get_atoms(phi_cnf)
-        fresh_atoms: Set[FNode] = frozenset(phi_cnf_atoms.difference(phi_atoms))
+        fresh_atoms: Set[FNode] = frozenset(
+            phi_cnf_atoms.difference(phi_atoms))
         important_atoms_labels: List[int] = []
 
         # create mapping
@@ -159,15 +165,14 @@ class D4Compiler(DDNNFCompiler):
             return
 
         # check if formula is bottom
-        if phi_cnf.is_false():
+        if phi_cnf.is_false() or sat_result == UNSAT:
             self.write_dimacs_false(dimacs_file)
             return
 
         # CONVERTNG IN DIMACS FORMAT AND SAVING ON FILE
         self.write_dimacs(dimacs_file, phi_cnf, important_atoms_labels)
 
-
-    def from_nnf_to_pysmt(self,nnf_file: str) -> Tuple[FNode, int, int]:
+    def from_nnf_to_pysmt(self, nnf_file: str) -> Tuple[FNode, int, int]:
         """
         Translates the formula contained in the file d4_file from nnf format to a pysmt FNode
 
@@ -242,8 +247,7 @@ class D4Compiler(DDNNFCompiler):
 
         return pysmt_node, total_nodes, total_arcs
 
-
-    def count_nodes_and_edges_from_nnf(self,nnf_file: str) -> Tuple[int, int]:
+    def count_nodes_and_edges_from_nnf(self, nnf_file: str) -> Tuple[int, int]:
         """
         Counts nodes and edges of the formula contained in the file d4_file from nnf format to a pysmt FNode
 
@@ -272,6 +276,7 @@ class D4Compiler(DDNNFCompiler):
         tlemmas: List[FNode] | None = None,
         save_path: str | None = None,
         back_to_fnode: bool = False,
+        sat_result: bool | None = None,
         verbose: bool = False,
         computation_logger: Dict | None = None,
         timeout: int = 3600
@@ -311,10 +316,7 @@ class D4Compiler(DDNNFCompiler):
         computation_logger["dDNNF compiler"] = "d4"
 
         # choose temporary folder
-        if save_path is None:
-            tmp_folder = "temp_" + str(random.randint(0, 9223372036854775807))
-        else:
-            tmp_folder = save_path
+        tmp_folder = self._choose_tmp_folder(save_path)
 
         # translate to CNF DIMACS and get mapping used for translation
         if not os.path.exists(tmp_folder):
@@ -323,8 +325,7 @@ class D4Compiler(DDNNFCompiler):
         if verbose:
             print("Translating to DIMACS...")
         self.from_smtlib_to_dimacs_file(
-            phi, f"{tmp_folder}/dimacs.cnf", tlemmas
-        )
+            phi, f"{tmp_folder}/dimacs.cnf", tlemmas, sat_result=sat_result)
         elapsed_time = time.time() - start_time
         computation_logger["DIMACS translation time"] = elapsed_time
         if verbose:
@@ -335,12 +336,12 @@ class D4Compiler(DDNNFCompiler):
         if not os.path.exists(f"{tmp_folder}/mapping"):
             os.mkdir(f"{tmp_folder}/mapping")
         if verbose:
-            print("Saving mapping...")
+            print("Saving refinement...")
         save_refinement(self.refinement, f"{tmp_folder}/mapping/mapping.json")
         with open(f"{tmp_folder}/mapping/important_labels.json", "w", encoding="utf8") as f:
             json.dump(self.important_atoms_labels, f)
         if verbose:
-            print("Mapping saved")
+            print("Refinement saved")
 
         # call d4 for compilation
         # output should be in file temp_folder/compilation_output.nnf
@@ -365,7 +366,8 @@ class D4Compiler(DDNNFCompiler):
 
         # return if not back to fnode
         if not back_to_fnode:
-            nodes, edges = self.count_nodes_and_edges_from_nnf(f"{tmp_folder}/compilation_output.nnf")
+            nodes, edges = self.count_nodes_and_edges_from_nnf(
+                f"{tmp_folder}/compilation_output.nnf")
             return None, nodes, edges
 
         # loading saved mapping
@@ -375,7 +377,8 @@ class D4Compiler(DDNNFCompiler):
         start_time = time.time()
         if verbose:
             print("Translating to pysmt...")
-        phi_ddnnf, nodes, edges = self.from_nnf_to_pysmt(f"{tmp_folder}/compilation_output.nnf")
+        phi_ddnnf, nodes, edges = self.from_nnf_to_pysmt(
+            f"{tmp_folder}/compilation_output.nnf")
         if os.path.exists(tmp_folder) and save_path is None:
             os.system(f"rm -rd {tmp_folder}")
         elapsed_time = time.time() - start_time
@@ -383,7 +386,6 @@ class D4Compiler(DDNNFCompiler):
         if verbose:
             print(f"pysmt translation completed in {elapsed_time} seconds")
         return phi_ddnnf, nodes, edges
-
 
     def load_dDNNF(self, nnf_path: str, mapping_path: str) -> FNode:
         """
@@ -400,7 +402,6 @@ class D4Compiler(DDNNFCompiler):
         self.refinement = load_refinement(mapping_path)
         self.abstraction = {v: k for k, v in self.refinement.items()}
         return self.from_nnf_to_pysmt(nnf_path)
-    
 
     def _fix_ddnnf(self, nnf_file: str, projected_vars: set[FNode]):
         """
@@ -416,7 +417,7 @@ class D4Compiler(DDNNFCompiler):
         """
         with open(nnf_file, "r", encoding='utf8') as f:
             lines = f.readlines()
-            
+
         projected_ids: Set[int] = {self.abstraction[v] for v in projected_vars}
 
         with open(nnf_file, "w", encoding='utf8') as f:
@@ -436,7 +437,7 @@ class D4Compiler(DDNNFCompiler):
 
 
 if __name__ == "__main__":
-    from theorydd.formula import bottom, default_phi, read_phi
+    from theorydd.formula import read_phi
     test_phi = read_phi('input/shortest_path.smt')
 
     print(test_phi.serialize())

@@ -110,7 +110,7 @@ def get_solver(args: Options) -> SMTEnumerator:
 
 
 def is_smt_phase_necessary(args: Options):
-    """checks if the user necessitates to do the all-SMT phase"""
+    """checks if it is necessary to compute the all-SMT phase"""
     return args.save_lemmas or args.tsdd or args.tbdd or args.print_lemmas or args.print_models or args.tdDNNF
 
 

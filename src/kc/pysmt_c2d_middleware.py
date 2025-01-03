@@ -15,7 +15,8 @@ from pysmt.shortcuts import (
 )
 from pysmt.fnode import FNode
 from allsat_cnf.label_cnfizer import LabelCNFizer
-from theorydd.formula import save_refinement,load_refinement, get_phi_and_lemmas as _get_phi_and_lemmas
+from theorydd.formula import save_refinement, load_refinement, get_phi_and_lemmas as _get_phi_and_lemmas
+from theorydd.constants import UNSAT
 
 # load c2d executable location from dotenv
 from dotenv import load_dotenv as _load_env
@@ -31,8 +32,9 @@ if _C2D_EXECUTABLE is not None and os.path.isfile(_C2D_EXECUTABLE) and not _C2D_
     else:
         _C2D_EXECUTABLE = f"./{_C2D_EXECUTABLE}"
 
+
 class C2DCompiler(DDNNFCompiler):
-    
+
     def __init__(self):
         super().__init__()
 
@@ -41,6 +43,7 @@ class C2DCompiler(DDNNFCompiler):
         phi: FNode,
         dimacs_file: str,
         tlemmas: List[FNode] | None = None,
+        sat_result: bool | None = None,
         quantification_file: str = "quantification.exist",
     ) -> None:
         """
@@ -54,6 +57,7 @@ class C2DCompiler(DDNNFCompiler):
             phi (FNode) -> the pysmt formula to be translated
             dimacs_file (str) -> the path to the file where the dimacs output need to be saved
             tlemmas (List[FNode] | None) -> a list of theory lemmas to be added to the formula
+            sat_result (bool | None) -> the result of the SAT check on the formula
             quantification_file (str) -> the path to the file where the quantified variables
                 need to be saved
         """
@@ -65,7 +69,7 @@ class C2DCompiler(DDNNFCompiler):
         phi_atoms: frozenset = get_atoms(phi)
         phi_cnf_atoms: frozenset = get_atoms(phi_cnf)
         fresh_atoms: List[FNode] = list(phi_cnf_atoms.difference(phi_atoms))
-        
+
         count = 1
         self.abstraction = {}
         self.refinement = {}
@@ -74,32 +78,31 @@ class C2DCompiler(DDNNFCompiler):
             self.refinement[count] = atom
             count += 1
 
+        # SAVE QUANTIFICATION FILE
+        self._save_quantification_file(quantification_file, fresh_atoms)
+
         # check if formula is top
         if phi_cnf.is_true():
             self.write_dimacs_true(dimacs_file)
             return
 
         # check if formula is bottom
-        if phi_cnf.is_false():
+        if phi_cnf.is_false() or sat_result == UNSAT:
             self.write_dimacs_false(dimacs_file)
             return
 
         # CONVERTNG IN DIMACS FORMAT AND SAVING ON FILE
         self.write_dimacs(dimacs_file, phi_cnf, fresh_atoms)
 
-        # SAVING QUANTIFICATION FILE
-        self._save_quantification_file(quantification_file, fresh_atoms)
-
-        # SAVING QUANTIFICATION FILE
     def _save_quantification_file(self, quantification_file: str, fresh_atoms: List[FNode]) -> None:
         with open(quantification_file, "w", encoding="utf8") as quantification_out:
-            quantified_indexes = [str(self.abstraction[atom]) for atom in fresh_atoms]
+            quantified_indexes = [str(self.abstraction[atom])
+                                  for atom in fresh_atoms]
             quantified_indexes_str: str = " ".join(quantified_indexes)
             quantification_out.write(
                 f"{len(quantified_indexes)} {quantified_indexes_str}")
 
-
-    def from_nnf_to_pysmt(self,nnf_file: str) -> Tuple[FNode,int,int]:
+    def from_nnf_to_pysmt(self, nnf_file: str) -> Tuple[FNode, int, int]:
         """
         Translates the formula contained in the file c2d_file from nnf format to a pysmt FNode
 
@@ -161,8 +164,7 @@ class C2DCompiler(DDNNFCompiler):
                     pysmt_nodes.append(Not(self.refinement[abs(variable)]))
         return pysmt_nodes[len(pysmt_nodes) - 1], total_nodes, total_edges
 
-
-    def count_nodes_and_edges_from_nnf(self,nnf_file: str) -> Tuple[int, int]:
+    def count_nodes_and_edges_from_nnf(self, nnf_file: str) -> Tuple[int, int]:
         """
         Counts nodes and edges of the formula contained in the file c2d_file from nnf format to a pysmt FNode
 
@@ -207,13 +209,13 @@ class C2DCompiler(DDNNFCompiler):
                 total_nodes += 1
         return (total_nodes, total_edges)
 
-
     def compile_dDNNF(
         self,
         phi: FNode,
         tlemmas: List[FNode] | None = None,
         save_path: str | None = None,
         back_to_fnode: bool = False,
+        sat_result: bool | None = None,
         verbose: bool = False,
         computation_logger: Dict | None = None,
         timeout: int = 3600
@@ -250,10 +252,7 @@ class C2DCompiler(DDNNFCompiler):
         computation_logger["dDNNF compiler"] = "c2d"
 
         # choose temporary folder
-        if save_path is None:
-            tmp_folder = "temp_" + str(random.randint(0, 9223372036854775807))
-        else:
-            tmp_folder = save_path
+        tmp_folder = self._choose_tmp_folder(save_path)
 
         # translate to CNF DIMACS and get mapping used for translation
         if not os.path.exists(tmp_folder):
@@ -262,7 +261,11 @@ class C2DCompiler(DDNNFCompiler):
         if verbose:
             print("Translating to DIMACS...")
         self.from_smtlib_to_dimacs_file(
-            phi, f"{tmp_folder}/dimacs.cnf", tlemmas, f"{tmp_folder}/quantification.exist"
+            phi,
+            f"{tmp_folder}/dimacs.cnf",
+            tlemmas,
+            sat_result=sat_result,
+            quantification_file=f"{tmp_folder}/quantification.exist"
         )
         elapsed_time = time.time() - start_time
         computation_logger["DIMACS translation time"] = elapsed_time
@@ -298,7 +301,8 @@ class C2DCompiler(DDNNFCompiler):
 
         # return if not back to fnode
         if not back_to_fnode:
-            nodes, edges = self.count_nodes_and_edges_from_nnf(f"{tmp_folder}/dimacs.cnf.nnf")
+            nodes, edges = self.count_nodes_and_edges_from_nnf(
+                f"{tmp_folder}/dimacs.cnf.nnf")
             return None, nodes, edges
 
         # translate to pysmt
@@ -315,7 +319,6 @@ class C2DCompiler(DDNNFCompiler):
         if verbose:
             print(f"pysmt translation completed in {elapsed_time} seconds")
         return result, nodes, edges
-
 
     def load_dDNNF(self, nnf_path: str, mapping_path: str) -> FNode:
         """
@@ -342,6 +345,7 @@ if __name__ == "__main__":
 
     c2d_compiler = C2DCompiler()
 
-    phi_ddnnf, _a, _b = c2d_compiler.compile_dDNNF(test_phi, back_to_fnode=True)
+    phi_ddnnf, _a, _b = c2d_compiler.compile_dDNNF(
+        test_phi, back_to_fnode=True)
 
     print(phi_ddnnf.serialize())

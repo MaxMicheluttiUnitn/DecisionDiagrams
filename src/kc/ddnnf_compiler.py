@@ -1,6 +1,7 @@
 """interface for ddnnf compiler implementations"""
 
 from abc import ABC, abstractmethod
+import random
 from typing import Dict, List, Tuple
 
 from pysmt.fnode import FNode
@@ -23,6 +24,7 @@ class DDNNFCompiler(ABC):
         tlemmas: List[FNode] | None = None,
         save_path: str | None = None,
         back_to_fnode: bool = False,
+        sat_result: bool | None = None,
         verbose: bool = False,
         computation_logger: Dict | None = None,
         timeout: int = 3600
@@ -52,13 +54,15 @@ class DDNNFCompiler(ABC):
             self,
             phi: FNode,
             dimacs_file: str,
-            tlemmas: List[FNode] | None = None) -> None:
-        """convert a smtlib formula to a dimacs file
+            tlemmas: List[FNode] | None = None,
+            sat_result: bool | None = None) -> None:
+        """convert a smtlib formula to a dimacs file that can be read from a dDNNF compiler
 
         Args:
             phi (FNode) -> the formula to be converted
             dimacs_file (str) -> the path to the file where the dimacs output need to be saved
             tlemmas (List[FNode] | None) = None -> a list of theory lemmas to be added to the formula
+            sat_result (bool | None) = None -> the result of the SAT check on the formula
         """
         pass
 
@@ -147,3 +151,13 @@ class DDNNFCompiler(ABC):
                     line = str(self.abstraction[clause])
                 dimacs_out.write(line)
                 dimacs_out.write(" 0\n")
+
+    def _choose_tmp_folder(self, save_path: str | None = None) -> str:
+        """choose a temporary folder name"""
+        if save_path is None:
+            tmp_folder = "temp_" + str(random.randint(0, 9223372036854775807))
+        else:
+            tmp_folder = save_path
+        if tmp_folder.endswith("/"):
+            tmp_folder = tmp_folder[:-1]
+        return tmp_folder
