@@ -80,9 +80,9 @@ def is_tddnnf_loading_folder_correct(folder: str) -> bool:
     # check that the folder exists
     if not os.path.exists(folder):
         return False
-    # trim if path finishes with /
-    if folder.endswith("/"):
-        folder = folder[:-1]
+    # trim if path finishes with / <-- done on arg parsing
+    # if folder.endswith("/"):
+    #     folder = folder[:-1]
     # check that mapping subfolder exists
     if not os.path.exists(os.path.join(folder, "/mapping")):
         return False
