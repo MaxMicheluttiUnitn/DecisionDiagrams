@@ -1,17 +1,19 @@
-"""main module to query dDNNF formulas"""
+"""main module to query dDNNF formulas
+
+This module expects that the D4 compiler was used for dDNNF compilation."""
 
 import json
 from theorydd.formula import load_refinement
 
 from src.query.tddnnf.commands import get_args
-from src.query.util import is_tddnnf_loading_folder_correct
+from src.query.util import is_d4_tddnnf_loading_folder_correct
 from src.query.tddnnf.manager import DDNNFQueryManager
 
 def main():
     """main function to query T-dDNNF formulas"""
     args = get_args()
 
-    if not is_tddnnf_loading_folder_correct(args.load_tddnnf):
+    if not is_d4_tddnnf_loading_folder_correct(args.load_tddnnf):
         raise ValueError("The folder where the T-dDNNF files are stored was not found, or some files are missing from it.")
     
     # load the important labels

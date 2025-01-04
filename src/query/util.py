@@ -67,7 +67,7 @@ def is_tsdd_loading_folder_correct(folder: str) -> bool:
         return False
     return True
 
-def is_tddnnf_loading_folder_correct(folder: str) -> bool:
+def is_d4_tddnnf_loading_folder_correct(folder: str) -> bool:
     """checks if the folder where the dDNNF files are stored 
     has all the required content to load the T-dDNNF
 
