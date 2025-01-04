@@ -19,10 +19,21 @@ def is_tbdd_loading_folder_correct(folder: str) -> bool:
     # check that the folder exists
     if not os.path.exists(folder):
         return False
-    # trim if path finishes with /
-    if folder.endswith("/"):
-        folder = folder[:-1]
-    # DO OTHER CHECKS
+    # trim if path finishes with / <-- done on arg parsing
+    # if folder.endswith("/"):
+    #     folder = folder[:-1]
+    # check that bdd_data.dddmp exists
+    if not os.path.exists(f"{folder}/bdd_data.dddmp"):
+        return False
+    # check that bdd_data.pickle exists
+    if not os.path.exists(f"{folder}/bdd_data.pickle"):
+        return False
+    # check that abstraction.json exists
+    if not os.path.exists(f"{folder}/abstraction.json"):
+        return False
+    # check that qvars.qvars exists
+    if not os.path.exists(f"{folder}/qvars.qvars"):
+        return False
     return True
 
 
@@ -39,10 +50,21 @@ def is_tsdd_loading_folder_correct(folder: str) -> bool:
     # check that the folder exists
     if not os.path.exists(folder):
         return False
-    # trim if path finishes with /
-    if folder.endswith("/"):
-        folder = folder[:-1]
-    # DO OTHER CHECKS
+    # trim if path finishes with / <-- done on arg parsing
+    # if folder.endswith("/"):
+    #     folder = folder[:-1]
+    # check that sdd.sdd exists
+    if not os.path.exists(f"{folder}/sdd.sdd"):
+        return False
+    # check that vtree.vtree exists
+    if not os.path.exists(f"{folder}/vtree.vtree"):
+        return False
+    # check that abstraction.json exists
+    if not os.path.exists(f"{folder}/abstraction.json"):
+        return False
+    # check that qvars.qvars exists
+    if not os.path.exists(f"{folder}/qvars.qvars"):
+        return False
     return True
 
 def is_tddnnf_loading_folder_correct(folder: str) -> bool:
