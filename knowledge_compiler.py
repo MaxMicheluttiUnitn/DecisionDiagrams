@@ -1,4 +1,4 @@
-"""main for the Knowledge Compiler"""
+"""callable for the Knowledge Compiler"""
 
 from src.kc.main import main as kc_main
 

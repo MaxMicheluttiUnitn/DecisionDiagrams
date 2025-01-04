@@ -1,3 +1,4 @@
+"""module for generating synthetic TVPI problems"""
 import argparse
 import os
 import random

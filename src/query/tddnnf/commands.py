@@ -17,6 +17,9 @@ class TDDNNFQueryOptions:
 
     def __init__(self, args: argparse.Namespace):
         self.load_tddnnf = args.load_tddnnf
+        # trim the trailing slash if it exists
+        if self.load_tddnnf.endswith("/"):
+            self.load_tddnnf = self.load_tddnnf[:-1]
         self.consistency = args.consistency
         self.validity = args.validity
         self.entail_clause = args.entail_clause
