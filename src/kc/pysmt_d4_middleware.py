@@ -20,9 +20,17 @@ from theorydd.formula import save_refinement, load_refinement, get_phi_and_lemma
 from theorydd.constants import UNSAT
 
 from src.kc.ddnnf_compiler import DDNNFCompiler
-from src.kc.constants import _D4_EXECUTABLE, _D4_AND_NODE, _D4_OR_NODE, _D4_TRUE_NODE, _D4_FALSE_NODE, _RE_NNF_EDGE
+from src.kc.constants import (
+    D4_EXECUTABLE as _D4_EXECUTABLE,
+    D4_AND_NODE as _D4_AND_NODE,
+    D4_OR_NODE as _D4_OR_NODE,
+    D4_TRUE_NODE as _D4_TRUE_NODE,
+    D4_FALSE_NODE as _D4_FALSE_NODE,
+    RE_NNF_EDGE as _RE_NNF_EDGE
+)
 
 _SelfD4Node = TypeVar("SelfD4Node", bound="D4Node")
+
 
 @dataclass
 class D4Node:
@@ -87,6 +95,7 @@ class D4Node:
                 raise ValueError("OR node with no children")
             self.memo = Or(*children_pysmts)
         return self.memo
+
 
 class D4Compiler(DDNNFCompiler):
     """D4 compiler implementation for the DDNNFCompiler interface"""

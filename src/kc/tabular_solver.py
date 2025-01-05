@@ -6,13 +6,17 @@ import subprocess
 import sys
 from typing import List, Dict
 from pysmt.fnode import FNode
-#from allsat_cnf.polarity_cnfizer import PolarityCNFizer
+# from allsat_cnf.polarity_cnfizer import PolarityCNFizer
 from theorydd.constants import SAT, UNSAT
 from theorydd.solvers.mathsat_total import MathSATTotalEnumerator as _Enumerator
 from theorydd.solvers.solver import SMTEnumerator
 from theorydd.formula import get_normalized, save_phi, read_phi
 
-from src.kc.constants import _TABULAR_ALLSMT_BINARY, _TLEMMAS_FILE_REGEX
+from src.kc.constants import (
+    TABULAR_ALLSMT_BINARY as _TABULAR_ALLSMT_BINARY,
+    TLEMMAS_FILE_REGEX as _TLEMMAS_FILE_REGEX
+)
+
 
 class TabularSMTSolver(SMTEnumerator):
     """A wrapper for the tabular T-solver
@@ -64,7 +68,7 @@ class TabularSMTSolver(SMTEnumerator):
 
         # save normalized phi on temporary smt file
         phi_file = "temp_phi.smt"
-        #save_phi(phi_tsetsin, phi_file)
+        # save_phi(phi_tsetsin, phi_file)
         save_phi(normal_phi, phi_file)
 
         if self._is_partial:
@@ -74,10 +78,11 @@ class TabularSMTSolver(SMTEnumerator):
 
         # run solver with one hour timeout
         options = f"--debug.dump_theory_lemmas=true --dpll.store_tlemmas=true --theory.la.split_rat_eq=false --preprocessor.simplification=0 --preprocessor.toplevel_propagation=false --dpll.allsat_minimize_model={minimize_models}"
-        
+
         command = f"timeout 3600 ./{_TABULAR_ALLSMT_BINARY} {options} < {phi_file}"
         try:
-            output_data = subprocess.check_output(command, shell=True, text=True)
+            output_data = subprocess.check_output(
+                command, shell=True, text=True)
         except subprocess.CalledProcessError as e:
             result = e.returncode
             _clear_tlemmas()
@@ -102,7 +107,7 @@ class TabularSMTSolver(SMTEnumerator):
         #     print(output)
 
         # read lemmas
-         #count_lemmas = 1
+         # count_lemmas = 1
         for item in os.listdir():
             if re.search(_TLEMMAS_FILE_REGEX, item):
                 # print(count_lemmas,item)
@@ -117,7 +122,6 @@ class TabularSMTSolver(SMTEnumerator):
         # phi
         os.remove(phi_file)
 
-        
         # read model
         # output syntax:
         # [MODELS] s MODEL COUNT <models>
@@ -125,7 +129,8 @@ class TabularSMTSolver(SMTEnumerator):
             if not self._is_partial:
                 total_models_tokenized = output_data.split('MODEL COUNT')
             else:
-                total_models_tokenized = output_data.split('NUMBER OF PARTIAL ASSIGNMENTS')
+                total_models_tokenized = output_data.split(
+                    'NUMBER OF PARTIAL ASSIGNMENTS')
             if len(total_models_tokenized) != 2:
                 raise ValueError
             total_models_string = total_models_tokenized[1].strip()

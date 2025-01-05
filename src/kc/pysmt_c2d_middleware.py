@@ -20,7 +20,7 @@ from theorydd.constants import UNSAT
 
 from src.kc.ddnnf_compiler import DDNNFCompiler
 
-from src.kc.constants import _C2D_EXECUTABLE
+from src.kc.constants import C2D_EXECUTABLE as _C2D_EXECUTABLE
 
 class C2DCompiler(DDNNFCompiler):
 
