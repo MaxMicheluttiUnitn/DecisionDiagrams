@@ -10,6 +10,7 @@ __pycache__
 /logs
 /tabular_allsmt
 /temp_*
+/utility
 
 tmp*
 
@@ -39,7 +40,7 @@ fix_extension.py
 out.txt
 tmp.txt
 tmp_data.txt
-options.txt
+tool_options.txt
 d4_options.txt
 
 mathsat
