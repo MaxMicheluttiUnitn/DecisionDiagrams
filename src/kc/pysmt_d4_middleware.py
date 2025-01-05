@@ -31,7 +31,6 @@ from src.kc.constants import (
 
 _SelfD4Node = TypeVar("SelfD4Node", bound="D4Node")
 
-
 @dataclass
 class D4Node:
     """a node that results from a d4 compilation process"""
