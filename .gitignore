@@ -11,6 +11,7 @@ __pycache__
 /logs
 /tabular_allsmt
 /temp_*
+/test_*
 /utility
 
 tmp*
