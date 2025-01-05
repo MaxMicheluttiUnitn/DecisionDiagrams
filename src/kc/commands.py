@@ -156,7 +156,7 @@ def get_args() -> Options:
             VALID_SOLVER),
         type=str,
         choices=VALID_SOLVER,
-        default="partial")
+        default="total")
     parser.add_argument(
         "--tvtree_output",
         help="Specify a .dot or .svg file to save the vtree of the T-SDD (by default the vtree is not saved)",

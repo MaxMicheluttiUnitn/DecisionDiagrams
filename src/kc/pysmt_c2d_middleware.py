@@ -1,5 +1,6 @@
 """midddleware for pysmt-c2d compatibility"""
 
+import logging
 import random
 import os
 import time
@@ -27,6 +28,7 @@ class C2DCompiler(DDNNFCompiler):
 
     def __init__(self):
         super().__init__()
+        self.logger = logging.getLogger("c2d_ddnnf_compiler")
 
     def from_smtlib_to_dimacs_file(
         self,
@@ -206,7 +208,6 @@ class C2DCompiler(DDNNFCompiler):
         save_path: str | None = None,
         back_to_fnode: bool = False,
         sat_result: bool | None = None,
-        verbose: bool = False,
         computation_logger: Dict | None = None,
         timeout: int = 3600
     ) -> Tuple[FNode | None, int, int]:
@@ -218,7 +219,6 @@ class C2DCompiler(DDNNFCompiler):
             tlemmas (List[FNode] | None) -> a list of theory lemmas to be added to the formula
             save_path (str | None) -> the path where the dDNNF will be saved
             back_to_fnode (bool) -> if True, the function returns the pysmt formula
-            verbose (bool) -> if True, the function prints the steps of the computation
             computation_logger (Dict | None) -> a dictionary to store the computation time
             timeout (int) -> the maximum time allowed for the computation
 
@@ -248,8 +248,7 @@ class C2DCompiler(DDNNFCompiler):
         if not os.path.exists(tmp_folder):
             os.mkdir(tmp_folder)
         start_time = time.time()
-        if verbose:
-            print("Translating to DIMACS...")
+        self.logger.info("Translating to DIMACS...")
         self.from_smtlib_to_dimacs_file(
             phi,
             f"{tmp_folder}/dimacs.cnf",
@@ -259,23 +258,22 @@ class C2DCompiler(DDNNFCompiler):
         )
         elapsed_time = time.time() - start_time
         computation_logger["DIMACS translation time"] = elapsed_time
-        if verbose:
-            print(f"DIMACS translation completed in {elapsed_time} seconds")
+        self.logger.info("DIMACS translation completed in %s seconds", str(elapsed_time))
 
         # save mapping for refinement
+        start_time = time.time()
         if not os.path.exists(f"{tmp_folder}/mapping"):
             os.mkdir(f"{tmp_folder}/mapping")
-        if verbose:
-            print("Saving refinement...")
+        self.logger.info("Saving refinement...")
         save_refinement(self.refinement, f"{tmp_folder}/mapping/mapping.json")
-        if verbose:
-            print("Refinement saved")
+        elapsed_time = time.time() - start_time
+        self.logger.info("Refinement saved in %s seconds", str(elapsed_time))
+        computation_logger["refinement serialization time"] = elapsed_time
 
         # call c2d for compilation
         # output should be in file temp_folder/test_dimacs.cnf.nnf
         start_time = time.time()
-        if verbose:
-            print("Compiling dDNNF...")
+        self.logger.info("Compiling dDNNF...")
         timeout_string = ""
         if timeout > 0:
             timeout_string = f"timeout {timeout}s "
@@ -286,8 +284,7 @@ class C2DCompiler(DDNNFCompiler):
             raise TimeoutError("c2d compilation failed: timeout")
         elapsed_time = time.time() - start_time
         computation_logger["dDNNF compilation time"] = elapsed_time
-        if verbose:
-            print(f"dDNNF compilation completed in {elapsed_time} seconds")
+        self.logger.info("dDNNF compilation completed in %s seconds", str(elapsed_time))
 
         # return if not back to fnode
         if not back_to_fnode:
@@ -297,8 +294,7 @@ class C2DCompiler(DDNNFCompiler):
 
         # translate to pysmt
         start_time = time.time()
-        if verbose:
-            print("Translating to pysmt...")
+        self.logger.info("Translating to pysmt...")
         result, nodes, edges = self.from_nnf_to_pysmt(
             f"{tmp_folder}/dimacs.cnf.nnf")
         # clean if necessary
@@ -306,8 +302,7 @@ class C2DCompiler(DDNNFCompiler):
             os.system(f"rm -rd {tmp_folder}")
         elapsed_time = time.time() - start_time
         computation_logger["pysmt translation time"] = elapsed_time
-        if verbose:
-            print(f"pysmt translation completed in {elapsed_time} seconds")
+        self.logger.info("Pysmt translation completed in %s seconds", str(elapsed_time))
         return result, nodes, edges
 
     def load_dDNNF(self, nnf_path: str, mapping_path: str) -> FNode:

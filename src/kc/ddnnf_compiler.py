@@ -1,6 +1,7 @@
 """interface for ddnnf compiler implementations"""
 
 from abc import ABC, abstractmethod
+import logging
 import random
 from typing import Dict, List, Tuple
 
@@ -16,6 +17,7 @@ class DDNNFCompiler(ABC):
     def __init__(self):
         self.abstraction = {}
         self.refinement = {}
+        self.logger = logging.getLogger("ddnnf_compiler")
 
     @abstractmethod
     def compile_dDNNF(
@@ -25,7 +27,6 @@ class DDNNFCompiler(ABC):
         save_path: str | None = None,
         back_to_fnode: bool = False,
         sat_result: bool | None = None,
-        verbose: bool = False,
         computation_logger: Dict | None = None,
         timeout: int = 3600
     ) -> Tuple[FNode | None, int, int]:
@@ -41,7 +42,6 @@ class DDNNFCompiler(ABC):
                 and deleted once the comèputation ends
             computation_logger (Dict | None) = None -> a dictionary that will be filled with
                 data about the computation
-            verbose (bool) = False -> set it to True to print information about the computation
             back_to_fnode (bool) = True -> set it to False to avoid the final pysmt translation
             timeout (int) = 3600 -> the maximum time in seconds the computation is allowed to run
 

@@ -5,7 +5,9 @@
 # import warnings
 # warnings.filterwarnings("ignore", category=DeprecationWarning)
 import json
+import logging
 import time
+import sys
 from typing import Dict, List
 import theorydd.formula as formula
 from pysmt.fnode import FNode
@@ -21,6 +23,8 @@ import src.kc.abstraction_decision_diagrams as add
 import src.kc.theory_decision_diagrams as tdd
 import src.kc.tabular_solver as tabular
 from src.kc.commands import Options, get_args
+
+kc_logger = logging.getLogger("knowledge_compiler")
 
 def print_models(models, boolean_mapping) -> None:
     """prints the models from allSMT computation on screen"""
@@ -41,55 +45,53 @@ def print_models(models, boolean_mapping) -> None:
     else:
         print("\n".join(map(str, models)))
 
-def get_phi(args: Options, logger: Dict) -> FNode:
+def get_phi(args: Options, data_logger: Dict) -> FNode:
     """load the input formula"""
     start_time = time.time()
-    if args.verbose:
-        print("Loading phi...")
+    kc_logger.info("Loading phi...")
     if args.input is None:
         phi = formula.default_phi()
     else:
         phi = formula.read_phi(args.input)
     elapsed_time = time.time() - start_time
-    logger["phi loading time"] = elapsed_time
-    if args.verbose:
-        print("Loaded phi in ", elapsed_time, " seconds")
+    data_logger["phi loading time"] = elapsed_time
+    kc_logger.info("Loaded phi in %s seconds", str(elapsed_time))
     return phi
 
 
-def do_pure_abstraction(phi: FNode, args: Options, logger: Dict) -> None:
+def do_pure_abstraction(phi: FNode, args: Options, data_logger: Dict) -> None:
     """DO ALL FUNCTIONS THAT DO NOT REQUIRE All-SMT to be computed"""
     # ABSTRACTION dDNNF
     if args.abstraction_dDNNF:
-        add.abstr_ddnnf(phi, args, logger)
+        add.abstr_ddnnf(phi, args, data_logger)
     # ABSTRACTION BDD
     if args.abstraction_bdd:
-        add.abstr_bdd(phi, args, logger)
+        add.abstr_bdd(phi, args, data_logger)
     # ABSTRACTION SDD
     if args.abstraction_sdd:
-        add.abstr_sdd(phi, args, logger)
+        add.abstr_sdd(phi, args, data_logger)
     # LDD
     if args.ldd:
-        add.ldd(phi, args, logger)
+        add.ldd(phi, args, data_logger)
     # XSDD
     if args.xsdd:
-        add.xsdd(phi, args, logger)
+        add.xsdd(phi, args, data_logger)
 
 
-def dump_details(logger: Dict, args: Options) -> None:
+def dump_details(data_logger: Dict, args: Options) -> None:
     """dump details on file"""
     filename = args.details_file
     with open(filename, 'w', encoding='utf8') as f:
-        json.dump(logger, f)
+        json.dump(data_logger, f)
 
 
 def load_details(args: Options) -> Dict:
     """load details from file"""
     filename = args.load_details
-    logger = {}
+    data_logger = {}
     with open(filename, 'r', encoding='utf8') as f:
-        logger = json.load(f)
-    return logger
+        data_logger = json.load(f)
+    return data_logger
 
 
 def get_solver(args: Options) -> SMTEnumerator:
@@ -114,7 +116,7 @@ def is_smt_phase_necessary(args: Options):
     return args.save_lemmas or args.tsdd or args.tbdd or args.print_lemmas or args.print_models or args.tdDNNF
 
 
-def smt_phase(phi: FNode, args: Options, logger: Dict):
+def smt_phase(phi: FNode, args: Options, data_logger: Dict):
     """SMT phase"""
     smt_solver = get_solver(args)
 
@@ -125,15 +127,13 @@ def smt_phase(phi: FNode, args: Options, logger: Dict):
         sat_result, tlemmas, boolean_mapping = extract(
             phi,
             smt_solver,
-            verbose=args.verbose,
             use_boolean_mapping=(not args.no_boolean_mapping),
-            computation_logger=logger)
+            computation_logger=data_logger)
 
         if args.count_models:
             models_total = len(smt_solver.get_models())
-            logger["All-SMT models"] = models_total
-            if args.verbose:
-                print("All-SMT total models ", models_total)
+            data_logger["All-SMT models"] = models_total
+            kc_logger.info("All-SMT total models %s", str(models_total))
 
         if args.print_models:
             if isinstance(smt_solver, tabular.TabularSMTSolver):
@@ -143,10 +143,10 @@ def smt_phase(phi: FNode, args: Options, logger: Dict):
                 models = smt_solver.get_models()
                 print_models(models, boolean_mapping)
 
-        logger["total lemmas"] = len(tlemmas)
-        if args.verbose:
-            print("All-SMT found ", len(tlemmas), " theory lemmas")
+        data_logger["total lemmas"] = len(tlemmas)
+        kc_logger.info("All-SMT found %s theory lemmas", str(len(tlemmas)))
 
+        # THIS IS ALWAYS PRINTED ON STDOUT WHEN THE OPTION IS ENABLED
         if args.print_lemmas:
             print("All-SMT lemmas:")
             print("\n".join(map(lambda x: x.serialize(), tlemmas)))
@@ -163,8 +163,8 @@ def smt_phase(phi: FNode, args: Options, logger: Dict):
         tlemmas = [formula.read_phi(args.load_lemmas)]
 
     # laod sat result from logger if available
-    if "All-SMT result" in logger.keys():
-        sat_result_string = logger["All-SMT result"]
+    if "All-SMT result" in data_logger.keys():
+        sat_result_string = data_logger["All-SMT result"]
         if sat_result_string == "SAT":
             sat_result = SAT
         else:
@@ -172,47 +172,58 @@ def smt_phase(phi: FNode, args: Options, logger: Dict):
 
     # T-dDNNF
     if args.tdDNNF:
-        tdd.theory_ddnnf(phi, args, logger, smt_solver, tlemmas, sat_result)
+        tdd.theory_ddnnf(phi, args, data_logger, smt_solver, tlemmas, sat_result)
 
     # T-BDD
     if args.tbdd:
-        tdd.theory_bdd(phi, args, logger, smt_solver, tlemmas, sat_result)
+        tdd.theory_bdd(phi, args, data_logger, smt_solver, tlemmas, sat_result)
 
     # T-SDD
     if args.tsdd:
-        tdd.theory_sdd(phi, args, logger, smt_solver, tlemmas, sat_result)
+        tdd.theory_sdd(phi, args, data_logger, smt_solver, tlemmas, sat_result)
 
+def _set_logging_handlers(args: Options) -> None:
+    """set logging handlers"""
+    logging_handlers = []
+    if args.verbose:
+        logging_handlers.append(logging.StreamHandler(sys.stdout))
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=logging_handlers
+    )
 
 def main() -> None:
     '''Main function for this project'''
     global_start_time = time.time()
     args = get_args()
-    if args.verbose:
-        print("Starting computation...")
+
+    _set_logging_handlers(args)
+
+    kc_logger.info("Starting computation...")
     if args.load_details:
-        logger = load_details(args)
+        data_logger = load_details(args)
         # in case of computation restarting, adjust start time accordingly
-        if logger["total computation time"] is not None:
-            global_start_time -= logger["total computation time"]
+        if data_logger["total computation time"] is not None:
+            global_start_time -= data_logger["total computation time"]
     else:
-        logger = {}
+        data_logger = {}
 
     # LOAD FORMULA
-    phi = get_phi(args, logger)
+    phi = get_phi(args, data_logger)
 
     # ONLY NEEDS ABSTRACTION
-    do_pure_abstraction(phi, args, logger)
+    do_pure_abstraction(phi, args, data_logger)
 
     # SMT PHASE (ONLY DONE IF NECESSARY)
     if is_smt_phase_necessary(args):
-        smt_phase(phi, args, logger)
+        smt_phase(phi, args, data_logger)
 
     global_elapsed_time = time.time() - global_start_time
-    if args.verbose:
-        print("All finished in ", global_elapsed_time, " seconds")
-    logger['total computation time'] = global_elapsed_time
+    kc_logger.info("All done in %s seconds", str(global_elapsed_time))
+    data_logger['total computation time'] = global_elapsed_time
     if args.details_file is not None:
-        dump_details(logger, args)
+        dump_details(data_logger, args)
 
 
 if __name__ == "__main__":

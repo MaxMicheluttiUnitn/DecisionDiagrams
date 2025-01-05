@@ -2,6 +2,7 @@
 
 
 import json
+import logging
 import os
 import time
 from typing import Dict, List, Set, Tuple, TypeVar
@@ -102,6 +103,7 @@ class D4Compiler(DDNNFCompiler):
     def __init__(self):
         self.important_atoms_labels = []
         super().__init__()
+        self.logger = logging.getLogger("d4_ddnnf_compiler")
 
     def from_smtlib_to_dimacs_file(
         self,
@@ -262,7 +264,6 @@ class D4Compiler(DDNNFCompiler):
         save_path: str | None = None,
         back_to_fnode: bool = False,
         sat_result: bool | None = None,
-        verbose: bool = False,
         computation_logger: Dict | None = None,
         timeout: int = 3600
     ) -> Tuple[FNode | None, int, int]:
@@ -277,7 +278,6 @@ class D4Compiler(DDNNFCompiler):
                 and deleted once the comèputation ends
             computation_logger (Dict | None) = None -> a dictionary that will be filled with
                 data about the computation
-            verbose (bool) = False -> set it to True to print information about the computation
             back_to_fnode (bool) = True -> set it to False to avoid the final pysmt translation
             timeout (int) = 3600 -> the maximum time in seconds the computation is allowed to run
 
@@ -307,32 +307,29 @@ class D4Compiler(DDNNFCompiler):
         if not os.path.exists(tmp_folder):
             os.mkdir(tmp_folder)
         start_time = time.time()
-        if verbose:
-            print("Translating to DIMACS...")
+        self.logger.info("Translating to DIMACS...")
         self.from_smtlib_to_dimacs_file(
             phi, f"{tmp_folder}/dimacs.cnf", tlemmas, sat_result=sat_result)
         elapsed_time = time.time() - start_time
         computation_logger["DIMACS translation time"] = elapsed_time
-        if verbose:
-            print(f"DIMACS translation completed in {elapsed_time} seconds")
-        # compute reverse mapping to translate back to pysmt (REFINEMENT)
+        self.logger.info("DIMACS translation completed in %s seconds", str(elapsed_time))
 
         # save mapping for refinement
+        start_time = time.time()
         if not os.path.exists(f"{tmp_folder}/mapping"):
             os.mkdir(f"{tmp_folder}/mapping")
-        if verbose:
-            print("Saving refinement...")
+        self.logger.info("Saving refinement...")
         save_refinement(self.refinement, f"{tmp_folder}/mapping/mapping.json")
         with open(f"{tmp_folder}/mapping/important_labels.json", "w", encoding="utf8") as f:
             json.dump(self.important_atoms_labels, f)
-        if verbose:
-            print("Refinement saved")
+        elapsed_time = time.time() - start_time
+        self.logger.info("Refinement saved in %s seconds", str(elapsed_time))
+        computation_logger["refinement serialization time"] = elapsed_time
 
         # call d4 for compilation
         # output should be in file temp_folder/compilation_output.nnf
         start_time = time.time()
-        if verbose:
-            print("Compiling dDNNF...")
+        self.logger.info("Compiling dDNNF...")
         timeout_string = ""
         if timeout > 0:
             timeout_string = f"timeout {timeout}s "
@@ -343,8 +340,7 @@ class D4Compiler(DDNNFCompiler):
             raise TimeoutError("d4 compilation failed: timeout")
         elapsed_time = time.time() - start_time
         computation_logger["dDNNF compilation time"] = elapsed_time
-        if verbose:
-            print(f"dDNNF compilation completed in {elapsed_time} seconds")
+        self.logger.info("dDNNF compilation completed in %s seconds", str(elapsed_time))
 
         # fix output
         self._fix_ddnnf(f"{tmp_folder}/compilation_output.nnf", get_atoms(phi))
@@ -360,16 +356,14 @@ class D4Compiler(DDNNFCompiler):
 
         # translate to pysmt
         start_time = time.time()
-        if verbose:
-            print("Translating to pysmt...")
+        self.logger.info("Translating to pysmt...")
         phi_ddnnf, nodes, edges = self.from_nnf_to_pysmt(
             f"{tmp_folder}/compilation_output.nnf")
         if os.path.exists(tmp_folder) and save_path is None:
             os.system(f"rm -rd {tmp_folder}")
         elapsed_time = time.time() - start_time
         computation_logger["pysmt translation time"] = elapsed_time
-        if verbose:
-            print(f"pysmt translation completed in {elapsed_time} seconds")
+        self.logger.info("pysmt translation completed in %s seconds", str(elapsed_time))
         return phi_ddnnf, nodes, edges
 
     def load_dDNNF(self, nnf_path: str, mapping_path: str) -> FNode:
@@ -430,4 +424,4 @@ if __name__ == "__main__":
     d4_compiler = D4Compiler()
 
     _phi_ddnnf, _a, _b = d4_compiler.compile_dDNNF(
-        test_phi, None, back_to_fnode=False, verbose=True, save_path="tmp")
+        test_phi, None, back_to_fnode=False, save_path="tmp")
