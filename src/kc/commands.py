@@ -50,6 +50,7 @@ class Options:
     save_tsdd: str | None
     save_abstraction_sdd: str | None
     dDNNF_timeout: int
+    log_file: str | None
 
     def __init__(self, args: argparse.Namespace):
         self.tsdd = args.tsdd
@@ -95,6 +96,7 @@ class Options:
         self.save_tsdd = args.save_tsdd
         self.save_abstraction_sdd = args.save_abstraction_sdd
         self.dDNNF_timeout = args.dDNNF_timeout
+        self.log_file = args.log_file
 
 
 def get_args() -> Options:
@@ -288,6 +290,10 @@ def get_args() -> Options:
         help="Specify the timeout (in seconds) for the dDNNF compiler, set to 0 for no timeout",
         type=int,
         default=3600)
+    parser.add_argument(
+        "--log_file",
+        help="Specify a file to log the events of computation",
+        type=str)
     # parser.add_argument(
     #     "--check_eq",
     #     help="Check the T-equivalence of the T-agnostic DD with the T-formula phi",

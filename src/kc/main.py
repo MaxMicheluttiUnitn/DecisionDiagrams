@@ -187,6 +187,8 @@ def _set_logging_handlers(args: Options) -> None:
     logging_handlers = []
     if args.verbose:
         logging_handlers.append(logging.StreamHandler(sys.stdout))
+    if args.log_file is not None:
+        logging_handlers.append(logging.FileHandler(args.log_file, mode='w', encoding='utf8'))
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
