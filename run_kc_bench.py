@@ -1,4 +1,6 @@
-"""module for starting a benchmarking run on the main benchmarks for this project"""
+"""
+module for easily running the knowledge compiler on all the problems from a given benchmark source
+"""
 import os
 from typing import List
 
