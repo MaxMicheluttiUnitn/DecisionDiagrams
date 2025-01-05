@@ -3,7 +3,7 @@
 If you want to extend this tool, please add your constants here"""
 import os
 import re
-from theorydd.constants import VALID_VTREE, VALID_LDD_THEORY, VALID_SOLVER as _LIBRARY_SOLVERS
+from theorydd.constants import VALID_VTREE, VALID_LDD_THEORY, VALID_SOLVER as _LIBRARY_SOLVERS # pylint: disable=unused-import
 
 # load environment variables
 from dotenv import load_dotenv as _load_env

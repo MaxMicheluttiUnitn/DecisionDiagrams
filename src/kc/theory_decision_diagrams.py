@@ -7,7 +7,6 @@ from pysmt.shortcuts import write_smtlib
 from theorydd.tdd.theory_bdd import TheoryBDD
 from theorydd.tdd.theory_sdd import TheorySDD
 from theorydd.solvers.solver import SMTEnumerator
-import theorydd.formula as formula
 
 from src.kc.commands import Options
 from src.kc.pysmt_c2d_middleware import C2DCompiler

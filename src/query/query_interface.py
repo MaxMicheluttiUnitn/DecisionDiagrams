@@ -57,7 +57,7 @@ class QueryInterface(ABC):
         
         Returns:
             bool: True if the formula is consistent, False otherwise"""
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def check_validity(self) -> bool:
@@ -65,7 +65,7 @@ class QueryInterface(ABC):
         
         Returns:
             bool: True if the formula is valid, False otherwise"""
-        pass
+        raise NotImplementedError()
 
     @final
     def _clause_file_can_entail(self, clause_file: str) -> FNode:
@@ -116,7 +116,7 @@ class QueryInterface(ABC):
     @abstractmethod
     def _check_entail_clause_body(self, clause: FNode) -> bool:
         """where the actual entailment checking for clauses is done"""
-        pass
+        raise NotImplementedError()
 
     @final
     def _term_file_can_be_implicant(self, term_file: str) -> FNode:
@@ -169,7 +169,7 @@ class QueryInterface(ABC):
     @abstractmethod
     def _check_implicant_body(self, term: FNode) -> bool:
         """where the actual implicant checking is done"""
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def count_models(self) -> int:
@@ -178,13 +178,13 @@ class QueryInterface(ABC):
         Returns:
             int: the number of models for the encoded formula
         """
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def enumerate_models(self) -> None:
         """function to enumerate all models for the encoded formula
         """
-        pass
+        raise NotImplementedError()
 
     @final
     def _alpha_file_can_condition(self, alpha_file: str) -> FNode:
@@ -237,4 +237,4 @@ class QueryInterface(ABC):
     @abstractmethod
     def _condition_body(self, alpha: FNode, output_file: str | None) -> None:
         """where the actual conditioning is done"""
-        pass
+        raise NotImplementedError()

@@ -47,7 +47,7 @@ class DDNNFCompiler(ABC):
 
         Returns:
             Tuple[FNode | None, int, int] -> the dDNNF formula, the number of nodes and the number of edges"""
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def from_smtlib_to_dimacs_file(
@@ -64,7 +64,7 @@ class DDNNFCompiler(ABC):
             tlemmas (List[FNode] | None) = None -> a list of theory lemmas to be added to the formula
             sat_result (bool | None) = None -> the result of the SAT check on the formula
         """
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def from_nnf_to_pysmt(
@@ -77,7 +77,7 @@ class DDNNFCompiler(ABC):
 
         Returns:
             Tuple[FNode,int,int] -> the pysmt formula, the number of nodes and the number of edges"""
-        pass
+        raise NotImplementedError()
 
     @abstractmethod
     def count_nodes_and_edges_from_nnf(
@@ -87,7 +87,7 @@ class DDNNFCompiler(ABC):
 
         Args:
             nnf_file (str) -> the path to the file containing the ddnnf compilation output"""
-        pass
+        raise NotImplementedError()
 
     def from_nnf_to_smtlib(
             self,
