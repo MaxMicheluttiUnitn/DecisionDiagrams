@@ -73,12 +73,12 @@ class C2D_DDNNFQueryManager(QueryInterface):
         Returns:
             int: the number of models for the encoded formula
         """
-        pass
+        raise NotImplementedError()
 
     def enumerate_models(self) -> None:
         """function to enumerate all models for the encoded formula
         """
-        pass
+        raise NotImplementedError()
 
     def _condition_body(
             self,
