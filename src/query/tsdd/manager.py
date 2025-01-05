@@ -28,36 +28,44 @@ class TSDDQueryManager(QueryInterface):
         """
         super().__init__(source_folder, refinement_mapping, abstraction_mapping)
 
-    def check_consistency(self):
-        """function to check if the encoded formula is consistent"""
+    def check_consistency(self) -> bool:
+        """function to check if the encoded formula is consistent
+        
+        Returns:
+            bool: True if the formula is consistent, False otherwise"""
         raise NotImplementedError()
 
     def check_validity(self):
-        """function to check if the encoded formula is valid"""
+        """function to check if the encoded formula is valid
+        
+        Returns:
+            bool: True if the formula is valid, False otherwise"""
         raise NotImplementedError()
 
-    def check_entail_clause(self, clause_file: str):
-        """function to check if the encoded formula entails the clause specifoied in the clause_file
+    def _check_entail_clause_body(self, clause: FNode) -> bool:
+        """function to check if the encoded formula entails the given clause
 
         Args:
-            clause_file (str): the path to the smt2 file containing the clause to check
-        """
-        clause = self._clause_file_can_entail(clause_file)
+            clause (FNode): the clause to check for entailment
 
+        Returns:
+            bool: True if the formula entails the clause, False otherwise
+        """
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
         clause_items = aliases_from_mapping(clause, self.abstraction_mapping)
         raise NotImplementedError()
 
-    def check_implicant(
+    def _check_implicant_body(
             self,
-            term_file: str):
-        """function to check if the term specified in term_file is an implicant for the encoded formula
+            term: FNode) -> bool:
+        """function to check if the term is an implicant for the encoded formula
 
         Args:
-            term_file (str): the path to the smt2 file containing the term to check
-        """
-        term = self._term_file_can_be_implicant(term_file)
+            term (FNode): the term to check
 
+        Returns:
+            bool: True if the term is an implicant, False otherwise
+        """
         # RETRIEVE THE INDEX ON WHICH TO OPERATE
         term_index = aliases_from_mapping(term, self.abstraction_mapping)[0]
         raise NotImplementedError()
@@ -71,22 +79,19 @@ class TSDDQueryManager(QueryInterface):
         pass
 
     def enumerate_models(self) -> None:
-        """function to enumerate all models for the encoded formula
-        """
+        """function to enumerate all models for the encoded formula"""
         pass
 
-    def condition(
+    def _condition_body(
             self,
-            alpha_file: str,
-            output_file: str | None = None):
-        """function to obtain [compiled formula | alpha], where alpha is a literal or a cube specified in the provided .smt2 file
+            alpha: FNode,
+            output_file: str | None = None) -> None:
+        """function to obtain [compiled formula | alpha], where alpha is a literal or a cube
 
         Args:
-            alpha_file (str): the path to the smt2 file containing the literal (or conjunction of literals) to condition the T-SDD
+            alpha (FNode): the literal (or conjunction of literals) to condition the T-SDD
             output_file (str, optional): the path to the .smt2 file where the conditioned T-SDD will be saved. Defaults to None.
         """
-        alpha = self._alpha_file_can_condition(alpha_file)
-
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
         alpha_items = aliases_from_mapping(alpha, self.abstraction_mapping)
 

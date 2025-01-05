@@ -1,7 +1,7 @@
 """interface for all Query objects"""
 
 from abc import ABC, abstractmethod
-from typing import Dict
+from typing import Dict, final
 
 from pysmt.fnode import FNode
 
@@ -52,15 +52,22 @@ class QueryInterface(ABC):
             v: k for k, v in refinement_mapping.items()}
 
     @abstractmethod
-    def check_consistency(self):
-        """function to check if the encoded formula is consistent"""
+    def check_consistency(self) -> bool:
+        """function to check if the encoded formula is consistent
+        
+        Returns:
+            bool: True if the formula is consistent, False otherwise"""
         pass
 
     @abstractmethod
-    def check_validity(self):
-        """function to check if the encoded formula is valid"""
+    def check_validity(self) -> bool:
+        """function to check if the encoded formula is valid
+        
+        Returns:
+            bool: True if the formula is valid, False otherwise"""
         pass
 
+    @final
     def _clause_file_can_entail(self, clause_file: str) -> FNode:
         """checks if the provided input file can be used to check entailment
 
@@ -93,16 +100,25 @@ class QueryInterface(ABC):
             raise ValueError(
                 "The clause must be on the same atoms as the encoded formula")
         return clause
-
-    @abstractmethod
-    def check_entail_clause(self, clause_file: str):
+    
+    @final
+    def check_entail_clause(self, clause_file: str) -> bool:
         """function to check if the encoded formula entails the clause specifoied in the clause_file
 
         Args:
             clause_file (str): the path to the smt2 file containing the clause to check
+
+        Returns:
+            bool: True if the clause is entailed bt the T-dDNNF, False otherwise
         """
+        return self._check_entail_clause_body(self._clause_file_can_entail(clause_file))
+
+    @abstractmethod
+    def _check_entail_clause_body(self, clause: FNode) -> bool:
+        """where the actual entailment checking for clauses is done"""
         pass
 
+    @final
     def _term_file_can_be_implicant(self, term_file: str) -> FNode:
         """checks if the provided input file can be used to query for implicant
 
@@ -136,15 +152,23 @@ class QueryInterface(ABC):
 
         return term
 
-    @abstractmethod
+    @final
     def check_implicant(
             self,
-            term_file: str):
+            term_file: str) -> bool:
         """function to check if the term specified in term_file is an implicant for the encoded formula
 
         Args:
             term_file (str): the path to the smt2 file containing the term to check
+
+        Returns:
+            bool: True if the term is an implicant, False otherwise
         """
+        return self._check_implicant_body(self._term_file_can_be_implicant(term_file))
+
+    @abstractmethod
+    def _check_implicant_body(self, term: FNode) -> bool:
+        """where the actual implicant checking is done"""
         pass
 
     @abstractmethod
@@ -162,6 +186,7 @@ class QueryInterface(ABC):
         """
         pass
 
+    @final
     def _alpha_file_can_condition(self, alpha_file: str) -> FNode:
         """checks if the provided input file can be used to apply conditioning
 
@@ -195,15 +220,21 @@ class QueryInterface(ABC):
 
         return alpha
 
-    @abstractmethod
+    @final
     def condition(
             self,
             alpha_file: str,
-            output_file: str | None = None):
+            output_file: str | None = None) -> None:
         """function to obtain [compiled formula | alpha], where alpha is a literal or a cube specified in the provided .smt2 file
 
         Args:
             alpha_file (str): the path to the smt2 file containing the literal (or conjunction of literals) to condition the compiled formula
             output_file (str | None) [None]: the path to the .smt2 file where the conditioned compiled formula will be saved. Defaults to None.
         """
+        alpha = self._alpha_file_can_condition(alpha_file)
+        self._condition_body(alpha, output_file)
+
+    @abstractmethod
+    def _condition_body(self, alpha: FNode, output_file: str | None) -> None:
+        """where the actual conditioning is done"""
         pass
