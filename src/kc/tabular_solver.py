@@ -11,21 +11,8 @@ from theorydd.constants import SAT, UNSAT
 from theorydd.solvers.mathsat_total import MathSATTotalEnumerator as _Enumerator
 from theorydd.solvers.solver import SMTEnumerator
 from theorydd.formula import get_normalized, save_phi, read_phi
-from dotenv import load_dotenv as _load_env
 
-_load_env()
-
-# path to the tabular allsmt binary
-_TABULAR_ALLSMT_BINARY = os.getenv("TABULAR_ALLSMT_BINARY")
-if _TABULAR_ALLSMT_BINARY is not None and isinstance(_TABULAR_ALLSMT_BINARY,str) and not _TABULAR_ALLSMT_BINARY.startswith("."):
-    if _TABULAR_ALLSMT_BINARY.startswith("/"):
-        _TABULAR_ALLSMT_BINARY = f".{_TABULAR_ALLSMT_BINARY}"
-    else:
-        _TABULAR_ALLSMT_BINARY = f"./{_TABULAR_ALLSMT_BINARY}"
-
-# regex for tlemmas files
-_TLEMMAS_FILE_REGEX = "tlemma_[0-9]+.smt2"
-
+from src.kc.constants import _TABULAR_ALLSMT_BINARY, _TLEMMAS_FILE_REGEX
 
 class TabularSMTSolver(SMTEnumerator):
     """A wrapper for the tabular T-solver

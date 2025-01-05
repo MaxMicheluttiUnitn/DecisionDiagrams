@@ -8,17 +8,37 @@ prepare_paths_{bench} function
 import os
 from typing import List
 
+# TO ADD A NEW BENCHMARKS EXTEND THIS LIST
 VALID_BENCHS = ["ldd_randgen", "randgen", "qfrdl"]
+
+# never change this list
 RUN_TYPES = ["allsmt", "dd", "both", "abstraction"]
+
+# the valid solver options
+# if you implement a custom SMTEnumerator, you can add it to this list
+# also remember to:
+# - add it into src.kc.main.py in the get_solver function
+# - add it to the VALID_SOLVERS list in src.kc.constants.py
 VALID_SOLVERS = ["total", "partial", "extended_partial",
                  "tabular_total", "tabular_partial"]
-VALID_DD = ["tbdd", "tsdd", "tddnnf"]
+
+# the valid theory compilation options
+# theory compilations are all compilations that necessitate of running AllSMT
+VALID_THEORY_DD = ["tbdd", "tsdd", "tddnnf"]
+
+# the valid abstract compilation options
+# abstract compilation are all compilations that do not necessitate of running AllSMT
 VALID_ABSTRACT_DD = ["abstraction_bdd",
                      "abstraction_sdd", "abstraction_ddnnf", "ldd"]
+
+# the valid dDNNF compilers
 VALID_DDNNF_COMPILER = ["c2d", "d4"]
 
+# the main module of the knowledge compiler
 COMPILER_MAIN_MODULE = "knowledge_compiler.py"
-# can be changed to "python3" if python3 is the command for python in your system
+
+# can be changed to "python3" if python3 is the command for python in your system,
+# or any other command that runs python on your system
 PYTHON_CALLABLE = "python"
 
 
@@ -144,10 +164,10 @@ def main() -> None:
             print("Invalid solver type")
             return
     if run_type == "dd" or run_type == "both":
-        print(VALID_DD)
+        print(VALID_THEORY_DD)
         dd_type = input("Enter the dd type: ")
         dd_type = dd_type.strip().lower()
-        if dd_type not in VALID_DD:
+        if dd_type not in VALID_THEORY_DD:
             print("Invalid dd type")
             return
         output_folder = input("Enter the output folder name: ")

@@ -2,13 +2,10 @@
 
 
 import json
-import random
 import os
 import time
-import re
 from typing import Dict, List, Set, Tuple, TypeVar
 from dataclasses import dataclass
-from dotenv import load_dotenv as _load_env
 from pysmt.shortcuts import (
     And,
     Or,
@@ -23,14 +20,9 @@ from theorydd.formula import save_refinement, load_refinement, get_phi_and_lemma
 from theorydd.constants import UNSAT
 
 from src.kc.ddnnf_compiler import DDNNFCompiler
-
-_D4_AND_NODE = 0
-_D4_OR_NODE = 1
-_D4_TRUE_NODE = 2
-_D4_FALSE_NODE = 3
+from src.kc.constants import _D4_EXECUTABLE, _D4_AND_NODE, _D4_OR_NODE, _D4_TRUE_NODE, _D4_FALSE_NODE, _RE_NNF_EDGE
 
 _SelfD4Node = TypeVar("SelfD4Node", bound="D4Node")
-
 
 @dataclass
 class D4Node:
@@ -95,21 +87,6 @@ class D4Node:
                 raise ValueError("OR node with no children")
             self.memo = Or(*children_pysmts)
         return self.memo
-
-
-_RE_NNF_EDGE = re.compile(r"(\d+) (\d+)( .+)? 0")
-
-# load d4 executable location from dotenv
-_load_env()
-_D4_EXECUTABLE = os.getenv("D4_BINARY")
-
-# fix command to launch d4 compiler
-if _D4_EXECUTABLE is not None and os.path.isfile(_D4_EXECUTABLE) and not _D4_EXECUTABLE.startswith("."):
-    if _D4_EXECUTABLE.startswith("/"):
-        _D4_EXECUTABLE = f".{_D4_EXECUTABLE}"
-    else:
-        _D4_EXECUTABLE = f"./{_D4_EXECUTABLE}"
-
 
 class D4Compiler(DDNNFCompiler):
     """D4 compiler implementation for the DDNNFCompiler interface"""

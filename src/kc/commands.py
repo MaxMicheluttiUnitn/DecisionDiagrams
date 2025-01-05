@@ -2,10 +2,7 @@
 import argparse
 from dataclasses import dataclass
 
-from theorydd.constants import VALID_SOLVER, VALID_VTREE, VALID_LDD_THEORY
-
-VALID_DDNNF_COMPILER = ["c2d", "d4"]
-
+from src.kc.constants import VALID_VTREE, VALID_LDD_THEORY, VALID_SOLVER, VALID_DDNNF_COMPILER
 
 @dataclass
 class Options:

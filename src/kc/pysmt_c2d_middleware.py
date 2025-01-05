@@ -18,20 +18,9 @@ from allsat_cnf.label_cnfizer import LabelCNFizer
 from theorydd.formula import save_refinement, load_refinement, get_phi_and_lemmas as _get_phi_and_lemmas
 from theorydd.constants import UNSAT
 
-# load c2d executable location from dotenv
-from dotenv import load_dotenv as _load_env
-
 from src.kc.ddnnf_compiler import DDNNFCompiler
-_load_env()
-_C2D_EXECUTABLE = os.getenv("C2D_BINARY")
 
-# fix command to launch c2d compiler
-if _C2D_EXECUTABLE is not None and os.path.isfile(_C2D_EXECUTABLE) and not _C2D_EXECUTABLE.startswith("."):
-    if _C2D_EXECUTABLE.startswith("/"):
-        _C2D_EXECUTABLE = f".{_C2D_EXECUTABLE}"
-    else:
-        _C2D_EXECUTABLE = f"./{_C2D_EXECUTABLE}"
-
+from src.kc.constants import _C2D_EXECUTABLE
 
 class C2DCompiler(DDNNFCompiler):
 
