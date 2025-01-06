@@ -236,7 +236,9 @@ def main() -> None:
         raise ValueError("Invalid benchmark source")
 
     # run the benchmarks
-    for input_file in input_files:
+    total_files = len(input_files)
+    for file_index, input_file in enumerate(input_files):
+        print("Progress: ", file_index + 1, "/", total_files)
         print(f"Running {input_file}...")
         # abstraction
         if run_type == "abstraction":
