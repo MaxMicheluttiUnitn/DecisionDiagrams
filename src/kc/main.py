@@ -33,11 +33,11 @@ def print_models(models, boolean_mapping) -> None:
         for model in models:
             out = ""
             for elem in model:
+                if elem.is_not():
+                    out += "!"
+                    elem = elem.args()[0]
                 if elem in boolean_mapping.keys():
-                    if elem.is_not():
-                        out += str(boolean_mapping[elem.args()[0]]) + ", "
-                    else:
-                        out += str(boolean_mapping[elem]) + ", "
+                    out += str(boolean_mapping[elem]) + ", "
                 else:
                     out += str(elem) + ", "
             counter += 1
