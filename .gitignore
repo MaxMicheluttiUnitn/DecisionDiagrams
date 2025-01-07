@@ -14,6 +14,7 @@ __pycache__
 /test_*
 /utility
 /ddnnf_reasoner
+/ddnnife
 
 tmp*
 
@@ -45,7 +46,9 @@ tmp.txt
 tmp_data.txt
 tool_options.txt
 d4_options.txt
+ddnnf_reasoner_commands.txt
 
 mathsat
 c2d_linux
 d4
+ddnnife

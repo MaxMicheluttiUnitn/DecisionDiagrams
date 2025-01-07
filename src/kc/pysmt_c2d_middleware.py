@@ -284,7 +284,7 @@ class C2DCompiler(DDNNFCompiler):
         if timeout > 0:
             timeout_string = f"timeout {timeout}s "
         result = os.system(
-            f"{timeout_string}{_C2D_EXECUTABLE} -in {tmp_folder}/dimacs.cnf -exist {tmp_folder}/quantification.exist > /dev/null"
+            f"{timeout_string}{_C2D_EXECUTABLE} -in {tmp_folder}/dimacs.cnf -exist {tmp_folder}/quantification.exist -smooth -reduce > /dev/null"
         )
         if result != 0:
             raise TimeoutError("c2d compilation failed: timeout")
