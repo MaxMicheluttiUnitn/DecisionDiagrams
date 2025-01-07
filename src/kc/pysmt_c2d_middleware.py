@@ -1,7 +1,6 @@
 """midddleware for pysmt-c2d compatibility"""
 
 import logging
-import random
 import os
 import time
 from typing import Dict, List, Tuple
@@ -18,6 +17,8 @@ from pysmt.fnode import FNode
 from allsat_cnf.label_cnfizer import LabelCNFizer
 from theorydd.formula import save_refinement, load_refinement, get_phi_and_lemmas as _get_phi_and_lemmas
 from theorydd.constants import UNSAT
+from theorydd.formula import get_normalized
+from theorydd.solvers.mathsat_total import MathSATTotalEnumerator
 
 from src.kc.ddnnf_compiler import DDNNFCompiler
 
@@ -29,6 +30,7 @@ class C2DCompiler(DDNNFCompiler):
     def __init__(self):
         super().__init__()
         self.logger = logging.getLogger("c2d_ddnnf_compiler")
+        self.normalizing_solver = MathSATTotalEnumerator()
 
     def from_smtlib_to_dimacs_file(
         self,
@@ -53,10 +55,13 @@ class C2DCompiler(DDNNFCompiler):
             quantification_file (str) -> the path to the file where the quantified variables
                 need to be saved
         """
+        # solver to normalize phi
         if tlemmas is None:
             phi_and_lemmas = phi
         else:
             phi_and_lemmas = _get_phi_and_lemmas(phi, tlemmas)
+        # normalize phi and lemmas
+        phi_and_lemmas = get_normalized(phi_and_lemmas, self.normalizing_solver.get_converter())
         phi_cnf: FNode = LabelCNFizer().convert_as_formula(phi_and_lemmas)
         phi_atoms: frozenset = get_atoms(phi)
         phi_cnf_atoms: frozenset = get_atoms(phi_cnf)
@@ -249,6 +254,7 @@ class C2DCompiler(DDNNFCompiler):
             os.mkdir(tmp_folder)
         start_time = time.time()
         self.logger.info("Translating to DIMACS...")
+        phi = get_normalized(phi, self.normalizing_solver.get_converter())
         self.from_smtlib_to_dimacs_file(
             phi,
             f"{tmp_folder}/dimacs.cnf",

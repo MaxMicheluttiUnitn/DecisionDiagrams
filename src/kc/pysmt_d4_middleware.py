@@ -17,8 +17,9 @@ from pysmt.shortcuts import (
 )
 from pysmt.fnode import FNode
 from allsat_cnf.label_cnfizer import LabelCNFizer
-from theorydd.formula import save_refinement, load_refinement, get_phi_and_lemmas
+from theorydd.formula import save_refinement, load_refinement, get_phi_and_lemmas, get_normalized
 from theorydd.constants import UNSAT
+from theorydd.solvers.mathsat_total import MathSATTotalEnumerator
 
 from src.kc.ddnnf_compiler import DDNNFCompiler
 from src.kc.constants import (
@@ -102,6 +103,7 @@ class D4Compiler(DDNNFCompiler):
 
     def __init__(self):
         self.important_atoms_labels = []
+        self.normalizer_solver = MathSATTotalEnumerator()
         super().__init__()
         self.logger = logging.getLogger("d4_ddnnf_compiler")
 
@@ -128,6 +130,7 @@ class D4Compiler(DDNNFCompiler):
             phi_and_lemmas = get_phi_and_lemmas(phi, tlemmas)
         else:
             phi_and_lemmas = phi
+        phi_and_lemmas = get_normalized(phi_and_lemmas, self.normalizer_solver.get_converter())
         phi_cnf: FNode = LabelCNFizer().convert_as_formula(phi_and_lemmas)
         phi_cnf_atoms: frozenset = get_atoms(phi_cnf)
         fresh_atoms: Set[FNode] = frozenset(
@@ -308,6 +311,7 @@ class D4Compiler(DDNNFCompiler):
             os.mkdir(tmp_folder)
         start_time = time.time()
         self.logger.info("Translating to DIMACS...")
+        phi = get_normalized(phi, self.normalizer_solver.get_converter())
         self.from_smtlib_to_dimacs_file(
             phi, f"{tmp_folder}/dimacs.cnf", tlemmas, sat_result=sat_result)
         elapsed_time = time.time() - start_time
