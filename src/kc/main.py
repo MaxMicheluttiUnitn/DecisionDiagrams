@@ -16,12 +16,12 @@ from theorydd.solvers.solver import SMTEnumerator
 from theorydd.solvers.mathsat_total import MathSATTotalEnumerator
 from theorydd.solvers.mathsat_partial_extended import MathSATExtendedPartialEnumerator
 from theorydd.solvers.mathsat_partial import MathSATPartialEnumerator
+from theorydd.solvers.tabular import TabularPartialSMTSolver, TabularSMTSolver, TabularTotalSMTSolver
 from theorydd.solvers.lemma_extractor import extract
 from theorydd.constants import SAT, UNSAT
 
 import src.kc.abstraction_decision_diagrams as add
 import src.kc.theory_decision_diagrams as tdd
-import src.kc.tabular_solver as tabular
 from src.kc.commands import Options, get_args
 
 kc_logger = logging.getLogger("knowledge_compiler")
@@ -103,9 +103,9 @@ def get_solver(args: Options) -> SMTEnumerator:
     elif args.solver == "extended_partial":
         return MathSATPartialEnumerator()
     elif args.solver == "tabular_total":
-        return tabular.TabularSMTSolver(is_partial=False)
+        return TabularTotalSMTSolver()
     elif args.solver == "tabular_partial":
-        return tabular.TabularSMTSolver(is_partial=True)
+        return TabularPartialSMTSolver()
     else:
         # default on total solver
         return MathSATTotalEnumerator()
@@ -136,7 +136,7 @@ def smt_phase(phi: FNode, args: Options, data_logger: Dict):
             kc_logger.info("All-SMT total models %s", str(models_total))
 
         if args.print_models:
-            if isinstance(smt_solver, tabular.TabularSMTSolver):
+            if isinstance(smt_solver, TabularSMTSolver):
                 print("Models not available from Tabular computation")
             else:
                 print("All-SMT models:")
