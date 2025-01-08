@@ -41,6 +41,8 @@ def _get_c2d_manager(input_folder: str) -> C2D_DDNNFQueryManager:
     # load refinement funvtion as a mapping
     refinement_mapping = load_refinement(path.join(
         input_folder, "mapping/mapping.json"))
+    
+    total_vars = len(refinement_mapping)
 
     # remove non important items from the mapping
     keys_to_remove = set()
@@ -50,7 +52,7 @@ def _get_c2d_manager(input_folder: str) -> C2D_DDNNFQueryManager:
     for key in keys_to_remove:
         del refinement_mapping[key]
 
-    return C2D_DDNNFQueryManager(input_folder, refinement_mapping)
+    return C2D_DDNNFQueryManager(input_folder, total_vars, refinement_mapping = refinement_mapping)
 
 
 def _get_d4_manager(input_folder: str) -> D4_DDNNFQueryManager:
@@ -71,7 +73,7 @@ def _get_d4_manager(input_folder: str) -> D4_DDNNFQueryManager:
     for key in keys_to_remove:
         del refinement_mapping[key]
 
-    return D4_DDNNFQueryManager(input_folder, refinement_mapping)
+    return D4_DDNNFQueryManager(input_folder, refinement_mapping = refinement_mapping)
 
 
 def _get_tbdd_manager(input_folder: str) -> TBDDQueryManager:
@@ -93,7 +95,7 @@ def _get_tbdd_manager(input_folder: str) -> TBDDQueryManager:
         del refinement_mapping[key]
 
     # INITIALIZE QUERY MANAGER
-    return TBDDQueryManager(input_folder, refinement_mapping)
+    return TBDDQueryManager(input_folder, refinement_mapping = refinement_mapping)
 
 
 def _get_tsdd_manager(input_folder: str) -> TSDDQueryManager:
@@ -115,7 +117,7 @@ def _get_tsdd_manager(input_folder: str) -> TSDDQueryManager:
         del refinement_mapping[key]
 
     # INITIALIZE QUERY MANAGER
-    return TSDDQueryManager(input_folder, refinement_mapping)
+    return TSDDQueryManager(input_folder, refinement_mapping = refinement_mapping)
 
 
 def main():

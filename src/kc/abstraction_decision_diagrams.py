@@ -9,10 +9,10 @@ from theorydd.abstractdd.ldd import LDD as TheoryLDD
 from theorydd.xsdd import TheoryXSDD
 from theorydd.abstractdd.abstraction_bdd import AbstractionBDD
 from theorydd.abstractdd.abstraction_sdd import AbstractionSDD
+from theorydd.ddnnf.c2d_compiler import C2DCompiler
+from theorydd.ddnnf.d4_compiler import D4Compiler
 
 from src.kc.commands import Options
-from src.kc.pysmt_c2d_middleware import C2DCompiler
-from src.kc.pysmt_d4_middleware import D4Compiler
 
 kc_logger = logging.getLogger("knowledge_compiler")
 

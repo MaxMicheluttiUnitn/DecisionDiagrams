@@ -8,12 +8,13 @@ from pysmt.shortcuts import write_smtlib
 from theorydd.tdd.theory_bdd import TheoryBDD
 from theorydd.tdd.theory_sdd import TheorySDD
 from theorydd.solvers.solver import SMTEnumerator
+from theorydd.ddnnf.c2d_compiler import C2DCompiler
+from theorydd.ddnnf.d4_compiler import D4Compiler
 
 from src.kc.commands import Options
-from src.kc.pysmt_c2d_middleware import C2DCompiler
-from src.kc.pysmt_d4_middleware import D4Compiler
 
 kc_logger = logging.getLogger("knowledge_compiler")
+
 
 def theory_ddnnf(phi,
                  args: Options,
@@ -25,7 +26,7 @@ def theory_ddnnf(phi,
     # THEORY dDNNF
     start_time = time.time()
     data_logger["T-dDNNF"] = {}
-    ddnnf_compiler:str = args.dDNNF_compiler
+    ddnnf_compiler: str = args.dDNNF_compiler
     kc_logger.info("T-dDNNF computation starting...")
     if ddnnf_compiler == "c2d":
         compiler = C2DCompiler()
@@ -59,7 +60,8 @@ def theory_ddnnf(phi,
     if args.tdDNNF_output is not None and tddnnf is not None:
         kc_logger.info("Saving T-dDNNF to %s", args.tdDNNF_output)
         write_smtlib(tddnnf, args.tdDNNF_output)
-    kc_logger.info("T-dDNNF computation completed in %s seconds", str(elapsed_time))
+    kc_logger.info("T-dDNNF computation completed in %s seconds",
+                   str(elapsed_time))
     del tddnnf
 
 
@@ -87,7 +89,8 @@ def theory_bdd(phi,
         tbdd.save_to_folder(args.save_tbdd)
         elapsed_time = time.time() - start_time
         data_logger["T-BDD"]["serialization time"] = elapsed_time
-        kc_logger.info("T-BDD serialization completed in %s seconds", str(elapsed_time))
+        kc_logger.info(
+            "T-BDD serialization completed in %s seconds", str(elapsed_time))
     if args.count_nodes:
         nodes = tbdd.count_nodes()
         kc_logger.info("Nodes: %s", str(nodes))
@@ -101,14 +104,16 @@ def theory_bdd(phi,
         kc_logger.info("Models: %s", str(models))
         data_logger["T-BDD"]["DD models"] = models
     if args.tbdd_output is not None:
-        tbdd.graphic_dump(args.tbdd_output, dump_abstraction=args.dump_abstraction)
+        tbdd.graphic_dump(args.tbdd_output,
+                          dump_abstraction=args.dump_abstraction)
     if args.print_mapping:
         print(tbdd.get_mapping())
     del tbdd
 
     elapsed_time = time.time() - start_time
     data_logger["T-BDD"]["total DD computation time"] = elapsed_time
-    kc_logger.info("T-BDD computation completed in %s seconds", str(elapsed_time)) 
+    kc_logger.info("T-BDD computation completed in %s seconds",
+                   str(elapsed_time))
 
 
 def theory_sdd(phi,
@@ -135,7 +140,8 @@ def theory_sdd(phi,
         tsdd.save_to_folder(args.save_tsdd)
         elapsed_time = time.time() - start_time
         data_logger["T-SDD"]["serialization time"] = elapsed_time
-        kc_logger.info("T-SDD serialization completed in %s seconds", str(elapsed_time))
+        kc_logger.info(
+            "T-SDD serialization completed in %s seconds", str(elapsed_time))
     if args.count_nodes:
         nodes = tsdd.count_nodes()
         kc_logger.info("Nodes: %s", str(nodes))
@@ -149,7 +155,8 @@ def theory_sdd(phi,
         kc_logger.info("Models: %s", str(models))
         data_logger["T-SDD"]["DD models"] = models
     if args.tsdd_output is not None:
-        tsdd.graphic_dump(args.tsdd_output, dump_abstraction=args.dump_abstraction)
+        tsdd.graphic_dump(args.tsdd_output,
+                          dump_abstraction=args.dump_abstraction)
     if args.tvtree_output is not None:
         tsdd.graphic_dump_vtree(args.tvtree_output)
     if args.print_mapping:
@@ -158,4 +165,5 @@ def theory_sdd(phi,
 
     elapsed_time = time.time() - start_time
     data_logger["T-SDD"]["total DD computation time"] = elapsed_time
-    kc_logger.info("T-SDD computation completed in %s seconds", str(elapsed_time))
+    kc_logger.info("T-SDD computation completed in %s seconds",
+                   str(elapsed_time))
