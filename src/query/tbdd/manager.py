@@ -1,15 +1,20 @@
 """module where all the queries functions are defined"""
 
-from typing import Dict
+import time
+from typing import Dict, List
 
 from pysmt.fnode import FNode
 
-from src.query.util import aliases_from_mapping
+from theorydd.tdd.theory_bdd import TheoryBDD
+
+from src.query.util import aliases_from_mapping, fix_elapsed_time
 from src.query.query_interface import QueryInterface
 
 
 class TBDDQueryManager(QueryInterface):
     """manager to handle all queries on T-BDDs"""
+
+    loading_time: float
 
     def __init__(
             self,
@@ -28,19 +33,46 @@ class TBDDQueryManager(QueryInterface):
         """
         super().__init__(source_folder, refinement_mapping, abstraction_mapping)
 
+        start_time = time.time()
+        # load tbdd from folder to subtract loading time from query time
+        _tbdd = self._load_tbdd()
+        self.loading_time = time.time() - start_time
+
+    def _load_tbdd(self) -> TheoryBDD:
+        """function to load the T-BDD from the source folder"""
+        return TheoryBDD(None, folder_name=self.source_folder)
+
     def check_consistency(self) -> bool:
         """function to check if the encoded formula is consistent
-        
+
         Returns:
             bool: True if the formula is consistent, False otherwise"""
-        raise NotImplementedError()
+        # load TBDD
+        tbdd = self._load_tbdd()
+
+        # check coinsistency
+        start_time = time.time()
+        is_sat = tbdd.is_sat()
+        consistency_time = fix_elapsed_time(
+            time.time() - start_time - self.loading_time)
+
+        return is_sat
 
     def check_validity(self) -> bool:
         """function to check if the encoded formula is valid
-        
+
         Returns:
             bool: True if the formula is valid, False otherwise"""
-        raise NotImplementedError()
+        # load TBDD
+        tbdd = self._load_tbdd()
+
+        # check validity
+        start_time = time.time()
+        is_valid = tbdd.is_valid()
+        validity_time = fix_elapsed_time(
+            time.time() - start_time - self.loading_time)
+
+        return is_valid
 
     def _check_entail_clause_body(self, clause: FNode) -> bool:
         """function to check if the encoded formula entails the given clause
@@ -50,7 +82,28 @@ class TBDDQueryManager(QueryInterface):
         """
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
         clause_items = aliases_from_mapping(clause, self.abstraction_mapping)
-        raise NotImplementedError()
+
+        clause_items_negated = []
+        for item in clause_items:
+            if item.startswith('-'):
+                clause_items_negated.append(item[1:])
+            else:
+                clause_items_negated.append('-' + item)
+
+        # LOAD THE T-BDD
+        tbdd = self._load_tbdd()
+
+        start_time = time.time()
+        # CONDITION OVER CLAUSE ITEMS NEGATED
+        self._condition_tbdd(tbdd, clause_items_negated)
+        # CHECK IF THE CONDITIONED T-BDD IS UNSAT
+        consistency = tbdd.is_sat()
+        # IF THE CONDITIONED T-BDD IS UNSAT, THEN THE FORMULA ENTAILS THE CLAUSE
+        entailment = not consistency
+        entailment_time = fix_elapsed_time(
+            time.time() - start_time - self.loading_time)
+
+        return entailment
 
     def _check_implicant_body(
             self,
@@ -62,20 +115,52 @@ class TBDDQueryManager(QueryInterface):
         """
         # RETRIEVE THE INDEX ON WHICH TO OPERATE
         term_index = aliases_from_mapping(term, self.abstraction_mapping)[0]
-        raise NotImplementedError()
-    
+
+        # LOAD THE T-BDD
+        tbdd = self._load_tbdd()
+
+        start_time = time.time()
+        # CONSTRUCT TBDD | term
+        tbdd.condition(term_index)
+        # CHECK IF THE CONDITIONED T-BDD IS VALID
+        validity = tbdd.is_valid()
+        # IF THE CONDITIONED T-BDD IS VALID, THEN THE TERM IS AN IMPLICANT
+        implicant = validity
+        implicant_time = fix_elapsed_time(
+            time.time() - start_time - self.loading_time)
+
+        return implicant
+
     def count_models(self) -> int:
         """function to count the number of models for the encoded formula
 
         Returns:
             int: the number of models for the encoded formula
         """
-        raise NotImplementedError()
+        # load TBDD
+        tbdd = self._load_tbdd()
+
+        # count models
+        start_time = time.time()
+        models_total = tbdd.count_models()
+        counting_time = fix_elapsed_time(
+            time.time() - start_time - self.loading_time)
+
+        return models_total
 
     def enumerate_models(self) -> None:
         """function to enumerate all models for the encoded formula
         """
-        raise NotImplementedError()
+        # load TBDD
+        tbdd = self._load_tbdd()
+
+        # enumerate models
+        start_time = time.time()
+        models = tbdd.pick_all()
+        for model in models:
+            print(model)
+        enumeration_time = fix_elapsed_time(
+            time.time() - start_time - self.loading_time)
 
     def _condition_body(
             self,
@@ -85,9 +170,28 @@ class TBDDQueryManager(QueryInterface):
 
         Args:
             alpha (FNode): the literal (or conjunction of literals) to condition the T-BDD
-            output_file (str, optional): the path to the .smt2 file where the conditioned T-BDD will be saved. Defaults to None.
+            output_file (str, optional): the path to the folder file where the conditioned T-BDD will be saved. Defaults to None.
         """
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
         alpha_items = aliases_from_mapping(alpha, self.abstraction_mapping)
 
-        raise NotImplementedError()
+        # LOAD THE T-BDD
+        tbdd = self._load_tbdd()
+
+        # CONDITION THE T-BDD
+        start_time = time.time()
+        self._condition_tbdd(tbdd, alpha_items)
+        conditioning_time = fix_elapsed_time(
+            time.time() - start_time - self.loading_time)
+        if output_file is not None:
+            tbdd.save_to_folder(output_file)
+
+    def _condition_tbdd(self, tbdd: TheoryBDD, items: List[str]) -> None:
+        """function to condition the T-BDD with the given items
+
+        Args:
+            tbdd (TheoryBDD): the T-BDD to condition
+            items (List[str]): the items to condition the T-BDD with
+        """
+        for item in items:
+            tbdd.condition(item)
