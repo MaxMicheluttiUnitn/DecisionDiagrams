@@ -148,7 +148,15 @@ class TSDDQueryManager(QueryInterface):
 
     def enumerate_models(self) -> None:
         """function to enumerate all models for the encoded formula"""
-        raise NotImplementedError()
+        start_time = time.time()
+        tsdd = self._load_tsdd()
+        load_time = time.time() - start_time
+
+        # enumerate models
+        models = tsdd.pick_all()
+        for model in models:
+            print(model)
+        enumeration_time = time.time() - start_time - load_time
 
     def _condition_body(
             self,

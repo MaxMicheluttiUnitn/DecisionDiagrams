@@ -95,8 +95,7 @@ class TBDDQueryManager(QueryInterface):
         start_time = time.time()
         tbdd = self._load_tbdd()
         load_time = time.time() - start_time
-
-        
+ 
         # CONDITION OVER CLAUSE ITEMS NEGATED
         self._condition_tbdd(tbdd, clause_items_negated)
         # CHECK IF THE CONDITIONED T-BDD IS UNSAT
