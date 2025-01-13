@@ -187,6 +187,8 @@ class TBDDQueryManager(QueryInterface):
         # CONDITION THE T-BDD
         self._condition_tbdd(tbdd, alpha_items)
         conditioning_time = time.time() - start_time - load_time
+
+        # SAVE CONDITIONED TBDD
         if output_file is not None:
             tbdd.save_to_folder(output_file)
 
