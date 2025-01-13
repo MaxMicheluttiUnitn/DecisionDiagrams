@@ -6,8 +6,6 @@ from pysmt.shortcuts import Not
 from theorydd.solvers.solver import SMTEnumerator
 from theorydd.formula import get_normalized, get_atoms
 
-from src.query.constants import MINIMUM_TIME_FOR_QUERY
-
 
 def is_tbdd_loading_folder_correct(folder: str) -> bool:
     """checks if the folder where the T-BDD files are stored 
@@ -322,16 +320,3 @@ def _aliases_from_arg(phi: FNode, mapping: Dict[FNode, str]) -> str:
             alias = "-" + alias
     return alias
 
-
-def fix_elapsed_time(elapsed_time: float) -> float:
-    """fixes the elapsed time to be at least the minimum time for a query
-
-    Args:
-        elapsed_time (float): the elapsed time
-
-    Returns:
-        (float) : the fixed elapsed time
-    """
-    if elapsed_time < MINIMUM_TIME_FOR_QUERY:
-        return MINIMUM_TIME_FOR_QUERY
-    return elapsed_time

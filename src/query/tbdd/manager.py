@@ -7,7 +7,7 @@ from pysmt.fnode import FNode
 
 from theorydd.tdd.theory_bdd import TheoryBDD
 
-from src.query.util import aliases_from_mapping, fix_elapsed_time
+from src.query.util import aliases_from_mapping
 from src.query.query_interface import QueryInterface
 
 
@@ -48,13 +48,13 @@ class TBDDQueryManager(QueryInterface):
         Returns:
             bool: True if the formula is consistent, False otherwise"""
         # load TBDD
+        start_time = time.time()
         tbdd = self._load_tbdd()
+        load_time = time.time() - start_time
 
         # check coinsistency
-        start_time = time.time()
         is_sat = tbdd.is_sat()
-        consistency_time = fix_elapsed_time(
-            time.time() - start_time - self.loading_time)
+        consistency_time = time.time() - start_time - load_time
 
         return is_sat
 
@@ -64,13 +64,13 @@ class TBDDQueryManager(QueryInterface):
         Returns:
             bool: True if the formula is valid, False otherwise"""
         # load TBDD
+        start_time = time.time()
         tbdd = self._load_tbdd()
+        load_time = time.time() - start_time
 
         # check validity
-        start_time = time.time()
         is_valid = tbdd.is_valid()
-        validity_time = fix_elapsed_time(
-            time.time() - start_time - self.loading_time)
+        validity_time = time.time() - start_time - load_time
 
         return is_valid
 
@@ -91,17 +91,18 @@ class TBDDQueryManager(QueryInterface):
                 clause_items_negated.append('-' + item)
 
         # LOAD THE T-BDD
-        tbdd = self._load_tbdd()
-
         start_time = time.time()
+        tbdd = self._load_tbdd()
+        load_time = time.time() - start_time
+
+        
         # CONDITION OVER CLAUSE ITEMS NEGATED
         self._condition_tbdd(tbdd, clause_items_negated)
         # CHECK IF THE CONDITIONED T-BDD IS UNSAT
         consistency = tbdd.is_sat()
         # IF THE CONDITIONED T-BDD IS UNSAT, THEN THE FORMULA ENTAILS THE CLAUSE
         entailment = not consistency
-        entailment_time = fix_elapsed_time(
-            time.time() - start_time - self.loading_time)
+        entailment_time = time.time() - start_time - load_time
 
         return entailment
 
@@ -117,17 +118,17 @@ class TBDDQueryManager(QueryInterface):
         term_index = aliases_from_mapping(term, self.abstraction_mapping)[0]
 
         # LOAD THE T-BDD
-        tbdd = self._load_tbdd()
-
         start_time = time.time()
+        tbdd = self._load_tbdd()
+        load_time = time.time() - start_time
+
         # CONSTRUCT TBDD | term
         tbdd.condition(term_index)
         # CHECK IF THE CONDITIONED T-BDD IS VALID
         validity = tbdd.is_valid()
         # IF THE CONDITIONED T-BDD IS VALID, THEN THE TERM IS AN IMPLICANT
         implicant = validity
-        implicant_time = fix_elapsed_time(
-            time.time() - start_time - self.loading_time)
+        implicant_time = time.time() - start_time - load_time
 
         return implicant
 
@@ -138,13 +139,14 @@ class TBDDQueryManager(QueryInterface):
             int: the number of models for the encoded formula
         """
         # load TBDD
+        start_time = time.time()
         tbdd = self._load_tbdd()
+        load_time = time.time() - start_time
 
         # count models
-        start_time = time.time()
+        
         models_total = tbdd.count_models()
-        counting_time = fix_elapsed_time(
-            time.time() - start_time - self.loading_time)
+        counting_time = time.time() - start_time - load_time
 
         return models_total
 
@@ -152,15 +154,14 @@ class TBDDQueryManager(QueryInterface):
         """function to enumerate all models for the encoded formula
         """
         # load TBDD
-        tbdd = self._load_tbdd()
-
-        # enumerate models
         start_time = time.time()
+        tbdd = self._load_tbdd()
+        load_time = time.time() - start_time
+
         models = tbdd.pick_all()
         for model in models:
             print(model)
-        enumeration_time = fix_elapsed_time(
-            time.time() - start_time - self.loading_time)
+        enumeration_time = time.time() - start_time - load_time
 
     def _condition_body(
             self,
@@ -176,13 +177,13 @@ class TBDDQueryManager(QueryInterface):
         alpha_items = aliases_from_mapping(alpha, self.abstraction_mapping)
 
         # LOAD THE T-BDD
+        start_time = time.time()
         tbdd = self._load_tbdd()
+        load_time = time.time() - start_time
 
         # CONDITION THE T-BDD
-        start_time = time.time()
         self._condition_tbdd(tbdd, alpha_items)
-        conditioning_time = fix_elapsed_time(
-            time.time() - start_time - self.loading_time)
+        conditioning_time = time.time() - start_time - load_time
         if output_file is not None:
             tbdd.save_to_folder(output_file)
 
