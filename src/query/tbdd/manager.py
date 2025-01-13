@@ -1,5 +1,6 @@
 """module where all the queries functions are defined"""
 
+import sys
 import time
 from typing import Dict, List
 
@@ -144,8 +145,10 @@ class TBDDQueryManager(QueryInterface):
         load_time = time.time() - start_time
 
         # count models
-        
         models_total = tbdd.count_models()
+        # sometimes TBDD MC can return -1 due to memory issues
+        if models_total == -1:
+            print("Model counting Error", file = sys.stderr)
         counting_time = time.time() - start_time - load_time
 
         return models_total
@@ -171,7 +174,7 @@ class TBDDQueryManager(QueryInterface):
 
         Args:
             alpha (FNode): the literal (or conjunction of literals) to condition the T-BDD
-            output_file (str, optional): the path to the folder file where the conditioned T-BDD will be saved. Defaults to None.
+            output_file (str, optional): the path to the folder where the conditioned T-BDD will be saved. Defaults to None.
         """
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
         alpha_items = aliases_from_mapping(alpha, self.abstraction_mapping)
