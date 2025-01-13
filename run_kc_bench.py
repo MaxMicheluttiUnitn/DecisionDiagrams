@@ -154,8 +154,15 @@ def main() -> None:
     output_folder = None
     ddnnf_compiler = None
     save_dd = False
+    enumerate_true = False
+    negate_input = False
     if run_type != "abstraction":
         tmp_folder = input("Enter the temporary folder name: ")
+    nagated_input_prompt = input(
+        "Do you want to negate the input formula? (y/n): ")
+    nagated_input_prompt = nagated_input_prompt.strip().lower()
+    if nagated_input_prompt == "y":
+        negate_input = True
     if run_type == "allsmt" or run_type == "both":
         print(VALID_SOLVERS)
         solver_type = input("Enter the solver type: ")
@@ -163,6 +170,11 @@ def main() -> None:
         if solver_type not in VALID_SOLVERS:
             print("Invalid solver type")
             return
+        enumerate_true_prompt = input(
+            "Do you want to enumerate over true? (y/n): ")
+        enumerate_true_prompt = enumerate_true_prompt.strip().lower()
+        if enumerate_true_prompt == "y":
+            enumerate_true = True
     if run_type == "dd" or run_type == "both":
         print(VALID_THEORY_DD)
         dd_type = input("Enter the dd type: ")
@@ -237,6 +249,9 @@ def main() -> None:
 
     # run the benchmarks
     total_files = len(input_files)
+    negate_input_string = ""
+    if negate_input:
+        negate_input_string = "--negative"
     for file_index, input_file in enumerate(input_files):
         print("Progress: ", file_index + 1, "/", total_files)
         print(f"Running {input_file}...")
@@ -254,21 +269,21 @@ def main() -> None:
                     save_dd_folder = output_folder_path.replace(".smt2", "")
                     save_dd_str = f"--save_abstraction_bdd {save_dd_folder}_abstraction_bdd"
                 result = os.system(
-                    f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} -v -i {input_file} --count_nodes --count_models --abstraction_bdd -d {output_file} {save_dd_str}")
+                    f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} {negate_input_string} -v -i {input_file} --count_nodes --count_models --abstraction_bdd -d {output_file} {save_dd_str}")
             elif dd_type == "abstraction_sdd":
                 if save_dd:
                     save_dd_folder = output_folder_path.replace(".smt2", "")
                     save_dd_str = f"--save_abstraction_sdd {save_dd_folder}_abstraction_sdd"
                 result = os.system(
-                    f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} -v -i {input_file} --abstraction_sdd --count_nodes --count_models -d {output_file} --abstraction_vtree balanced {save_dd_str}")
+                    f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} {negate_input_string} -v -i {input_file} --abstraction_sdd --count_nodes --count_models -d {output_file} --abstraction_vtree balanced {save_dd_str}")
             elif dd_type == "abstraction_ddnnf":
                 tmp_folder_path = output_folder_path.replace(
                     ".smt2", f"_{ddnnf_compiler}")
                 os.system(
-                    f"{PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} -v -i {input_file} --abstraction_dDNNF -d {output_file} --no_dDNNF_to_pysmt --save_dDNNF {tmp_folder_path} --dDNNF_compiler {ddnnf_compiler}")
+                    f"{PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} {negate_input_string} -v -i {input_file} --abstraction_dDNNF -d {output_file} --no_dDNNF_to_pysmt --save_dDNNF {tmp_folder_path} --dDNNF_compiler {ddnnf_compiler}")
             elif dd_type == "ldd":
                 result = os.system(
-                    f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} -v -i {input_file} --ldd --ldd_theory TVPI --count_models --count_nodes -d {output_file}")
+                    f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} {negate_input_string} -v -i {input_file} --ldd --ldd_theory TVPI --count_models --count_nodes -d {output_file}")
             if result != 0:
                 print(f"Abstraction DD compilation timed out for {input_file}")
                 with open(output_file, "w", encoding='utf8') as f:
@@ -277,6 +292,9 @@ def main() -> None:
 
         # allsmt only
         elif run_type == "allsmt" or run_type == "both":
+            enumerate_true_str = ""
+            if enumerate_true:
+                enumerate_true_str = "--enumerate_true"
             tmp_lemma_file = input_file.replace("data", tmp_folder)
             tmp_json_file = tmp_lemma_file.replace(".smt2", ".json")
             print(f"Running allsmt on {input_file}...")
@@ -284,7 +302,7 @@ def main() -> None:
                 print(f"{tmp_json_file} already exists. Skipping...")
                 continue
             os.system(
-                f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} -v -i {input_file} --save_lemmas {tmp_lemma_file} --solver partial -d {tmp_json_file} --count_models")
+                f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} {negate_input_string} {enumerate_true_str} -v -i {input_file} --save_lemmas {tmp_lemma_file} --solver partial -d {tmp_json_file} --count_models")
 
         # dd compilation only
         elif run_type == "dd" or run_type == "both":
@@ -308,18 +326,18 @@ def main() -> None:
                     save_dd_folder = output_folder_path.replace(".smt2", "")
                     save_dd_str = f"--save_tbdd {save_dd_folder}_tbdd"
                 result = os.system(
-                    f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tbdd --count_nodes --count_models -d {output_file} {save_dd_str}")
+                    f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} {negate_input_string} -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tbdd --count_nodes --count_models -d {output_file} {save_dd_str}")
             elif dd_type == "tsdd":
                 if save_dd:
                     save_dd_folder = output_folder_path.replace(".smt2", "")
                     save_dd_str = f"--save_tsdd {save_dd_folder}_tsdd"
                 result = os.system(
-                    f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file}  --tsdd --count_nodes --count_models -d {output_file} --tvtree balanced {save_dd_str}")
+                    f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} {negate_input_string} -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file}  --tsdd --count_nodes --count_models -d {output_file} --tvtree balanced {save_dd_str}")
             elif dd_type == "tddnnf":
                 tmp_ddnnf_folder = output_folder_path.replace(
                     ".smt2", f"_{ddnnf_compiler}")
                 os.system(
-                    f"{PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tdDNNF -d {output_file} --no_dDNNF_to_pysmt --save_dDNNF {tmp_ddnnf_folder} --dDNNF_compiler {ddnnf_compiler}")
+                    f"{PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} {negate_input_string} -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tdDNNF -d {output_file} --no_dDNNF_to_pysmt --save_dDNNF {tmp_ddnnf_folder} --dDNNF_compiler {ddnnf_compiler}")
 
             if result != 0:
                 print(f"DD compilation timed out for {input_file}")
@@ -337,6 +355,7 @@ def main() -> None:
     print("DD type:", dd_type)
     print("Temporary folder:", tmp_folder)
     print("Output folder:", output_folder)
+    print("dDNNF compiler: ", ddnnf_compiler)
 
 
 if __name__ == "__main__":
