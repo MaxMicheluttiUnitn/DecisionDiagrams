@@ -84,6 +84,9 @@ class TBDDQueryManager(QueryInterface):
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
         clause_items = aliases_from_mapping(clause, self.abstraction_mapping)
 
+        # NEGATE ALL ITEMS IN THE CLAUSE
+        # TO OBTAIN A CUBE EQUIVALENT TO
+        # NOT CLAUSE
         clause_items_negated = []
         for item in clause_items:
             if item.startswith('-'):
@@ -95,7 +98,7 @@ class TBDDQueryManager(QueryInterface):
         start_time = time.time()
         tbdd = self._load_tbdd()
         load_time = time.time() - start_time
- 
+
         # CONDITION OVER CLAUSE ITEMS NEGATED
         self._condition_tbdd(tbdd, clause_items_negated)
         # CHECK IF THE CONDITIONED T-BDD IS UNSAT
@@ -147,7 +150,7 @@ class TBDDQueryManager(QueryInterface):
         models_total = tbdd.count_models()
         # sometimes TBDD MC can return -1 due to memory issues
         if models_total == -1:
-            print("Model counting Error", file = sys.stderr)
+            print("Model counting Error", file=sys.stderr)
         counting_time = time.time() - start_time - load_time
 
         return models_total

@@ -83,6 +83,9 @@ class TSDDQueryManager(QueryInterface):
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
         clause_items = indexes_from_mapping(clause, self.abstraction_mapping)
 
+        # NEGATE ALL ITEMS IN THE CLAUSE
+        # TO OBTAIN A CUBE EQUIVALENT TO
+        # NOT CLAUSE
         clause_items_negated = [-item for item in clause_items]
 
         # LOAD THE T-SDD
@@ -90,7 +93,6 @@ class TSDDQueryManager(QueryInterface):
         tsdd = self._load_tsdd()
         load_time = time.time() - start_time
 
-        
         # CONDITION OVER CLAUSE ITEMS NEGATED
         self._condition_tsdd(tsdd, clause_items_negated)
         # CHECK IF THE CONDITIONED T-SDD IS UNSAT
@@ -114,7 +116,7 @@ class TSDDQueryManager(QueryInterface):
         """
         # RETRIEVE THE INDEX ON WHICH TO OPERATE
         term_index = indexes_from_mapping(term, self.abstraction_mapping)[0]
-        
+
         # LOAD THE T-SDD
         start_time = time.time()
         tsdd = self._load_tsdd()
