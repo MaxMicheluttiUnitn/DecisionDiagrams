@@ -160,8 +160,7 @@ class TBDDQueryManager(QueryInterface):
         tbdd = self._load_tbdd()
         load_time = time.time() - start_time
 
-        models = tbdd.pick_all()
-        for model in models:
+        for model in tbdd.pick_all_iter():
             print(model)
         enumeration_time = time.time() - start_time - load_time
 

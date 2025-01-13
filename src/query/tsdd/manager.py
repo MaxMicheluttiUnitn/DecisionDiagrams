@@ -153,8 +153,7 @@ class TSDDQueryManager(QueryInterface):
         load_time = time.time() - start_time
 
         # enumerate models
-        models = tsdd.pick_all()
-        for model in models:
+        for model in tsdd.pick_all_iter():
             print(model)
         enumeration_time = time.time() - start_time - load_time
 
