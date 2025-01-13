@@ -53,6 +53,8 @@ def get_phi(args: Options, data_logger: Dict) -> FNode:
         phi = formula.default_phi()
     else:
         phi = formula.read_phi(args.input)
+    if args.negative:
+        phi = formula.negate(phi)
     elapsed_time = time.time() - start_time
     data_logger["phi loading time"] = elapsed_time
     kc_logger.info("Loaded phi in %s seconds", str(elapsed_time))
@@ -127,6 +129,7 @@ def smt_phase(phi: FNode, args: Options, data_logger: Dict):
         sat_result, tlemmas, boolean_mapping = extract(
             phi,
             smt_solver,
+            enumerate_true=args.enumerate_true,
             use_boolean_mapping=(not args.no_boolean_mapping),
             computation_logger=data_logger)
 

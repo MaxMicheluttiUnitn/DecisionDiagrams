@@ -51,6 +51,8 @@ class Options:
     save_abstraction_sdd: str | None
     dDNNF_timeout: int
     log_file: str | None
+    negative: bool
+    enumerate_true: bool
 
     def __init__(self, args: argparse.Namespace):
         self.tsdd = args.tsdd
@@ -97,6 +99,8 @@ class Options:
         self.save_abstraction_sdd = args.save_abstraction_sdd
         self.dDNNF_timeout = args.dDNNF_timeout
         self.log_file = args.log_file
+        self.negative = args.negative
+        self.enumerate_true = args.enumerate_true
 
 
 def get_args() -> Options:
@@ -294,6 +298,14 @@ def get_args() -> Options:
         "--log_file",
         help="Specify a file to log the events of computation",
         type=str)
+    parser.add_argument(
+        "--negative",
+        help="Use Not(input formula) instead of input formula",
+        action="store_true")
+    parser.add_argument(
+        "--enumerate_true",
+        help="Enumerate all lemmas of a boolean valid formula on all the atoms of the input formmula",
+        action="store_true")
     # parser.add_argument(
     #     "--check_eq",
     #     help="Check the T-equivalence of the T-agnostic DD with the T-formula phi",
