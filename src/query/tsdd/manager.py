@@ -4,7 +4,7 @@ from typing import Dict
 
 from pysmt.fnode import FNode
 
-from src.query.util import aliases_from_mapping
+from src.query.util import indexes_from_mapping
 from src.query.query_interface import QueryInterface
 
 
@@ -52,7 +52,7 @@ class TSDDQueryManager(QueryInterface):
             bool: True if the formula entails the clause, False otherwise
         """
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
-        clause_items = aliases_from_mapping(clause, self.abstraction_mapping)
+        clause_items = indexes_from_mapping(clause, self.abstraction_mapping)
         raise NotImplementedError()
 
     def _check_implicant_body(
@@ -67,7 +67,7 @@ class TSDDQueryManager(QueryInterface):
             bool: True if the term is an implicant, False otherwise
         """
         # RETRIEVE THE INDEX ON WHICH TO OPERATE
-        term_index = aliases_from_mapping(term, self.abstraction_mapping)[0]
+        term_index = indexes_from_mapping(term, self.abstraction_mapping)[0]
         raise NotImplementedError()
     
     def count_models(self) -> int:
@@ -93,6 +93,6 @@ class TSDDQueryManager(QueryInterface):
             output_file (str, optional): the path to the .smt2 file where the conditioned T-SDD will be saved. Defaults to None.
         """
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
-        alpha_items = aliases_from_mapping(alpha, self.abstraction_mapping)
+        alpha_items = indexes_from_mapping(alpha, self.abstraction_mapping)
 
         raise NotImplementedError()
