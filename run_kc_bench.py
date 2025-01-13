@@ -227,6 +227,8 @@ def main() -> None:
     print("Output folder:", output_folder)
     print("dDNNF compiler: ", ddnnf_compiler)
     print("Save DDs: ", save_dd)
+    print("Enumerate true: ", enumerate_true)
+    print("Negate input: ", negate_input)
     # ask confirmation
     is_ok = input("Is this correct? (y/n): ")
     is_ok = is_ok.strip().lower()
@@ -356,6 +358,9 @@ def main() -> None:
     print("Temporary folder:", tmp_folder)
     print("Output folder:", output_folder)
     print("dDNNF compiler: ", ddnnf_compiler)
+    print("Save DDs: ", save_dd)
+    print("Enumerate true: ", enumerate_true)
+    print("Negate input: ", negate_input)
 
 
 if __name__ == "__main__":
