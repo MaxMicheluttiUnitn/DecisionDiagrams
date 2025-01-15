@@ -322,6 +322,11 @@ def main() -> None:
                 with open(output_file, "w", encoding='utf8') as f:
                     f.write("{\"timeout\": \"ALL SMT\"}")
                 continue
+            
+            # check if dd compilation already exists
+            if os.path.exists(output_file):
+                print(f"{output_file} already exists. Skipping...")
+                continue
 
             if dd_type == "tbdd":
                 if save_dd:
