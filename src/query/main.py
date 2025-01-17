@@ -29,6 +29,7 @@ from src.query.tddnnf.c2d.manager import C2D_DDNNFQueryManager
 from src.query.tddnnf.d4.manager import D4_DDNNFQueryManager
 from src.query.tbdd.manager import TBDDQueryManager
 from src.query.tsdd.manager import TSDDQueryManager
+from src.query.smt_solver.manager import SMTQueryManager
 
 
 def _get_c2d_manager(input_folder: str) -> C2D_DDNNFQueryManager:
@@ -137,6 +138,8 @@ def main():
         query_manager = _get_tbdd_manager(input_folder)
     elif is_tsdd_loading_folder_correct(input_folder):
         query_manager = _get_tsdd_manager(input_folder)
+    elif input_folder.endswith(".smt") or input_folder.endswith(".smt2"):
+        query_manager = SMTQueryManager(input_folder)
     else:
         raise ValueError(
             "The folder where the compiled formula files are stored was not found, or some files are missing from it.")
