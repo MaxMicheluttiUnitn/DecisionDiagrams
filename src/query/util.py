@@ -6,6 +6,12 @@ from pysmt.shortcuts import Not
 from theorydd.solvers.solver import SMTEnumerator
 from theorydd.formula import get_normalized, get_atoms
 
+class UnsupportedQueryException(Exception):
+    """Exception raised when an unsupported query is called"""
+
+    def __init__(self, message: str = "Unsupported query type"):
+        super().__init__(message)
+
 
 def is_tbdd_loading_folder_correct(folder: str) -> bool:
     """checks if the folder where the T-BDD files are stored 

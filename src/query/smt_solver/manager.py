@@ -1,9 +1,10 @@
 """module where all the queries functions are defined. These queries are executed through SMTsolver calls"""
 
+import os
 import time
 
 from pysmt.fnode import FNode
-from pysmt.shortcuts import is_sat, Not, And
+from pysmt.shortcuts import is_sat, Not, And, Or
 
 from theorydd.formula import read_phi as _get_phi, save_phi as _save_phi
 from theorydd.solvers.mathsat_total import MathSATTotalEnumerator
@@ -161,3 +162,96 @@ class SMTQueryManager(QueryInterface):
         # save the conditioned formula
         if output_file is not None:
             _save_phi(conditioned_formula, output_file)
+
+    def check_entail(self, data_folder: str) -> bool:
+        """function to check entailment of the compiled formula with respect to the data in the file data_folder.
+
+        Args:
+            data_folder (str): the path to the file where the data is stored
+
+        Returns:
+            bool: True if the compiled formula entails the data, False otherwise
+        """
+        if not os.path.exists(data_folder):
+            raise FileNotFoundError(f"Data file {data_folder} does not exist")
+        if not data_folder.endswith(".smt2") and not data_folder.endswith(".smt"):
+            raise ValueError("Data file must be in SMT or SMT2 format")
+        
+        start_time = time.time()
+        phi = _get_phi(self.source_folder)
+        load_time = time.time() - start_time
+
+        data = _get_phi(data_folder)
+        # ENTAILMENT: phi -> data
+        # phi and not data must be unsatisfiable
+        entailment = not is_sat(And(phi, Not(data)), solver_name="msat")
+        entailment_time = time.time() - start_time - load_time
+
+        return entailment
+
+    def conjunction(self, data_folder: str, output_path: str | None = None) -> None:
+        """function to compute the conjunction of the compiled formula the data in data_folder.
+
+        Args:
+            data_folder (str): the path to the file where the data is stored
+            output_path (str | None) [None]: the path to the file where the conjunction will be saved
+        """
+        if not os.path.exists(data_folder):
+            raise FileNotFoundError(f"Data file {data_folder} does not exist")
+        if not data_folder.endswith(".smt2") and not data_folder.endswith(".smt"):
+            raise ValueError("Data file must be in SMT or SMT2 format")
+        
+        # load phi
+        start_time = time.time()
+        phi = _get_phi(self.source_folder)
+        load_time = time.time() - start_time
+
+        data = _get_phi(data_folder)
+        conjunction_formula = And(phi, data)
+        conjunction_time = time.time() - start_time - load_time
+
+        # save the conditioned formula
+        if output_path is not None:
+            _save_phi(conjunction_formula, output_path)
+
+    def disjunction(self, data_folder: str, output_path: str | None = None) -> None:
+        """function to compute the disjunction of the compiled formula the data in data_folder.
+
+        Args:
+            data_folder (str): the path to the file where the data is stored
+            output_path (str | None) [None]: the path to the file where the disjunction will be saved
+        """
+        if not os.path.exists(data_folder):
+            raise FileNotFoundError(f"Data file {data_folder} does not exist")
+        if not data_folder.endswith(".smt2") and not data_folder.endswith(".smt"):
+            raise ValueError("Data file must be in SMT or SMT2 format")
+        # load phi
+        start_time = time.time()
+        phi = _get_phi(self.source_folder)
+        load_time = time.time() - start_time
+
+        data = _get_phi(data_folder)
+        disjunction_formula = Or(phi, data)
+        disjunction_time = time.time() - start_time - load_time
+
+        # save the conditioned formula
+        if output_path is not None:
+            _save_phi(disjunction_formula, output_path)
+
+    def negation(self, output_path: str | None = None) -> None:
+        """function to compute the negation of the compiled formula
+
+        Args:
+            output_path (str | None) [None]: the path to the file where the negation will be saved
+        """
+        # load phi
+        start_time = time.time()
+        phi = _get_phi(self.source_folder)
+        load_time = time.time() - start_time
+
+        negation_formula = Not(phi)
+        negation_time = time.time() - start_time - load_time
+
+        # save the conditioned formula
+        if output_path is not None:
+            _save_phi(negation_formula, output_path)

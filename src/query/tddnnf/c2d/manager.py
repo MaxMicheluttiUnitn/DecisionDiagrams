@@ -9,7 +9,7 @@ from pysmt.fnode import FNode
 
 from dotenv import load_dotenv as _load_dotenv
 
-from src.query.util import indexes_from_mapping
+from src.query.util import indexes_from_mapping, UnsupportedQueryException
 from src.query.query_interface import QueryInterface
 
 _load_dotenv()
@@ -192,3 +192,28 @@ class C2D_DDNNFQueryManager(QueryInterface):
         alpha_items = indexes_from_mapping(alpha, self.abstraction_mapping)
 
         raise NotImplementedError()
+    
+    def check_entail(self, data_folder: str) -> bool:
+        """
+        raises UnsupportedQueryException
+        """
+
+        raise UnsupportedQueryException("T-dDNNF do not support polytime entailment checking")
+
+    def conjunction(self, data_folder: str, output_path: str | None = None) -> None:
+        """
+        raises UnsupportedQueryException
+        """
+        raise UnsupportedQueryException("T-dDNNF do not support polytime conjunction")
+
+    def disjunction(self, data_folder: str, output_path: str | None = None) -> None:
+        """
+        raises UnsupportedQueryException
+        """
+        raise UnsupportedQueryException("T-dDNNF do not support polytime disjunction")
+
+    def negation(self, output_path: str | None = None) -> None:
+        """
+        raises UnsupportedQueryException
+        """
+        raise UnsupportedQueryException("T-dDNNF do not support polytime negation")

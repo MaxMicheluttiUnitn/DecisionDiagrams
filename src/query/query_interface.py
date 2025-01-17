@@ -54,7 +54,7 @@ class QueryInterface(ABC):
     @abstractmethod
     def check_consistency(self) -> bool:
         """function to check if the encoded formula is consistent
-        
+
         Returns:
             bool: True if the formula is consistent, False otherwise"""
         raise NotImplementedError()
@@ -62,7 +62,7 @@ class QueryInterface(ABC):
     @abstractmethod
     def check_validity(self) -> bool:
         """function to check if the encoded formula is valid
-        
+
         Returns:
             bool: True if the formula is valid, False otherwise"""
         raise NotImplementedError()
@@ -100,7 +100,7 @@ class QueryInterface(ABC):
             raise ValueError(
                 "The clause must be on the same atoms as the encoded formula")
         return clause
-    
+
     @final
     def check_entail_clause(self, clause_file: str) -> bool:
         """function to check if the encoded formula entails the clause specifoied in the clause_file
@@ -237,4 +237,49 @@ class QueryInterface(ABC):
     @abstractmethod
     def _condition_body(self, alpha: FNode, output_file: str | None) -> None:
         """where the actual conditioning is done"""
+        raise NotImplementedError()
+
+    @abstractmethod
+    def check_entail(self, data_folder: str) -> bool:
+        """function to check entailment of the compiled formula with respect to the data in data_folder.
+        The data in data folder must be of the correct format, which is the same of for the queried structure
+
+        Args:
+            data_folder (str): the path to the folder where the data is stored
+
+        Returns:
+            bool: True if the compiled formula entails the data, False otherwise
+        """
+
+        raise NotImplementedError()
+
+    @abstractmethod
+    def conjunction(self, data_folder: str, output_path: str | None = None) -> None:
+        """function to compute the conjunction of the compiled formula the data in data_folder.
+        The data in data folder must be of the correct format, which is the same of for the queried structure
+
+        Args:
+            data_folder (str): the path to the folder where the data is stored
+            output_path (str | None) [None]: the path to the file where the conjunction will be saved
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def disjunction(self, data_folder: str, output_path: str | None = None) -> None:
+        """function to compute the disjunction of the compiled formula the data in data_folder.
+        The data in data folder must be of the correct format, which is the same of for the queried structure
+
+        Args:
+            data_folder (str): the path to the folder where the data is stored
+            output_path (str | None) [None]: the path to the file where the disjunction will be saved
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def negation(self, output_path: str | None = None) -> None:
+        """function to compute the negation of the compiled formula
+
+        Args:
+            output_path (str | None) [None]: the path to the file where the negation will be saved
+        """
         raise NotImplementedError()

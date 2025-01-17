@@ -7,7 +7,7 @@ from pysmt.fnode import FNode
 
 from theorydd.tdd.theory_sdd import TheorySDD
 
-from src.query.util import indexes_from_mapping
+from src.query.util import indexes_from_mapping, is_tsdd_loading_folder_correct
 from src.query.query_interface import QueryInterface
 
 
@@ -194,3 +194,50 @@ class TSDDQueryManager(QueryInterface):
         """
         for item in items:
             tsdd.condition(item)
+
+    def check_entail(self, data_folder: str) -> bool:
+        """function to check entailment of the compiled formula with respect to the data in data_folder.
+        The data in data folder must be of the correct format, which is the same of for the queried structure
+
+        Args:
+            data_folder (str): the path to the folder where the data is stored
+
+        Returns:
+            bool: True if the compiled formula entails the data, False otherwise
+        """
+        if not is_tsdd_loading_folder_correct(data_folder):
+            raise ValueError("The data folder is not in the correct format fro T-SDDs")
+        raise NotImplementedError()
+
+    def conjunction(self, data_folder: str, output_path: str | None = None) -> None:
+        """function to compute the conjunction of the compiled formula the data in data_folder.
+        The data in data folder must be of the correct format, which is the same of for the queried structure
+
+        Args:
+            data_folder (str): the path to the folder where the data is stored
+            output_path (str | None) [None]: the path to the file where the conjunction will be saved
+        """
+        if not is_tsdd_loading_folder_correct(data_folder):
+            raise ValueError("The data folder is not in the correct format fro T-SDDs")
+        raise NotImplementedError()
+
+    def disjunction(self, data_folder: str, output_path: str | None = None) -> None:
+        """function to compute the disjunction of the compiled formula the data in data_folder.
+        The data in data folder must be of the correct format, which is the same of for the queried structure
+
+        Args:
+            data_folder (str): the path to the folder where the data is stored
+            output_path (str | None) [None]: the path to the file where the disjunction will be saved
+        """
+        if not is_tsdd_loading_folder_correct(data_folder):
+            raise ValueError("The data folder is not in the correct format fro T-SDDs")
+        raise NotImplementedError()
+
+    def negation(self, output_path: str | None = None) -> None:
+        """function to compute the negation of the compiled formula
+
+        Args:
+            output_path (str | None) [None]: the path to the file where the negation will be saved
+        """
+        raise NotImplementedError()
+
