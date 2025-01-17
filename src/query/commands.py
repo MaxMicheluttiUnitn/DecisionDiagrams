@@ -47,7 +47,7 @@ def get_args() -> QueryOptions:
     """Reads the args from the command line"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--load_tsdd",
+        "--load_data",
         help="Specify the path to the folder where all necessary compiled formula files are stored",
         type=str,
         required=True)
