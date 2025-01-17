@@ -165,6 +165,17 @@ def main():
     if args.condition is not None:
         query_manager.condition(args.condition, args.save_conditioned)
 
+    if args.entail is not None:
+        query_manager.check_entail(args.entail)
+
+    if args.conjunction is not None:
+        query_manager.conjunction(args.conjunction, args.save_conjunction)
+
+    if args.disjunction is not None:
+        query_manager.disjunction(args.disjunction, args.save_disjunction)
+
+    if args.negation:
+        query_manager.negation(args.save_negation)
 
 if __name__ == "__main__":
     main()
