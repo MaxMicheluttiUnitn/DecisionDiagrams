@@ -10,7 +10,6 @@ from theorydd.tdd.theory_sdd import TheorySDD
 from src.query.util import indexes_from_mapping, is_tsdd_loading_folder_correct
 from src.query.query_interface import QueryInterface
 
-
 class TSDDQueryManager(QueryInterface):
     """manager to handle all queries on T-SDDs"""
 
@@ -37,7 +36,7 @@ class TSDDQueryManager(QueryInterface):
 
     def _load_tsdd(self) -> TheorySDD:
         """function to load the T-SDD from the serialized files"""
-        return TheorySDD(None, folder_name=self.source_folder)
+        return TheorySDD(None, folder_name=self.source_folder, solver=self.normalizer_solver)
 
     def check_consistency(self) -> bool:
         """function to check if the encoded formula is consistent

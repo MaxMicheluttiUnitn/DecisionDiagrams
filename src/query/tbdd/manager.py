@@ -40,7 +40,7 @@ class TBDDQueryManager(QueryInterface):
 
     def _load_tbdd(self) -> TheoryBDD:
         """function to load the T-BDD from the source folder"""
-        return TheoryBDD(None, folder_name=self.source_folder)
+        return TheoryBDD(None, folder_name=self.source_folder, solver=self.normalizer_solver)
 
     def check_consistency(self) -> bool:
         """function to check if the encoded formula is consistent
