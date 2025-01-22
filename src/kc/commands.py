@@ -53,6 +53,7 @@ class Options:
     log_file: str | None
     negative: bool
     enumerate_true: bool
+    preload_lemmas: str | None
 
     def __init__(self, args: argparse.Namespace):
         self.tsdd = args.tsdd
@@ -101,6 +102,7 @@ class Options:
         self.log_file = args.log_file
         self.negative = args.negative
         self.enumerate_true = args.enumerate_true
+        self.preload_lemmas = args.preload_lemmas
 
 
 def get_args() -> Options:
@@ -306,6 +308,10 @@ def get_args() -> Options:
         "--enumerate_true",
         help="Enumerate all lemmas of a boolean valid formula on all the atoms of the input formmula",
         action="store_true")
+    parser.add_argument(
+        "--preload_lemmas",
+        help="Specify a file where some lemmas are stored, which will be loaded together with the input formula",
+        type=str)
     # parser.add_argument(
     #     "--check_eq",
     #     help="Check the T-equivalence of the T-agnostic DD with the T-formula phi",

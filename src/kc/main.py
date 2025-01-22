@@ -55,6 +55,8 @@ def get_phi(args: Options, data_logger: Dict) -> FNode:
         phi = formula.read_phi(args.input)
     if args.negative:
         phi = formula.negate(phi)
+    if args.preload_lemmas is not None:
+        phi = formula.big_and([phi, formula.read_phi(args.preload_lemmas)])
     elapsed_time = time.time() - start_time
     data_logger["phi loading time"] = elapsed_time
     kc_logger.info("Loaded phi in %s seconds", str(elapsed_time))
