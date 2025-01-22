@@ -156,6 +156,7 @@ def main() -> None:
     save_dd = False
     enumerate_true = False
     negate_input = False
+    preload_lemmas = None
     if run_type != "abstraction":
         tmp_folder = input("Enter the temporary folder name: ")
     nagated_input_prompt = input(
@@ -175,6 +176,9 @@ def main() -> None:
         enumerate_true_prompt = enumerate_true_prompt.strip().lower()
         if enumerate_true_prompt == "y":
             enumerate_true = True
+        preload_lemmas = input("Enter the path to the preloaded lemmas file (enter s to skip): ")
+        if(preload_lemmas == "s"):
+            preload_lemmas = None
     if run_type == "dd" or run_type == "both":
         print(VALID_THEORY_DD)
         dd_type = input("Enter the dd type: ")
@@ -229,6 +233,7 @@ def main() -> None:
     print("Save DDs: ", save_dd)
     print("Enumerate true: ", enumerate_true)
     print("Negate input: ", negate_input)
+    print("Preload lemmas: ", preload_lemmas)
     # ask confirmation
     is_ok = input("Is this correct? (y/n): ")
     is_ok = is_ok.strip().lower()
@@ -298,13 +303,18 @@ def main() -> None:
             if enumerate_true:
                 enumerate_true_str = "--enumerate_true"
             tmp_lemma_file = input_file.replace("data", tmp_folder)
+            preload_lemmas_str = ""
+            if preload_lemmas is not None:
+                preload_lemmas_path = tmp_lemma_file.replace(tmp_folder, preload_lemmas)
+                print("Pre-loading lemmas from ", preload_lemmas_path, "...")
+                preload_lemmas_str = f"--preload_lemmas {preload_lemmas_path}"
             tmp_json_file = tmp_lemma_file.replace(".smt2", ".json")
             print(f"Running allsmt on {input_file}...")
             if os.path.exists(tmp_json_file):
                 print(f"{tmp_json_file} already exists. Skipping...")
                 continue
             os.system(
-                f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} {negate_input_string} {enumerate_true_str} -v -i {input_file} --save_lemmas {tmp_lemma_file} --solver partial -d {tmp_json_file} --count_models")
+                f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} {negate_input_string} {preload_lemmas_str} {enumerate_true_str} -v -i {input_file} --save_lemmas {tmp_lemma_file} --solver partial -d {tmp_json_file} --count_models")
 
         # dd compilation only
         elif run_type == "dd" or run_type == "both":
@@ -366,6 +376,7 @@ def main() -> None:
     print("Save DDs: ", save_dd)
     print("Enumerate true: ", enumerate_true)
     print("Negate input: ", negate_input)
+    print("Preload lemmas: ", preload_lemmas)
 
 
 if __name__ == "__main__":
