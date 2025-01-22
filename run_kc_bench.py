@@ -306,6 +306,9 @@ def main() -> None:
             preload_lemmas_str = ""
             if preload_lemmas is not None:
                 preload_lemmas_path = tmp_lemma_file.replace(tmp_folder, preload_lemmas)
+                if not os.path.isfile(preload_lemmas_path):
+                    print("Preloaded lemmas file does not exist. Skipping...")
+                    continue
                 print("Pre-loading lemmas from ", preload_lemmas_path, "...")
                 preload_lemmas_str = f"--preload_lemmas {preload_lemmas_path}"
             tmp_json_file = tmp_lemma_file.replace(".smt2", ".json")
