@@ -55,6 +55,7 @@ class Options:
     enumerate_true: bool
     preload_lemmas: str | None
     dDNNF_quantify_tseitsin: bool
+    dDNNF_do_not_quantify: bool
 
     def __init__(self, args: argparse.Namespace):
         self.tsdd = args.tsdd
@@ -105,6 +106,7 @@ class Options:
         self.enumerate_true = args.enumerate_true
         self.preload_lemmas = args.preload_lemmas
         self.dDNNF_quantify_tseitsin = args.dDNNF_quantify_tseitsin
+        self.dDNNF_do_not_quantify = args.dDNNF_do_not_quantify
 
 
 def get_args() -> Options:
@@ -317,6 +319,10 @@ def get_args() -> Options:
     parser.add_argument(
         "--dDNNF_quantify_tseitsin",
         help="Quantify over the fresh variables introduced from Tseitsin CNF-ization",
+        action="store_true")
+    parser.add_argument(
+        "--dDNNF_do_not_quantify",
+        help="Avoid quantifying any fresh variables when compiling a dDNNF",
         action="store_true")
     # parser.add_argument(
     #     "--check_eq",
