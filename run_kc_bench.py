@@ -157,6 +157,7 @@ def main() -> None:
     enumerate_true = False
     negate_input = False
     preload_lemmas = None
+    ddnnf_dont_quantify = False
     if run_type != "abstraction":
         tmp_folder = input("Enter the temporary folder name: ")
     nagated_input_prompt = input(
@@ -199,6 +200,11 @@ def main() -> None:
             if ddnnf_compiler not in VALID_DDNNF_COMPILER:
                 print("Invalid dDNNF compiler")
                 return
+            answer = input(
+                "Do you want to quantify fresh variables? (y/n): ")
+            answer = answer.strip().lower()
+            if answer == "n":
+                ddnnf_dont_quantify = True
     if run_type == "abstraction":
         print(VALID_ABSTRACT_DD)
         dd_type = input("Enter the dd type: ")
@@ -234,6 +240,7 @@ def main() -> None:
     print("Enumerate true: ", enumerate_true)
     print("Negate input: ", negate_input)
     print("Preload lemmas: ", preload_lemmas)
+    print("Do not quantify fresh variables: ", ddnnf_dont_quantify)
     # ask confirmation
     is_ok = input("Is this correct? (y/n): ")
     is_ok = is_ok.strip().lower()
@@ -354,10 +361,13 @@ def main() -> None:
                 result = os.system(
                     f"timeout 3600s {PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} {negate_input_string} -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file}  --tsdd --count_nodes --count_models -d {output_file} --tvtree balanced {save_dd_str}")
             elif dd_type == "tddnnf":
+                dont_quantify_str = ""
+                if ddnnf_dont_quantify:
+                    dont_quantify_str = "--dDNNF_do_not_quantify "
                 tmp_ddnnf_folder = output_folder_path.replace(
                     ".smt2", f"_{ddnnf_compiler}")
                 os.system(
-                    f"{PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} {negate_input_string} -v -i {input_file} --load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tdDNNF -d {output_file} --no_dDNNF_to_pysmt --save_dDNNF {tmp_ddnnf_folder} --dDNNF_compiler {ddnnf_compiler}")
+                    f"{PYTHON_CALLABLE} {COMPILER_MAIN_MODULE} {negate_input_string} -v -i {input_file} {dont_quantify_str}--load_lemmas {tmp_lemma_file} --load_details {tmp_json_file} --tdDNNF -d {output_file} --no_dDNNF_to_pysmt --save_dDNNF {tmp_ddnnf_folder} --dDNNF_compiler {ddnnf_compiler}")
 
             if result != 0:
                 print(f"DD compilation timed out for {input_file}")
@@ -380,6 +390,7 @@ def main() -> None:
     print("Enumerate true: ", enumerate_true)
     print("Negate input: ", negate_input)
     print("Preload lemmas: ", preload_lemmas)
+    print("Do not quantify fresh variables: ", ddnnf_dont_quantify)
 
 
 if __name__ == "__main__":
