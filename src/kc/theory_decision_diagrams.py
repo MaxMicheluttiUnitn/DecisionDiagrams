@@ -40,6 +40,7 @@ def theory_ddnnf(phi,
             tlemmas,
             save_path=args.save_dDNNF,
             back_to_fnode=(not args.no_dDNNF_to_pysmt),
+            quantify_tseitsin=args.dDNNF_quantify_tseitsin,
             computation_logger=data_logger["T-dDNNF"],
             timeout=args.dDNNF_timeout
         )

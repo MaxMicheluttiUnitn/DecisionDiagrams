@@ -54,6 +54,7 @@ class Options:
     negative: bool
     enumerate_true: bool
     preload_lemmas: str | None
+    dDNNF_quantify_tseitsin: bool
 
     def __init__(self, args: argparse.Namespace):
         self.tsdd = args.tsdd
@@ -103,6 +104,7 @@ class Options:
         self.negative = args.negative
         self.enumerate_true = args.enumerate_true
         self.preload_lemmas = args.preload_lemmas
+        self.dDNNF_quantify_tseitsin = args.dDNNF_quantify_tseitsin
 
 
 def get_args() -> Options:
@@ -312,6 +314,10 @@ def get_args() -> Options:
         "--preload_lemmas",
         help="Specify a file where some lemmas are stored, which will be loaded together with the input formula",
         type=str)
+    parser.add_argument(
+        "--dDNNF_quantify_tseitsin",
+        help="Quantify over the fresh variables introduced from Tseitsin CNF-ization",
+        action="store_true")
     # parser.add_argument(
     #     "--check_eq",
     #     help="Check the T-equivalence of the T-agnostic DD with the T-formula phi",
