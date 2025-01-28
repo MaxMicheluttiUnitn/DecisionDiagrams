@@ -12,6 +12,27 @@ class UnsupportedQueryException(Exception):
     def __init__(self, message: str = "Unsupported query type"):
         super().__init__(message)
 
+def check_executable(file_path: str) -> None:
+    """function to check if a binary can be called, 
+    raises exceptions if the reasoner cannot be called
+
+    Args:
+        file_path (str): the path to the reasoner
+
+    Raises:
+        ValueError: if the path to the reasoner is not provided
+        FileNotFoundError: if the path to the reasoner is invalid
+        PermissionError: if the reasoner is not executable"""
+    if file_path is None:
+        raise ValueError(
+            "Please provide the path to the decdnnf reasoner in the .env file")
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(
+            f"Invalid path to the ddnnf reasoner: {file_path}")
+    if not os.access(file_path, os.X_OK):
+        raise PermissionError(
+            f"File {file_path} is not executable")
+
 
 def is_tbdd_loading_folder_correct(folder: str) -> bool:
     """checks if the folder where the T-BDD files are stored 

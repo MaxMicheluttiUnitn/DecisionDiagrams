@@ -36,6 +36,8 @@ class QueryInterface(ABC):
             abstraction_mapping (Dict[FNode, int]) [None]: the mapping of the atoms of the formula to the indices in the compiled formula's abstraction
         """
         self.source_folder = source_folder
+        if(self.source_folder.endswith("/")):
+            self.source_folder = self.source_folder[:-1]
         if refinement_mapping is None and abstraction_mapping is None:
             raise ValueError(
                 "Either the refinement_mapping or the abstraction_mapping must be provided")

@@ -65,6 +65,8 @@ def _get_d4_manager(input_folder: str) -> D4_DDNNFQueryManager:
     # load refinement funvtion as a mapping
     refinement_mapping = load_refinement(
         path.join(input_folder, "mapping/mapping.json"))
+    
+    total_vars = len(refinement_mapping)
 
     # remove non important items from the mapping
     keys_to_remove = set()
@@ -74,7 +76,7 @@ def _get_d4_manager(input_folder: str) -> D4_DDNNFQueryManager:
     for key in keys_to_remove:
         del refinement_mapping[key]
 
-    return D4_DDNNFQueryManager(input_folder, refinement_mapping = refinement_mapping)
+    return D4_DDNNFQueryManager(input_folder, total_vars, refinement_mapping = refinement_mapping)
 
 
 def _get_tbdd_manager(input_folder: str) -> TBDDQueryManager:
