@@ -6,7 +6,7 @@ import subprocess
 from typing import Dict, List
 
 from pysmt.fnode import FNode
-
+from pysmt.shortcuts import Not
 
 from src.query.util import indexes_from_mapping, UnsupportedQueryException, check_executable
 from src.query.query_interface import QueryInterface
@@ -191,7 +191,46 @@ class DDNNFQueryManager(QueryInterface):
     def enumerate_models(self) -> None:
         """function to enumerate all models for the encoded formula
         """
-        raise NotImplementedError()
+        start_time = time.time()
+        try:
+            process_data = subprocess.check_output(
+                [_DECDNNF_PATH, "model-enumeration", "-i",
+                    self.d4_file, "-c", "--n-vars", self.total_vars],
+                shell=True,
+                text=True)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(
+                "An error occurred while enumerating the models") from e
+        for line in process_data.split("\n"):
+            if not line.startswith("["):
+                print(self._refine(line))
+        enumeration_time = time.time() - start_time
+
+    def _refine(self, model: str) -> str:
+        """refines a model by replacing the indices with the corresponding atoms"""
+        refined_model = ""
+        items = model.split()
+        # skip initial 'v' and final '0'
+        items = items[1:-1]
+        for item in items:
+            if item.startswith('*'):
+                # skip the variables that can be both positive and negative
+                continue
+            variable = int(item)
+            variable_name = abs(variable)
+            atom = self.refinement_mapping[variable_name]
+            if variable < 0:
+                if atom.is_not():
+                    refined_model += str(atom.arg(0)) + ", "
+                else:
+                    refined_model += "!" + str(Not(atom)) + ", "
+            else:
+                refined_model += str(atom) + ", "
+        if refined_model == "":
+            return "TRUE"
+        # remove the trailing comma and space
+        refined_model = refined_model[:-2]
+        return refined_model
 
     def _condition_all_variables(self, vars_to_condition: List[int], output_option: str | None = None, output_file: str | None = None) -> None:
         """function to condition the T-dDNNF on the specified variables
