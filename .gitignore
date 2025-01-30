@@ -37,11 +37,6 @@ tmp*
 
 .env
 
-fix_tsetsin.py
-fix_ddnnf.py
-fix_extension.py
-add_phi_size.py
-
 out.txt
 tmp.txt
 tmp_data.txt

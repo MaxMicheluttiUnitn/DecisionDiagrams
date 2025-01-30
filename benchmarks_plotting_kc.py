@@ -34,6 +34,7 @@ class DataSource(Enum):
 class Point:
     """a Point that can be plotted"""
     source: DataSource
+    phi_size: int
     computation_time: float
     all_smt_time: float
     dd_time: float
@@ -57,7 +58,7 @@ def get_wmi_bench_data(kind: str, source: str) -> List[Point]:
         f = open(source+"/mutex/"+filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0 or data.get("timeout") is not None:
-            points.append(Point(DataSource.THEORY_SDD, 0,
+            points.append(Point(DataSource.THEORY_SDD, 0,0,
                           0, 0, 0, 0, 0, 0, 0, "mutex/"+filename, True, data["timeout"]))
             continue
         if data.get("All-SAT computation time") is not None:
@@ -70,7 +71,12 @@ def get_wmi_bench_data(kind: str, source: str) -> List[Point]:
             tlemmas = data["total lemmas"]
         else:
             tlemmas = 0
+        if data.get("phi size") is not None:
+            phi_size = data["phi size"]
+        else:
+            phi_size = 0
         points.append(Point(DataSource.THEORY_SDD,
+                            phi_size,
                             data["total computation time"],
                             allsmttime,
                             data[kind]["total processing time"],
@@ -89,7 +95,7 @@ def get_wmi_bench_data(kind: str, source: str) -> List[Point]:
         f = open(source+"/xor/"+filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0 or data.get("timeout") is not None:
-            points.append(Point(DataSource.THEORY_SDD,
+            points.append(Point(DataSource.THEORY_SDD,0,
                           0, 0, 0, 0, 0, 0, 0, 0, "xor/"+filename, True, data["timeout"]))
             continue
         if data.get("All-SAT computation time") is not None:
@@ -102,7 +108,12 @@ def get_wmi_bench_data(kind: str, source: str) -> List[Point]:
             tlemmas = data["total lemmas"]
         else:
             tlemmas = 0
+        if data.get("phi size") is not None:
+            phi_size = data["phi size"]
+        else:
+            phi_size = 0
         points.append(Point(DataSource.THEORY_SDD,
+                            phi_size,
                             data["total computation time"],
                             allsmttime,
                             data[kind]["total processing time"],
@@ -131,7 +142,7 @@ def get_ldd_randgen_bench_data(kind: str, source: str) -> List[Point]:
         f = open(filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0 or data.get("timeout") is not None:
-            points.append(Point(DataSource.THEORY_BDD, 0, 0, 0, 0, 0, 0, 0, 0, filename.replace(
+            points.append(Point(DataSource.THEORY_BDD, 0,0, 0, 0, 0, 0, 0, 0, 0, filename.replace(
                 source+"/", ''), True, data["timeout"]))
             continue
         data.setdefault("All-SMT computation time", 0.1)
@@ -150,8 +161,10 @@ def get_ldd_randgen_bench_data(kind: str, source: str) -> List[Point]:
             data[kind]["DD nodes"] = data[kind]["nodes"]
         data[kind].setdefault("fresh T-atoms detected", 0)
         data[kind].setdefault("fresh T-atoms quantification time", 0)
+        data.setdefault("phi size", 0)
 
         points.append(Point(DataSource.THEORY_BDD,
+                            data["phi size"],
                             data["total computation time"],
                             data["All-SMT computation time"],
                             data[kind]["total DD computation time"],
@@ -177,7 +190,7 @@ def get_randgen_bench_data(kind: str, source: str) -> List[Point]:
         f = open(filename, encoding="utf8")
         data = json.load(f)
         if len(data) == 0 or data.get("timeout") is not None:
-            points.append(Point(DataSource.THEORY_BDD, 0, 0, 0, 0, 0, 0, 0, 0, filename.replace(
+            points.append(Point(DataSource.THEORY_BDD,0, 0, 0, 0, 0, 0, 0, 0, 0, filename.replace(
                 source+"/", ''), True, data["timeout"]))
             continue
         data.setdefault("All-SMT computation time", 0.1)
@@ -195,8 +208,10 @@ def get_randgen_bench_data(kind: str, source: str) -> List[Point]:
         data[kind].setdefault("DD nodes", 0)
         data[kind].setdefault("fresh T-atoms detected", 0)
         data[kind].setdefault("fresh T-atoms quantification time", 0)
+        data.setdefault("phi size", 0)
 
         points.append(Point(DataSource.THEORY_BDD,
+                            data["phi size"],
                             data["total computation time"],
                             data["All-SMT computation time"],
                             data[kind]["total DD computation time"],
@@ -225,10 +240,10 @@ def get_smtlib_bench_data(kind: str, source: str) -> List[Point]:
         data = json.load(f)
         if len(data) == 0 or data.get("timeout") is not None:
             if data.get("timeout") is not None:
-                points.append(Point(DataSource.THEORY_BDD, 0, 0, 0, 0, 0, 0, 0, 0, filename.replace(
+                points.append(Point(DataSource.THEORY_BDD, 0,0, 0, 0, 0, 0, 0, 0, 0, filename.replace(
                     source+"/", ''), True, data["timeout"]))
             else:
-                points.append(Point(DataSource.THEORY_BDD, 0, 0, 0, 0, 0, 0, 0, 0, filename.replace(
+                points.append(Point(DataSource.THEORY_BDD, 0,0, 0, 0, 0, 0, 0, 0, 0, filename.replace(
                     source+"/", ''), True, "Unknown"))
             continue
         if data.get("All-SMT computation time") is not None:
@@ -289,7 +304,10 @@ def get_smtlib_bench_data(kind: str, source: str) -> List[Point]:
         else:
             fresh_atoms_quant_time = 0
 
+        data.setdefault("phi size", 0)
+
         points.append(Point(DataSource.THEORY_BDD,
+                            data["phi size"],
                             data["total computation time"],
                             allsmttime,
                             ddtime,
@@ -545,6 +563,25 @@ def get_timeout_map(points: List[Point]) -> Dict[str, int]:
         total_timeouts += v
     timeout_map["Total"] = total_timeouts
     return timeout_map
+
+def get_phi_size_vs_dd_nodes_points(
+        theory_points: List[Point]) -> Tuple[List[int], List[int], int]:
+    """translate data into plottable points comparing phi size and DD size in nodes"""
+    max_size = 0
+    phi_size_points = []
+    dd_nodes_points = []
+    for item in theory_points:
+        if item.phi_size > max_size:
+            max_size = item.phi_size
+        if item.dd_nodes is not None:
+            phi_size_points.append(item.phi_size)
+            dd_nodes_points.append(item.dd_nodes) 
+            if item.dd_nodes > max_size:
+                max_size = item.dd_nodes
+
+    edge = max_size * 2
+    return (phi_size_points, dd_nodes_points, edge)
+    
 
 
 def get_dd_models_points(
