@@ -55,6 +55,7 @@ def get_phi(args: Options, data_logger: Dict) -> FNode:
         phi = formula.read_phi(args.input)
     if args.negative:
         phi = formula.negate(phi)
+    data_logger["phi size"] = formula.get_fnode_size(phi)
     if args.preload_lemmas is not None:
         phi = formula.big_and([phi, formula.read_phi(args.preload_lemmas)])
     elapsed_time = time.time() - start_time
