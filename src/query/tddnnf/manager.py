@@ -102,10 +102,7 @@ class DDNNFQueryManager(QueryInterface):
         # NOT CLAUSE
         clause_items_negated = []
         for item in clause_items:
-            if item.startswith('-'):
-                clause_items_negated.append(item[1:])
-            else:
-                clause_items_negated.append('-' + item)
+            clause_items_negated.append(-item)
 
         start_time = time.time()
         # CONDITION OVER CLAUSE ITEMS NEGATED
@@ -160,9 +157,10 @@ class DDNNFQueryManager(QueryInterface):
             input_file (str): the path to the input file for MC
         """
         try:
+            mc_command = " ".join([_DECDNNF_PATH, "model-counting", "-i",
+                                   input_file, "--n-vars", str(self.total_vars)])
             process_data = subprocess.check_output(
-                [_DECDNNF_PATH, "model-counting", "-i",
-                    input_file, "--n-vars", self.total_vars],
+                mc_command,
                 shell=True,
                 text=True)
         except subprocess.CalledProcessError as e:
@@ -171,7 +169,7 @@ class DDNNFQueryManager(QueryInterface):
         models_found = 0
         # find not empty output line that does not start with "["
         for line in process_data.split("\n"):
-            if line and not line.startswith("["):
+            if line and not line.startswith("!"):
                 models_found = int(line)
                 break
         # remove quantified vars from the total number of models
@@ -194,15 +192,17 @@ class DDNNFQueryManager(QueryInterface):
         start_time = time.time()
         try:
             process_data = subprocess.check_output(
-                [_DECDNNF_PATH, "model-enumeration", "-i",
-                    self.d4_file, "-c", "--n-vars", self.total_vars],
+                " ".join([_DECDNNF_PATH, "model-enumeration", "-i",
+                    self.d4_file, "-c", "--n-vars", str(self.total_vars)]),
                 shell=True,
                 text=True)
         except subprocess.CalledProcessError as e:
             raise RuntimeError(
                 "An error occurred while enumerating the models") from e
         for line in process_data.split("\n"):
-            if not line.startswith("["):
+            if len(line) == 0:
+                continue
+            if not line.startswith("!") and not line == "TRUE":
                 print(self._refine(line))
         enumeration_time = time.time() - start_time
 
@@ -248,21 +248,21 @@ class DDNNFQueryManager(QueryInterface):
         # trim the trailing space
         condition_option = condition_option[:-1]
         command = [_DDNNF_CONDITION_PATH, condition_option, "-i_d4",
-                   self.d4_file, condition_option]
+                   self.d4_file]
         if output_file is not None:
             if (output_option is None):
                 # default output option
-                output_option = _CONDITION_DDNNF_OUTPUT_OPTION
-            command.append(self.output_option)
+                if hasattr(self, "output_option"):
+                    output_option = self.output_option
+                else:
+                    output_option = _CONDITION_DDNNF_OUTPUT_OPTION
+            command.append(output_option)
             command.append(output_file)
-        try:
-            _process_data = subprocess.check_output(
-                command,
-                shell=True,
-                text=True)
-        except subprocess.CalledProcessError as e:
+        command_str = " ".join(command)
+        result = os.system(command_str + " > /dev/null")
+        if result != 0:
             raise RuntimeError(
-                "An error occurred while conditioning the T-dDNNF") from e
+                "An error occurred while conditioning the T-dDNNF")
 
     def _condition_body(
             self,

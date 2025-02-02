@@ -1,16 +1,19 @@
 """utility functions for query_ddnnf"""
 import os
+import random
 from typing import Dict, List
 from pysmt.fnode import FNode
-from pysmt.shortcuts import Not
+from pysmt.shortcuts import Not, Or
 from theorydd.solvers.solver import SMTEnumerator
-from theorydd.formula import get_normalized, get_atoms
+from theorydd.formula import get_normalized, get_atoms, save_phi, top, bottom, big_and, without_double_neg
+
 
 class UnsupportedQueryException(Exception):
     """Exception raised when an unsupported query is called"""
 
     def __init__(self, message: str = "Unsupported query type"):
         super().__init__(message)
+
 
 def check_executable(file_path: str) -> None:
     """function to check if a binary can be called, 
@@ -171,7 +174,7 @@ def is_clause(clause: FNode) -> bool:
     Returns:
         bool: True if the formula is a clause, False otherwise
     """
-    if not clause.is_literal() or not clause.is_or():
+    if not clause.is_or():
         return False
     if clause.is_or():
         for arg in clause.args():
@@ -189,7 +192,9 @@ def is_term(term: FNode) -> bool:
     Returns:
         bool: True if the formula is a term, False otherwise
     """
-    if not term.is_literal():
+    if term.is_not():
+        return is_term(term.arg(0))
+    if term.is_and() or term.is_or() or term.is_implies() or term.is_iff() or term.is_bool_constant():
         return False
     return True
 
@@ -347,3 +352,66 @@ def _aliases_from_arg(phi: FNode, mapping: Dict[FNode, str]) -> str:
             alias = "-" + alias
     return alias
 
+
+def create_random_clause(atoms: List[FNode], filename: str, seed: int | None = None) -> None:
+    """
+    creates a random clause from the given atoms and saves it to the specified SMT2 file
+
+    Args:
+        atoms (List[FNode]): the list of atoms to create the clause from
+        filename (str): the name of the file where the clause will be saved
+        seed (int | None): the seed for the random generator, if None the seed will be random
+    """
+    if len(atoms) == 0:
+        save_phi(bottom(), filename)
+        return
+    if seed is not None:
+        random.seed(seed)
+    clause_atoms = random.sample(
+        atoms, random.randint(1, max(1, len(atoms)//2)))
+    for i, atom in enumerate(clause_atoms):
+        if random.choice([True, False]):  # 50% chance to negate the atom
+            clause_atoms[i] = without_double_neg(Not(atom))
+    save_phi(Or(*clause_atoms), filename)
+
+
+def create_random_cube(atoms: List[FNode], filename: str, seed: int | None = None) -> None:
+    """
+    creates a random cube from the given atoms and saves it to the specified SMT2 file
+
+    Args:
+        atoms (List[FNode]): the list of atoms to create the clause from
+        filename (str): the name of the file where the clause will be saved
+        seed (int | None): the seed for the random generator, if None the seed will be random
+    """
+    if len(atoms) == 0:
+        save_phi(top(), filename)
+        return
+    if seed is not None:
+        random.seed(seed)
+    clause_atoms = random.sample(
+        atoms, random.randint(1, max(1, len(atoms)//2)))
+    for i, atom in enumerate(clause_atoms):
+        if random.choice([True, False]):  # 50% chance to negate the atom
+            clause_atoms[i] = without_double_neg(Not(atom))
+    save_phi(big_and(clause_atoms), filename)
+
+
+def create_random_term(atoms: List[FNode], filename: str, seed: int | None = None) -> None:
+    """
+    creates a random term from the given atoms and saves it to the specified SMT2 file
+
+    Args:
+        atoms (List[FNode]): the list of atoms to create the clause from
+        filename (str): the name of the file where the clause will be saved
+        seed (int | None): the seed for the random generator, if None the seed will be random
+    """
+    if len(atoms) == 0:
+        save_phi(top(), filename)
+        return
+    if seed is not None:
+        random.seed(seed)
+    term_atom = random.choice(atoms)
+    if random.choice([True, False]):
+        term_atom = without_double_neg(Not(term_atom))
+    save_phi(term_atom, filename)

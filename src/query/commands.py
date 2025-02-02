@@ -21,6 +21,8 @@ class QueryOptions:
     negation: bool
     save_negation: str | None
     entail: str | None
+    random: int | None
+    seed: int | None
 
     def __init__(self, args: argparse.Namespace):
         self.load_data = args.load_data
@@ -42,6 +44,11 @@ class QueryOptions:
         self.negation = args.negation
         self.save_negation = args.save_negation
         self.entail = args.entail
+        self.random = args.random
+        try:
+            self.seed = int(args.seed) if args.seed is not None else None
+        except ValueError:
+            raise ValueError("The seed provided is not an integer")
 
 def get_args() -> QueryOptions:
     """Reads the args from the command line"""
@@ -110,6 +117,16 @@ def get_args() -> QueryOptions:
     parser.add_argument(
         "--entail",
         help="Specify the path to the file or folder (depending on compiled language) where the formula for entailment is stored and query for entailment",
+        type=str)
+    parser.add_argument(
+        "-r",
+        "--random",
+        help="select a random clause/implicant/term instead of loading from a file",
+        action="store_true")
+    parser.add_argument(
+        "-s",
+        "--seed",
+        help="select a seed for the random selection",
         type=str)
     args = parser.parse_args()
     return QueryOptions(args)

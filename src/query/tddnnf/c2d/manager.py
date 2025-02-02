@@ -57,9 +57,9 @@ class C2D_DDNNFQueryManager(DDNNFQueryManager):
 
         # call the translation script
         start_time = time.time()
-        process_result: subprocess.CompletedProcess = subprocess.run(
-            [_DDNNF_CONDITION_PATH, "-i_c2d", c2d_nnf_path, "-o_d4", self.d4_file],
-            check=False, capture_output=False).returncode
-        if (process_result != 0):
+        translation_command = " ".join(
+            [_DDNNF_CONDITION_PATH, "-i_c2d", c2d_nnf_path, "-o_d4", self.d4_file])
+        result = os.system(translation_command + " > /dev/null")
+        if result != 0:
             raise RuntimeError("Error translating formula to d4 format")
         translation_time = time.time() - start_time

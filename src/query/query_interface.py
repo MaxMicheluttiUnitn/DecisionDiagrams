@@ -95,7 +95,7 @@ class QueryInterface(ABC):
         # check that the clause is on the same atoms as phi
         phi_atoms = set()
         for value in self.abstraction_mapping.keys():
-            phi_atoms.add(get_atoms(value))
+            phi_atoms.add(get_atoms(value)[0])
         phi_atoms = frozenset(phi_atoms)
         clause_atoms = frozenset(get_atoms(clause))
         if not phi_atoms.issuperset(clause_atoms):
@@ -145,7 +145,7 @@ class QueryInterface(ABC):
         # check that the term is on the same atoms as phi
         phi_atoms = set()
         for value in self.abstraction_mapping.keys():
-            phi_atoms.add(get_atoms(value))
+            phi_atoms.add(get_atoms(value)[0])
         phi_atoms = frozenset(phi_atoms)
         term_atom = get_atoms(term)[0]
         if term_atom not in phi_atoms:
@@ -213,7 +213,7 @@ class QueryInterface(ABC):
         # check that alpha is on the same atoms as phi
         phi_atoms = set()
         for value in self.abstraction_mapping.keys():
-            phi_atoms.add(get_atoms(value))
+            phi_atoms.add(get_atoms(value)[0])
         phi_atoms = frozenset(phi_atoms)
         alpha_atoms = frozenset(get_atoms(alpha))
         if not phi_atoms.issuperset(alpha_atoms):

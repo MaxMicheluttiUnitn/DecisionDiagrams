@@ -17,6 +17,7 @@ THE PROGRAM WILL RAISE A NotImplementedError
 
 import json
 import os.path as path
+from os import remove as rmv
 from theorydd.formula import load_refinement, load_abstraction_function
 
 from src.query.commands import get_args
@@ -24,13 +25,20 @@ from src.query.util import (
     is_c2d_tddnnf_loading_folder_correct,
     is_d4_tddnnf_loading_folder_correct,
     is_tbdd_loading_folder_correct,
-    is_tsdd_loading_folder_correct)
+    is_tsdd_loading_folder_correct,
+    create_random_clause,
+    create_random_term,
+    create_random_cube)
 from src.query.tddnnf.c2d.manager import C2D_DDNNFQueryManager
 from src.query.tddnnf.d4.manager import D4_DDNNFQueryManager
 from src.query.tbdd.manager import TBDDQueryManager
 from src.query.tsdd.manager import TSDDQueryManager
 from src.query.smt_solver.manager import SMTQueryManager
+from src.query.constants import TEMPORARY_QUERY_INPUT_FILE
 
+def clean_tmp_file():
+    if path.exists(TEMPORARY_QUERY_INPUT_FILE):
+        rmv(TEMPORARY_QUERY_INPUT_FILE)
 
 def _get_c2d_manager(input_folder: str) -> C2D_DDNNFQueryManager:
     """initialize a C2D manager from the input folder"""
@@ -153,9 +161,23 @@ def main():
         query_manager.check_validity()
 
     if args.entail_clause is not None:
+        if args.random is not None:
+            args.entail_clause = TEMPORARY_QUERY_INPUT_FILE
+            if args.seed is not None:
+                create_random_clause(
+                    list(query_manager.refinement_mapping.values()), args.entail_clause, args.seed)
+            else:
+                create_random_clause(list(query_manager.refinement_mapping.values()), args.entail_clause)
         query_manager.check_entail_clause(args.entail_clause)
 
     if args.implicant is not None:
+        if args.random is not None:
+            args.implicant = TEMPORARY_QUERY_INPUT_FILE
+            if args.seed is not None:
+                create_random_term(
+                    list(query_manager.refinement_mapping.values()), args.implicant, args.seed)
+            else:
+                create_random_term(list(query_manager.refinement_mapping.values()), args.implicant)
         query_manager.check_implicant(args.implicant)
 
     if args.count:
@@ -165,6 +187,13 @@ def main():
         query_manager.enumerate_models()
 
     if args.condition is not None:
+        if args.random is not None:
+            args.condition = TEMPORARY_QUERY_INPUT_FILE
+            if args.seed is not None:
+                create_random_cube(
+                    list(query_manager.refinement_mapping.values()), args.condition, args.seed)
+            else:
+                create_random_cube(list(query_manager.refinement_mapping.values()), args.condition)
         query_manager.condition(args.condition, args.save_conditioned)
 
     if args.entail is not None:
@@ -178,6 +207,8 @@ def main():
 
     if args.negation:
         query_manager.negation(args.save_negation)
+
+    clean_tmp_file()
 
 if __name__ == "__main__":
     main()
