@@ -2,7 +2,6 @@
 
 import os
 import time
-import subprocess
 from typing import Dict
 
 from pysmt.fnode import FNode
@@ -63,3 +62,5 @@ class C2D_DDNNFQueryManager(DDNNFQueryManager):
         if result != 0:
             raise RuntimeError("Error translating formula to d4 format")
         translation_time = time.time() - start_time
+
+        self.details["translation_time"] = translation_time

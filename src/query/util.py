@@ -54,10 +54,10 @@ def is_tbdd_loading_folder_correct(folder: str) -> bool:
     # if folder.endswith("/"):
     #     folder = folder[:-1]
     # check that bdd_data.dddmp exists
-    if not os.path.exists(f"{folder}/bdd_data.dddmp"):
+    if not os.path.exists(f"{folder}/tbdd_data.dddmp"):
         return False
     # check that bdd_data.pickle exists
-    if not os.path.exists(f"{folder}/bdd_data.pickle"):
+    if not os.path.exists(f"{folder}/tbdd_data.pickle"):
         return False
     # check that abstraction.json exists
     if not os.path.exists(f"{folder}/abstraction.json"):

@@ -1,7 +1,8 @@
 """interface for all Query objects"""
 
 from abc import ABC, abstractmethod
-from typing import Dict, final
+import time
+from typing import Dict, Tuple, final
 
 from pysmt.fnode import FNode
 
@@ -19,6 +20,7 @@ class QueryInterface(ABC):
     abstraction_mapping: Dict[FNode, object]
     # solver used for normalization of input
     normalizer_solver: MathSATTotalEnumerator
+    details: Dict[str, object]
 
     def __init__(self,
                  source_folder: str,
@@ -52,22 +54,48 @@ class QueryInterface(ABC):
         # compute reverse mapping to generate the abstraction funciton
         self.abstraction_mapping = {
             v: k for k, v in refinement_mapping.items()}
+        
+        self.details = {}
 
     @abstractmethod
+    def _check_consistency(self) -> Tuple[bool,float]:
+        """where the actual consistency checking is done
+        
+        Returns:
+            Tuple[bool,float]: the result of the consistency checking and the time taken to load the structure"""
+        raise NotImplementedError()
+
+    @final
     def check_consistency(self) -> bool:
         """function to check if the encoded formula is consistent
 
         Returns:
             bool: True if the formula is consistent, False otherwise"""
-        raise NotImplementedError()
+        start_time = time.time()
+        result, load_time = self._check_consistency()
+        self.details["consistency"] = result
+        self.details["consistency time"] = time.time() - start_time - load_time
+        return result
 
     @abstractmethod
+    def _check_validity(self) -> Tuple[bool,float]:
+        """where the actual validity checking is done
+        
+        Returns:
+            Tuple[bool,float]: the result of the validity checking and the time taken to load the structure"""
+        raise NotImplementedError()
+
+    @final
     def check_validity(self) -> bool:
         """function to check if the encoded formula is valid
 
         Returns:
             bool: True if the formula is valid, False otherwise"""
-        raise NotImplementedError()
+        start_time = time.time()
+        result, loading_time = self._check_validity()
+        self.details["validity"] = result
+        self.details["validity time"] = time.time() - start_time - loading_time
+        return result
 
     @final
     def _clause_file_can_entail(self, clause_file: str) -> FNode:
@@ -97,7 +125,7 @@ class QueryInterface(ABC):
         for value in self.abstraction_mapping.keys():
             phi_atoms.add(get_atoms(value)[0])
         phi_atoms = frozenset(phi_atoms)
-        clause_atoms = frozenset(get_atoms(clause))
+        clause_atoms = get_atoms(clause)
         if not phi_atoms.issuperset(clause_atoms):
             raise ValueError(
                 "The clause must be on the same atoms as the encoded formula")
@@ -113,11 +141,20 @@ class QueryInterface(ABC):
         Returns:
             bool: True if the clause is entailed bt the T-dDNNF, False otherwise
         """
-        return self._check_entail_clause_body(self._clause_file_can_entail(clause_file))
+        clause = self._clause_file_can_entail(clause_file)
+        self.details["entailment clause"] = str(clause)
+        start_time = time.time()
+        result, load_time = self._check_entail_clause_body(clause)
+        self.details["clause entailment result"] = result
+        self.details["clause entailment time"] = time.time() - start_time - load_time
+        return result
 
     @abstractmethod
-    def _check_entail_clause_body(self, clause: FNode) -> bool:
-        """where the actual entailment checking for clauses is done"""
+    def _check_entail_clause_body(self, clause: FNode) -> Tuple[bool,float]:
+        """where the actual entailment checking for clauses is done
+        
+        Returns:
+            Tuple[bool,float]: the result of the entailment checking and the time taken to load the structure"""
         raise NotImplementedError()
 
     @final
@@ -166,27 +203,62 @@ class QueryInterface(ABC):
         Returns:
             bool: True if the term is an implicant, False otherwise
         """
-        return self._check_implicant_body(self._term_file_can_be_implicant(term_file))
+        term = self._term_file_can_be_implicant(term_file)
+        self.details["implicant term"] = str(term)
+        start_time = time.time()
+        result, loading_time = self._check_implicant_body(term)
+        self.details["implicant result"] = result
+        self.details["implicant time"] = time.time() - start_time - loading_time
+        return result
+
 
     @abstractmethod
-    def _check_implicant_body(self, term: FNode) -> bool:
-        """where the actual implicant checking is done"""
+    def _check_implicant_body(self, term: FNode) -> Tuple[bool,float]:
+        """where the actual implicant checking is done
+        
+        Returns:
+            Tuple[bool,float]: the result of the implicant checking and the time taken to load the structure"""
         raise NotImplementedError()
 
     @abstractmethod
+    def _count_models(self) -> Tuple[int,float]:
+        """function to count the number of models for the encoded formula
+
+        Returns:
+            int: the number of models for the encoded formula
+            float: the structure loading time
+        """
+        raise NotImplementedError()
+
+    @final
     def count_models(self) -> int:
         """function to count the number of models for the encoded formula
 
         Returns:
             int: the number of models for the encoded formula
         """
-        raise NotImplementedError()
+        start_time = time.time()
+        result, loading_time = self._count_models()
+        self.details["model count"] = result
+        self.details["model count time"] = time.time() - start_time - loading_time
+        return result
 
     @abstractmethod
+    def _enumerate_models(self) -> float:
+        """function to enumerate all models for the encoded formula
+
+        Returns:
+            float: the structure loading time
+        """
+        raise NotImplementedError()
+    
+    @final
     def enumerate_models(self) -> None:
         """function to enumerate all models for the encoded formula
         """
-        raise NotImplementedError()
+        start_time = time.time()
+        load_time = self._enumerate_models()
+        self.details["model enumeration time"] = time.time() - start_time - load_time
 
     @final
     def _alpha_file_can_condition(self, alpha_file: str) -> FNode:
@@ -234,11 +306,18 @@ class QueryInterface(ABC):
             output_file (str | None) [None]: the path to the .smt2 file where the conditioned compiled formula will be saved. Defaults to None.
         """
         alpha = self._alpha_file_can_condition(alpha_file)
+        start_time = time.time()
+        self.details["conditioning cube"] = str(alpha)
         self._condition_body(alpha, output_file)
+        self.details["conditioning time"] = time.time() - start_time
+        
 
     @abstractmethod
-    def _condition_body(self, alpha: FNode, output_file: str | None) -> None:
-        """where the actual conditioning is done"""
+    def _condition_body(self, alpha: FNode, output_file: str | None) -> float:
+        """where the actual conditioning is done
+        
+        Returns:
+            float: the structure loading time"""
         raise NotImplementedError()
 
     @abstractmethod

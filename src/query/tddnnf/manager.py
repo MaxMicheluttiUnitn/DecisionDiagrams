@@ -3,7 +3,7 @@
 import os
 import time
 import subprocess
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from pysmt.fnode import FNode
 from pysmt.shortcuts import Not
@@ -64,28 +64,30 @@ class DDNNFQueryManager(QueryInterface):
 
         self.d4_file = ""
 
-    def check_consistency(self) -> bool:
+    def _check_consistency(self) -> Tuple[bool, float]:
         """function to check if the encoded formula is consistent
 
         Returns:
-            bool: True if the formula is consistent, False otherwise"""
-        models = self._count_models(self.d4_file)
+            bool: True if the formula is consistent, False otherwise
+            float: the strucutre loading time"""
+        models = self._count_models_body(self.d4_file)
         result = (models > 0)
 
-        return result
+        return result, 0
 
-    def check_validity(self) -> bool:
+    def _check_validity(self) -> Tuple[bool, float]:
         """function to check if the encoded formula is valid
 
         Returns:
-            bool: True if the formula is valid, False otherwise"""
-        models = self._count_models(self.d4_file)
+            bool: True if the formula is valid, False otherwise
+            float: the strucutre loading time"""
+        models = self._count_models_body(self.d4_file)
         max_models = 2 ** len(self.abstraction_mapping)
         result = (models == max_models)
 
-        return result
+        return result, 0
 
-    def _check_entail_clause_body(self, clause: FNode) -> bool:
+    def _check_entail_clause_body(self, clause: FNode) -> Tuple[bool,float]:
         """function to check if the encoded formula entails the clause
 
         Args:
@@ -93,7 +95,9 @@ class DDNNFQueryManager(QueryInterface):
 
         Returns:
             bool: True if the formula entails the clause, False otherwise
+            float: the entailment checking time
         """
+
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
         clause_items = indexes_from_mapping(clause, self.abstraction_mapping)
 
@@ -102,19 +106,17 @@ class DDNNFQueryManager(QueryInterface):
         # NOT CLAUSE
         clause_items_negated = [-item for item in clause_items]
 
-        start_time = time.time()
         # CONDITION OVER CLAUSE ITEMS NEGATED
         self._condition_all_variables(
             clause_items_negated, _CONDITION_D4_OUTPUT_OPTION, _TEMPORARY_CONDITIONED_FILE)
         # COUNT MODELS OF CONDITIONED T-dDNNF
-        conditioned_mc = self._count_models(_TEMPORARY_CONDITIONED_FILE)
+        conditioned_mc = self._count_models_body(_TEMPORARY_CONDITIONED_FILE)
         # IF THE CONDITIONED T-dDNNF HAS 0 MODELS, THEN THE FORMULA ENTAILS THE CLAUSE
         entailment = (conditioned_mc == 0)
-        entailment_time = time.time() - start_time
 
         self._clear_tmp_file()
 
-        return entailment
+        return entailment, 0
 
     def _clear_tmp_file(self) -> None:
         """function to clear the temporary file created during the execution"""
@@ -123,32 +125,34 @@ class DDNNFQueryManager(QueryInterface):
 
     def _check_implicant_body(
             self,
-            term: FNode) -> bool:
+            term: FNode) -> Tuple[bool, float]:
         """function to check if the term is an implicant for the encoded formula
 
         Args:
             term (FNode): the term to be checked
+
+        Returns:
+            bool: True if the term is an implicant, False otherwise
+            float: the implicant checking time
         """
         # RETRIEVE THE INDEX ON WHICH TO OPERATE
         term_index = indexes_from_mapping(term, self.abstraction_mapping)[0]
 
-        start_time = time.time()
         # CONSTRUCT T-dDNNF | term
         self._condition_all_variables(
             [term_index], _CONDITION_D4_OUTPUT_OPTION, _TEMPORARY_CONDITIONED_FILE)
         # COUNT MODELS OF CONDITIONED T-dDNNF
-        conditioned_mc = self._count_models(_TEMPORARY_CONDITIONED_FILE)
+        conditioned_mc = self._count_models_body(_TEMPORARY_CONDITIONED_FILE)
         # CHECK IF THE CONDITIONED T-dDNNF IS VALID (HAS 2**N MODELS)
         validity = (conditioned_mc == 2 ** len(self.abstraction_mapping))
         # IF THE CONDITIONED T-BDD IS VALID, THEN THE TERM IS AN IMPLICANT
         implicant = validity
-        implicant_time = time.time() - start_time
 
         self._clear_tmp_file()
 
-        return implicant
+        return implicant, 0
 
-    def _count_models(self, input_file: str) -> int:
+    def _count_models_body(self, input_file: str) -> int:
         """count_model body
 
         Args:
@@ -173,21 +177,22 @@ class DDNNFQueryManager(QueryInterface):
         # remove quantified vars from the total number of models
         return models_found / (2 ** len(self.quantified_vars))
 
-    def count_models(self) -> int:
+    def _count_models(self) -> Tuple[int, float]:
         """function to count the number of models for the encoded formula
 
         Returns:
             int: the number of models for the encoded formula
+            float: the model counting time
         """
-        start_time = time.time()
-        result = self._count_models(self.d4_file)
-        model_counting_time = time.time() - start_time
-        return result
+        result = self._count_models_body(self.d4_file)
+        return result, 0
 
-    def enumerate_models(self) -> None:
+    def _enumerate_models(self) -> float:
         """function to enumerate all models for the encoded formula
+
+        Returns:
+            float: the structure loading time
         """
-        start_time = time.time()
         try:
             process_data = subprocess.check_output(
                 " ".join([_DECDNNF_PATH, "model-enumeration", "-i",
@@ -202,7 +207,7 @@ class DDNNFQueryManager(QueryInterface):
                 continue
             if not line.startswith("!") and not line == "TRUE":
                 print(self._refine(line))
-        enumeration_time = time.time() - start_time
+        return 0
 
     def _refine(self, model: str) -> str:
         """refines a model by replacing the indices with the corresponding atoms"""
@@ -265,20 +270,23 @@ class DDNNFQueryManager(QueryInterface):
     def _condition_body(
             self,
             alpha: FNode,
-            output_file: str | None = None) -> None:
+            output_file: str | None = None) -> float:
         """function to obtain [compiled formula | alpha], where alpha is a literal or a cube
 
         Args:
             alpha (FNode): the literal (or conjunction of literals) to condition the T-dDNNF
             output_file (str, optional): the path to the .smt2 file where the conditioned T-dDNNF will be saved. Defaults to None.
+
+        Returns:
+            float: the structure loading time
         """
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
         alpha_items = indexes_from_mapping(alpha, self.abstraction_mapping)
 
-        start_time = time.time()
         self._condition_all_variables(
             alpha_items, self.output_option, output_file)
-        condition_time = time.time() - start_time
+
+        return 0
 
     def check_entail(self, data_folder: str) -> bool:
         """
