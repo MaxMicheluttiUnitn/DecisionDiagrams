@@ -100,9 +100,7 @@ class DDNNFQueryManager(QueryInterface):
         # NEGATE ALL ITEMS IN THE CLAUSE
         # TO OBTAIN A CUBE EQUIVALENT TO
         # NOT CLAUSE
-        clause_items_negated = []
-        for item in clause_items:
-            clause_items_negated.append(-item)
+        clause_items_negated = [-item for item in clause_items]
 
         start_time = time.time()
         # CONDITION OVER CLAUSE ITEMS NEGATED
