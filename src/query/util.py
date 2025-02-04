@@ -1,7 +1,7 @@
 """utility functions for query_ddnnf"""
 import os
 import random
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from pysmt.fnode import FNode
 from pysmt.shortcuts import Not, Or
 from theorydd.solvers.solver import SMTEnumerator
@@ -246,10 +246,6 @@ def normalize_refinement(refinement: Dict[int | str, FNode], normalizer_solver: 
     for key, value in refinement.items():
         normalized_mapping[key] = get_normalized(
             value, normalizer_solver.get_converter())
-        # if is_negated(normalized_mapping[key]):
-        #     # I hope this never happens otherwise I may commit a crime
-        #     raise NegatedMappingKeyException()
-        # # actually it may not even be an issue
     return normalized_mapping
 
 
@@ -415,3 +411,27 @@ def create_random_term(atoms: List[FNode], filename: str, seed: int | None = Non
     if random.choice([True, False]):
         term_atom = without_double_neg(Not(term_atom))
     save_phi(term_atom, filename)
+
+
+def select_random_items(items: List[object], amount: int | None = None, random_seed: int | None = None) -> List[Tuple[object,bool]]:
+    """
+    selects a random subset of items from a selction of items
+
+    Args:
+        items (List[object]): the list of items to select from
+        amount (int| None): the number of items to select, None will select a random number of items
+        random_seed (int | None): the seed for the random generator, if None the seed will be random
+
+    Returns:
+        List[Tuple(object,bool)]: the list of selected items, each pèaired with a boolean indicating if the item is positive or negative
+    """
+    if random_seed is not None:
+        random.seed(random_seed)
+
+    if amount is None:
+        amount = random.randint(1, max(1, len(items)//2))
+
+    samples = random.sample(items, amount)
+
+    result = [(sample, random.choice([True, False])) for sample in samples]
+    return result

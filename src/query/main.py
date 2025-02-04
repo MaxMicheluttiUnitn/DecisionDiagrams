@@ -162,23 +162,15 @@ def main():
 
     if args.entail_clause is not None:
         if args.random is not None:
-            args.entail_clause = TEMPORARY_QUERY_INPUT_FILE
-            if args.seed is not None:
-                create_random_clause(
-                    list(query_manager.refinement_mapping.values()), args.entail_clause, args.seed)
-            else:
-                create_random_clause(list(query_manager.refinement_mapping.values()), args.entail_clause)
-        query_manager.check_entail_clause(args.entail_clause)
+            query_manager.check_entail_clause_random(args.seed)
+        else:
+            query_manager.check_entail_clause(args.entail_clause)
 
     if args.implicant is not None:
         if args.random is not None:
-            args.implicant = TEMPORARY_QUERY_INPUT_FILE
-            if args.seed is not None:
-                create_random_term(
-                    list(query_manager.refinement_mapping.values()), args.implicant, args.seed)
-            else:
-                create_random_term(list(query_manager.refinement_mapping.values()), args.implicant)
-        query_manager.check_implicant(args.implicant)
+            query_manager.check_implicant_random(args.seed)
+        else:
+            query_manager.check_implicant(args.implicant)
 
     if args.count:
         query_manager.count_models()
@@ -188,13 +180,9 @@ def main():
 
     if args.condition is not None:
         if args.random is not None:
-            args.condition = TEMPORARY_QUERY_INPUT_FILE
-            if args.seed is not None:
-                create_random_cube(
-                    list(query_manager.refinement_mapping.values()), args.condition, args.seed)
-            else:
-                create_random_cube(list(query_manager.refinement_mapping.values()), args.condition)
-        query_manager.condition(args.condition, args.save_conditioned)
+            query_manager.condition_random(args.seed)
+        else:
+            query_manager.condition(args.condition, args.save_conditioned)
 
     if args.entail is not None:
         query_manager.check_entail(args.entail)
@@ -207,6 +195,8 @@ def main():
 
     if args.negation:
         query_manager.negation(args.save_negation)
+
+    print(query_manager.get_details())
 
     clean_tmp_file()
 

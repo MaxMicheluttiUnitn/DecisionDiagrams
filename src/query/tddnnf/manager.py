@@ -87,7 +87,7 @@ class DDNNFQueryManager(QueryInterface):
 
         return result, 0
 
-    def _check_entail_clause_body(self, clause: FNode) -> Tuple[bool,float]:
+    def _check_entail_clause_body(self, clause: FNode) -> Tuple[bool, float]:
         """function to check if the encoded formula entails the clause
 
         Args:
@@ -101,10 +101,27 @@ class DDNNFQueryManager(QueryInterface):
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
         clause_items = indexes_from_mapping(clause, self.abstraction_mapping)
 
+        clause_items_tuples = [(abs(item), item > 0) for item in clause_items]
+
+        return self._check_entail_clause_random_body(clause_items_tuples)
+
+    def _check_entail_clause_random_body(self, clause_items: List[Tuple[int, bool]]) -> Tuple[bool, float]:
+        """function to check if the encoded formula entails the clause
+
+        Args:
+            clause_items (List[Tuple[int,bool]]): the clause to be checked
+
+        Returns:
+            bool: True if the formula entails the clause, False otherwise
+            float: the structure loading time
+        """
+        clause_items_indexes = [item[0] if item[1]
+                                else -item[0] for item in clause_items]
+
         # NEGATE ALL ITEMS IN THE CLAUSE
         # TO OBTAIN A CUBE EQUIVALENT TO
         # NOT CLAUSE
-        clause_items_negated = [-item for item in clause_items]
+        clause_items_negated = [-item for item in clause_items_indexes]
 
         # CONDITION OVER CLAUSE ITEMS NEGATED
         self._condition_all_variables(
@@ -137,6 +154,20 @@ class DDNNFQueryManager(QueryInterface):
         """
         # RETRIEVE THE INDEX ON WHICH TO OPERATE
         term_index = indexes_from_mapping(term, self.abstraction_mapping)[0]
+        is_positive = True
+        if term_index < 0:
+            is_positive = False
+        return self._check_implicant_random_body((abs(term_index), is_positive))
+
+    def _check_implicant_random_body(self, term_item: Tuple[int, bool]) -> Tuple[bool, float]:
+        """function to check if the term is an implicant for the encoded formula
+
+        Args:
+            term_item (Tuple[int,bool]): the term to be checked
+
+        Returns:
+            bool: True if the term is an implicant, False otherwise"""
+        term_index = term_item[0] if term_item[1] else -term_item[0]
 
         # CONSTRUCT T-dDNNF | term
         self._condition_all_variables(
@@ -196,7 +227,7 @@ class DDNNFQueryManager(QueryInterface):
         try:
             process_data = subprocess.check_output(
                 " ".join([_DECDNNF_PATH, "model-enumeration", "-i",
-                    self.d4_file, "-c", "--n-vars", str(self.total_vars)]),
+                          self.d4_file, "-c", "--n-vars", str(self.total_vars)]),
                 shell=True,
                 text=True)
         except subprocess.CalledProcessError as e:
@@ -286,6 +317,19 @@ class DDNNFQueryManager(QueryInterface):
         self._condition_all_variables(
             alpha_items, self.output_option, output_file)
 
+        return 0
+
+    def _condition_random_body(self, cube_items: List[Tuple[int, bool]]) -> float:
+        """function to condition the encoded formula on the random cube
+
+        Args:
+            cube_items (List[Tuple[int,bool]]): the cube to condition
+
+        Returns:
+            float: the structure loading time
+        """
+        variables = [item[0] if item[1] else -item[0] for item in cube_items]
+        self._condition_all_variables(variables)
         return 0
 
     def check_entail(self, data_folder: str) -> bool:

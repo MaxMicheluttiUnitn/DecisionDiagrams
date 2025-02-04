@@ -88,17 +88,25 @@ class TBDDQueryManager(QueryInterface):
             float: the structure loading time
         """
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
-        clause_items = aliases_from_mapping(clause, self.abstraction_mapping)
+        clause_aliases = aliases_from_mapping(clause, self.abstraction_mapping)
 
-        # NEGATE ALL ITEMS IN THE CLAUSE
-        # TO OBTAIN A CUBE EQUIVALENT TO
-        # NOT CLAUSE
-        clause_items_negated = []
-        for item in clause_items:
-            if item.startswith('-'):
-                clause_items_negated.append(item[1:])
-            else:
-                clause_items_negated.append('-' + item)
+        clause_items = [(alias[1:] if alias.startswith('-') else alias, not alias.startswith('-')) for alias in clause_aliases]
+
+        return self._check_entail_clause_random_body(clause_items)
+    
+    def _check_entail_clause_random_body(self, clause_items: List[Tuple[str,bool]]) -> Tuple[bool, float]:
+        """function to check if the encoded formula entails the given clause
+
+        Args:
+            clause_items (List[Tuple[str,bool]]): the clause to check for entailment
+
+        Returns:
+            bool: True if the formula entails the clause, False otherwise
+            float: the structure loading time
+        """
+        clause_items_negated = [(item[0], not item[1]) for item in clause_items]
+
+        clause_items_negated_aliases = [(item[0] if item[1] else '-'+item[0]) for item in clause_items_negated]
 
         # LOAD THE T-BDD
         start_time = time.time()
@@ -106,13 +114,14 @@ class TBDDQueryManager(QueryInterface):
         load_time = time.time() - start_time
 
         # CONDITION OVER CLAUSE ITEMS NEGATED
-        self._condition_tbdd(tbdd, clause_items_negated)
+        self._condition_tbdd(tbdd, clause_items_negated_aliases)
         # CHECK IF THE CONDITIONED T-BDD IS UNSAT
         consistency = tbdd.is_sat()
         # IF THE CONDITIONED T-BDD IS UNSAT, THEN THE FORMULA ENTAILS THE CLAUSE
         entailment = not consistency
 
         return entailment, load_time
+        
 
     def _check_implicant_body(
             self,
@@ -127,7 +136,23 @@ class TBDDQueryManager(QueryInterface):
             float: the structure loading time
         """
         # RETRIEVE THE INDEX ON WHICH TO OPERATE
-        term_index = aliases_from_mapping(term, self.abstraction_mapping)[0]
+        term_alias = aliases_from_mapping(term, self.abstraction_mapping)[0]
+
+        term_item = (term_alias[1:] if term_alias.startswith('-') else term_alias, not term_alias.startswith('-'))
+
+        return self._check_implicant_random_body(term_item)
+
+    def _check_implicant_random_body(self, term_item: Tuple[str,bool]) -> Tuple[bool,float]:
+        """function to check if the term is an implicant for the encoded formula
+        
+        Args:
+            term_item (Tuple[str,bool]): the term to check
+            
+        Returns:
+            bool: True if the term is an implicant, False otherwise
+            float: the structure loading time
+        """
+        term_alias = term_item[0] if term_item[1] else "-"+term_item[0]
 
         # LOAD THE T-BDD
         start_time = time.time()
@@ -135,13 +160,14 @@ class TBDDQueryManager(QueryInterface):
         load_time = time.time() - start_time
 
         # CONSTRUCT TBDD | term
-        tbdd.condition(term_index)
+        tbdd.condition(term_alias)
         # CHECK IF THE CONDITIONED T-BDD IS VALID
         validity = tbdd.is_valid()
         # IF THE CONDITIONED T-BDD IS VALID, THEN THE TERM IS AN IMPLICANT
         implicant = validity
 
         return implicant, load_time
+        
 
     def _count_models(self) -> Tuple[int, float]:
         """function to count the number of models for the encoded formula
@@ -218,6 +244,27 @@ class TBDDQueryManager(QueryInterface):
         """
         for item in items:
             tbdd.condition(item)
+
+    def _condition_random_body(self, cube_items: List[Tuple[str,bool]]) -> float:
+        """function to condition the T-BDD with the given items
+
+        Args:
+            cube_items (List[str]): the items to condition the T-BDD with
+        
+        Returns:
+            float: the structure loading
+        """
+        alpha_items = [item[0] if item[1] else '-'+item[0] for item in cube_items]
+
+        # LOAD THE T-BDD
+        start_time = time.time()
+        tbdd = self._load_tbdd()
+        load_time = time.time() - start_time
+
+        # CONDITION THE T-BDD
+        self._condition_tbdd(tbdd, alpha_items)
+
+        return load_time
 
     def check_entail(self, data_folder: str) -> bool:
         """function to check entailment of the compiled formula with respect to the data in data_folder.

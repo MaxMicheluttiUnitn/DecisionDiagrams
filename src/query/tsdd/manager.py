@@ -83,12 +83,25 @@ class TSDDQueryManager(QueryInterface):
             float: the structure loading time
         """
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
-        clause_items = indexes_from_mapping(clause, self.abstraction_mapping)
+        clause_indexes = indexes_from_mapping(clause, self.abstraction_mapping)
 
-        # NEGATE ALL ITEMS IN THE CLAUSE
-        # TO OBTAIN A CUBE EQUIVALENT TO
-        # NOT CLAUSE
-        clause_items_negated = [-item for item in clause_items]
+        clause_items = [(item[0] if item[1] else -item[0], item[1]) for item in clause_indexes]
+
+        return self._check_entail_clause_random_body(clause_items)
+
+    def _check_entail_clause_random_body(self, clause_items: List[Tuple[int,bool]]) -> Tuple[bool, float]:
+        """function to check if the encoded formula entails the given clause
+
+        Args:
+            clause_items (List[Tuple[int,bool]]): the clause to check for entailment
+
+        Returns:
+            bool: True if the formula entails the clause, False otherwise
+            float: the structure loading time
+        """
+        clause_items_negated = [(item[0], not item[1]) for item in clause_items]
+
+        clause_items_negated_indexes = [item[0] if item[1] else -item[0] for item in clause_items_negated]
 
         # LOAD THE T-SDD
         start_time = time.time()
@@ -96,7 +109,7 @@ class TSDDQueryManager(QueryInterface):
         load_time = time.time() - start_time
 
         # CONDITION OVER CLAUSE ITEMS NEGATED
-        self._condition_tsdd(tsdd, clause_items_negated)
+        self._condition_tsdd(tsdd, clause_items_negated_indexes)
         # CHECK IF THE CONDITIONED T-SDD IS UNSAT
         consistency = tsdd.is_sat()
         # IF THE CONDITIONED T-SDD IS UNSAT, THEN THE FORMULA ENTAILS THE CLAUSE
@@ -119,6 +132,23 @@ class TSDDQueryManager(QueryInterface):
         # RETRIEVE THE INDEX ON WHICH TO OPERATE
         term_index = indexes_from_mapping(term, self.abstraction_mapping)[0]
 
+        term_item = (term_index[0] if term_index[1] else -term_index[0], term_index[1])
+
+        return self._check_implicant_random_body(term_item)
+        
+
+    def _check_implicant_random_body(self, term_item: Tuple[int,bool]) -> Tuple[bool,float]:
+        """function to check if the term is an implicant for the encoded formula
+        
+        Args:
+            term_item (Tuple[int,bool]): the term to check
+            
+        Returns:
+            bool: True if the term is an implicant, False otherwise
+            float: the structure loading time
+        """
+        term_index = term_item[0] if term_item[1] else -term_item[0]
+
         # LOAD THE T-SDD
         start_time = time.time()
         tsdd = self._load_tsdd()
@@ -132,6 +162,7 @@ class TSDDQueryManager(QueryInterface):
         implicant = validity
 
         return implicant, load_time
+
 
     def _count_models(self) -> Tuple[int, float]:
         """function to count the number of models for the encoded formula
@@ -181,12 +212,12 @@ class TSDDQueryManager(QueryInterface):
         # RETRIEVE THE INDEXES ON WHICH TO OPERATE
         alpha_items = indexes_from_mapping(alpha, self.abstraction_mapping)
 
-        # LOAD THE T-BDD
+        # LOAD THE T-SDD
         start_time = time.time()
         tsdd = self._load_tsdd()
         load_time = time.time() - start_time
 
-        # CONDITION THE T-BDD
+        # CONDITION THE T-SDD
         self._condition_tsdd(tsdd, alpha_items)
 
         # SAVE CONDITIONED TSDD
@@ -194,13 +225,35 @@ class TSDDQueryManager(QueryInterface):
             tsdd.save_to_folder(output_file)
 
         return load_time
+    
+    def _condition_random_body(self, cube_items: List[Tuple[int,bool]]) -> float:
+        """function to obtain [compiled formula | alpha], where alpha is a literal or a cube
+        described by the given cube_items
+        
+        Args:
+            cube_items (List[Tuple[int,bool]]): the literal (or conjunction of literals) to condition the T-SDD
+        
+        Returns:
+            float: the structure loading time
+        """
+        alpha_indexes = [item[0] if item[1] else -item[0] for item in cube_items]
+
+        # LOAD THE T-SDD
+        start_time = time.time()
+        tsdd = self._load_tsdd()
+        load_time = time.time() - start_time
+
+        # CONDITION THE T-SDD
+        self._condition_tsdd(tsdd, alpha_indexes)
+
+        return load_time
 
     def _condition_tsdd(self, tsdd: TheorySDD, items: List[str]) -> None:
-        """function to condition the T-BDD with the given items
+        """function to condition the T-SDD with the given items
 
         Args:
-            tbdd (TheoryBDD): the T-BDD to condition
-            items (List[str]): the items to condition the T-BDD with
+            tsdd (TheorySDD): the T-SDD to condition
+            items (List[str]): the items to condition the T-SDD with
         """
         for item in items:
             tsdd.condition(item)
