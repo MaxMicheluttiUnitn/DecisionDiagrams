@@ -1,7 +1,6 @@
 """module where all the queries functions are defined"""
 
 import os
-import time
 import subprocess
 from typing import Dict, List, Tuple
 

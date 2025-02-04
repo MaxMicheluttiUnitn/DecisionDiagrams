@@ -25,10 +25,7 @@ from src.query.util import (
     is_c2d_tddnnf_loading_folder_correct,
     is_d4_tddnnf_loading_folder_correct,
     is_tbdd_loading_folder_correct,
-    is_tsdd_loading_folder_correct,
-    create_random_clause,
-    create_random_term,
-    create_random_cube)
+    is_tsdd_loading_folder_correct)
 from src.query.tddnnf.c2d.manager import C2D_DDNNFQueryManager
 from src.query.tddnnf.d4.manager import D4_DDNNFQueryManager
 from src.query.tbdd.manager import TBDDQueryManager
@@ -37,6 +34,7 @@ from src.query.smt_solver.manager import SMTQueryManager
 from src.query.constants import TEMPORARY_QUERY_INPUT_FILE
 
 def clean_tmp_file():
+    """remove the temporary query file"""
     if path.exists(TEMPORARY_QUERY_INPUT_FILE):
         rmv(TEMPORARY_QUERY_INPUT_FILE)
 
