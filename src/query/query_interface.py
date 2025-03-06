@@ -54,7 +54,7 @@ class QueryInterface(ABC):
 
         # compute reverse mapping to generate the abstraction funciton
         self.abstraction_mapping = {
-            v: k for k, v in refinement_mapping.items()}
+            v: k for k, v in self.refinement_mapping.items()}
 
         self.details = {}
 
@@ -113,7 +113,6 @@ class QueryInterface(ABC):
         clause = read_phi(clause_file)
 
         # normalize the clause
-        print("Normalizing clause")
         clause.simplify()
         clause = get_normalized(clause, self.normalizer_solver.get_converter())
         clause = without_double_neg(clause)
@@ -130,7 +129,9 @@ class QueryInterface(ABC):
         clause_atoms = get_atoms(clause)
         if not phi_atoms.issuperset(clause_atoms):
             raise ValueError(
-                "The clause must be on the same atoms as the encoded formula")
+                "The clause must be on the same atoms as the encoded formula.\n"
+                "The atoms in the clause are: {}\n"
+                "The atoms in the encoded formula are: {}".format(clause_atoms, phi_atoms))
         return clause
 
     @final
@@ -152,7 +153,7 @@ class QueryInterface(ABC):
         return result
 
     @abstractmethod
-    def _check_entail_clause_random_body(self, clause_items: List[Tuple[object,bool]]) -> Tuple[bool, float]:
+    def _check_entail_clause_random_body(self, clause_items: List[Tuple[object, bool]]) -> Tuple[bool, float]:
         """where the actual entailment checking for random clauses is done
 
         Args:
@@ -180,7 +181,7 @@ class QueryInterface(ABC):
             seed = random_seed
         self.details["random clause seed"] = seed
         clause_items = select_random_items(
-            self.refinement_mapping.keys(), random_seed = seed)
+            self.refinement_mapping.keys(), random_seed=seed)
         self.details["random entailment clause"] = str(self._get_refinement_clause(
             clause_items).serialize())
         result, load_time = self._check_entail_clause_random_body(clause_items)
@@ -189,7 +190,7 @@ class QueryInterface(ABC):
         return result
 
     @final
-    def _get_refinement_clause(self, clause_items: List[Tuple[object,bool]]) -> FNode:
+    def _get_refinement_clause(self, clause_items: List[Tuple[object, bool]]) -> FNode:
         """
         function to get the refinement clause from the clause items
 
@@ -272,9 +273,9 @@ class QueryInterface(ABC):
         Returns:
             Tuple[bool,float]: the result of the implicant checking and the time taken to load the structure"""
         raise NotImplementedError()
-    
+
     @abstractmethod
-    def _check_implicant_random_body(self, term_item: Tuple[object,bool]) -> Tuple[bool, float]:
+    def _check_implicant_random_body(self, term_item: Tuple[object, bool]) -> Tuple[bool, float]:
         """where the actual implicant checking for random terms is done
 
         Args:
@@ -302,8 +303,9 @@ class QueryInterface(ABC):
             seed = random_seed
         self.details["random term seed"] = seed
         term_item = select_random_items(
-            self.refinement_mapping.keys(), random_seed = seed, amount=1)[0]
-        refined_term = self.refinement_mapping[term_item[0]] if term_item[1] else Not(self.refinement_mapping[term_item[0]])
+            self.refinement_mapping.keys(), random_seed=seed, amount=1)[0]
+        refined_term = self.refinement_mapping[term_item[0]] if term_item[1] else Not(
+            self.refinement_mapping[term_item[0]])
         self.details["random implicant term"] = str(refined_term.serialize())
         result, load_time = self._check_implicant_random_body(term_item)
         self.details["random implicant checking result"] = result
@@ -408,9 +410,9 @@ class QueryInterface(ABC):
         Returns:
             float: the structure loading time"""
         raise NotImplementedError()
-    
+
     @abstractmethod
-    def _condition_random_body(self, cube_items: List[Tuple[object,bool]]) -> float:
+    def _condition_random_body(self, cube_items: List[Tuple[object, bool]]) -> float:
         """where the actual conditioning on random items is done
 
         Args:
@@ -435,14 +437,14 @@ class QueryInterface(ABC):
             seed = random_seed
         self.details["random cube seed"] = seed
         clause_items = select_random_items(
-            self.refinement_mapping.keys(), random_seed = seed)
+            self.refinement_mapping.keys(), random_seed=seed)
         self.details["random conditioning cube"] = str(self._get_refinement_cube(
             clause_items).serialize())
         load_time = self._condition_random_body(clause_items)
         self.details["random conditioning time"] = time.time() - start_time - load_time
 
     @final
-    def _get_refinement_cube(self, cube_items: List[Tuple[object,bool]]) -> FNode:
+    def _get_refinement_cube(self, cube_items: List[Tuple[object, bool]]) -> FNode:
         """
         function to get the refinement cube from the cube items
 
@@ -455,7 +457,6 @@ class QueryInterface(ABC):
         nodes = [self.refinement_mapping[x[0]] if x[1] else Not(
             self.refinement_mapping[x[0]]) for x in cube_items]
         return And(*nodes)
-
 
     @abstractmethod
     def check_entail(self, data_folder: str) -> bool:
@@ -501,7 +502,7 @@ class QueryInterface(ABC):
             output_path (str | None) [None]: the path to the file where the negation will be saved
         """
         raise NotImplementedError()
-    
+
     @final
     def get_details(self) -> Dict[str, object]:
         """function to get the details of the last query
