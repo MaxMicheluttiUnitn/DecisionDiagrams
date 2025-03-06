@@ -159,13 +159,13 @@ def main():
         query_manager.check_validity()
 
     if args.entail_clause is not None:
-        if args.random is not None:
+        if args.random:
             query_manager.check_entail_clause_random(args.seed)
         else:
             query_manager.check_entail_clause(args.entail_clause)
 
     if args.implicant is not None:
-        if args.random is not None:
+        if args.random:
             query_manager.check_implicant_random(args.seed)
         else:
             query_manager.check_implicant(args.implicant)
@@ -177,7 +177,7 @@ def main():
         query_manager.enumerate_models()
 
     if args.condition is not None:
-        if args.random is not None:
+        if args.random:
             query_manager.condition_random(args.seed)
         else:
             query_manager.condition(args.condition, args.save_conditioned)
