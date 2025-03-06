@@ -14,6 +14,15 @@ class QueryOptions:
     enumerate: bool
     condition: str | None
     save_conditioned: str | None
+    conjunction: str | None
+    save_conjunction: str | None
+    disjunction: str | None
+    save_disjunction: str | None
+    negation: bool
+    save_negation: str | None
+    entail: str | None
+    random: int | None
+    seed: int | None
 
     def __init__(self, args: argparse.Namespace):
         self.load_data = args.load_data
@@ -28,12 +37,24 @@ class QueryOptions:
         self.enumerate = args.enumerate
         self.condition = args.condition
         self.save_conditioned = args.save_conditioned
+        self.conjunction = args.conjunction
+        self.save_conjunction = args.save_conjunction
+        self.disjunction = args.disjunction
+        self.save_disjunction = args.save_disjunction
+        self.negation = args.negation
+        self.save_negation = args.save_negation
+        self.entail = args.entail
+        self.random = args.random
+        try:
+            self.seed = int(args.seed) if args.seed is not None else None
+        except ValueError:
+            raise ValueError("The seed provided is not an integer")
 
 def get_args() -> QueryOptions:
     """Reads the args from the command line"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--load_tsdd",
+        "--load_data",
         help="Specify the path to the folder where all necessary compiled formula files are stored",
         type=str,
         required=True)
@@ -67,7 +88,45 @@ def get_args() -> QueryOptions:
         type=str)
     parser.add_argument(
         "--save_conditioned",
-        help="Specify the path to the .smt2 file where the conditioned compiled formula will be saved",
+        help="Specify the path to the file or folder (depending on compiled language) where the conditioned compiled formula will be saved",
+        type=str)
+    parser.add_argument(
+        "--conjunction",
+        help="Transform the compiled formula in compiled (formula and data), where data is another compiled formula in the same language",
+        type=str)
+    parser.add_argument(
+        "--save_conjunction",
+        help="Specify the path to the file or folder (depending on compiled language) where the conjunction of compiled formulas will be saved",
+        type=str)
+    parser.add_argument(
+        "--disjunction",
+        help="Transform the compiled formula in compiled (formula or data), where data is another compiled formula in the same language",
+        type=str)
+    parser.add_argument(
+        "--save_disjunction",
+        help="Specify the path to the file or folder (depending on compiled language) where the disjunction of compiled formulas will be saved",
+        type=str)
+    parser.add_argument(
+        "--negation",
+        help="Transform the compiled formula into its negation",
+        action="store_true")
+    parser.add_argument(
+        "--save_negation",
+        help="Specify the path to the file or folder (depending on compiled language) where the negation of the compiled formula will be saved",
+        type=str)
+    parser.add_argument(
+        "--entail",
+        help="Specify the path to the file or folder (depending on compiled language) where the formula for entailment is stored and query for entailment",
+        type=str)
+    parser.add_argument(
+        "-r",
+        "--random",
+        help="select a random clause/implicant/term instead of loading from a file",
+        action="store_true")
+    parser.add_argument(
+        "-s",
+        "--seed",
+        help="select a seed for the random selection",
         type=str)
     args = parser.parse_args()
     return QueryOptions(args)

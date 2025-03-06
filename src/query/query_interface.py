@@ -1,14 +1,16 @@
 """interface for all Query objects"""
 
 from abc import ABC, abstractmethod
-from typing import Dict, final
+import time
+from typing import Dict, List, Tuple, final
 
 from pysmt.fnode import FNode
+from pysmt.shortcuts import And, Or, Not
 
 from theorydd.solvers.mathsat_total import MathSATTotalEnumerator
 from theorydd.formula import get_normalized, get_atoms, without_double_neg, read_phi
 
-from src.query.util import is_clause, is_cube, is_term, normalize_refinement
+from src.query.util import is_clause, is_cube, is_term, normalize_refinement, select_random_items
 
 
 class QueryInterface(ABC):
@@ -19,6 +21,7 @@ class QueryInterface(ABC):
     abstraction_mapping: Dict[FNode, object]
     # solver used for normalization of input
     normalizer_solver: MathSATTotalEnumerator
+    details: Dict[str, object]
 
     def __init__(self,
                  source_folder: str,
@@ -36,6 +39,8 @@ class QueryInterface(ABC):
             abstraction_mapping (Dict[FNode, int]) [None]: the mapping of the atoms of the formula to the indices in the compiled formula's abstraction
         """
         self.source_folder = source_folder
+        if (self.source_folder.endswith("/")):
+            self.source_folder = self.source_folder[:-1]
         if refinement_mapping is None and abstraction_mapping is None:
             raise ValueError(
                 "Either the refinement_mapping or the abstraction_mapping must be provided")
@@ -51,21 +56,47 @@ class QueryInterface(ABC):
         self.abstraction_mapping = {
             v: k for k, v in refinement_mapping.items()}
 
-    @abstractmethod
-    def check_consistency(self) -> bool:
-        """function to check if the encoded formula is consistent
-        
-        Returns:
-            bool: True if the formula is consistent, False otherwise"""
-        raise NotImplementedError()
+        self.details = {}
 
     @abstractmethod
+    def _check_consistency(self) -> Tuple[bool, float]:
+        """where the actual consistency checking is done
+
+        Returns:
+            Tuple[bool,float]: the result of the consistency checking and the time taken to load the structure"""
+        raise NotImplementedError()
+
+    @final
+    def check_consistency(self) -> bool:
+        """function to check if the encoded formula is consistent
+
+        Returns:
+            bool: True if the formula is consistent, False otherwise"""
+        start_time = time.time()
+        result, load_time = self._check_consistency()
+        self.details["consistency"] = result
+        self.details["consistency time"] = time.time() - start_time - load_time
+        return result
+
+    @abstractmethod
+    def _check_validity(self) -> Tuple[bool, float]:
+        """where the actual validity checking is done
+
+        Returns:
+            Tuple[bool,float]: the result of the validity checking and the time taken to load the structure"""
+        raise NotImplementedError()
+
+    @final
     def check_validity(self) -> bool:
         """function to check if the encoded formula is valid
-        
+
         Returns:
             bool: True if the formula is valid, False otherwise"""
-        raise NotImplementedError()
+        start_time = time.time()
+        result, loading_time = self._check_validity()
+        self.details["validity"] = result
+        self.details["validity time"] = time.time() - start_time - loading_time
+        return result
 
     @final
     def _clause_file_can_entail(self, clause_file: str) -> FNode:
@@ -82,6 +113,7 @@ class QueryInterface(ABC):
         clause = read_phi(clause_file)
 
         # normalize the clause
+        print("Normalizing clause")
         clause.simplify()
         clause = get_normalized(clause, self.normalizer_solver.get_converter())
         clause = without_double_neg(clause)
@@ -93,14 +125,14 @@ class QueryInterface(ABC):
         # check that the clause is on the same atoms as phi
         phi_atoms = set()
         for value in self.abstraction_mapping.keys():
-            phi_atoms.add(get_atoms(value))
+            phi_atoms.add(get_atoms(value)[0])
         phi_atoms = frozenset(phi_atoms)
-        clause_atoms = frozenset(get_atoms(clause))
+        clause_atoms = get_atoms(clause)
         if not phi_atoms.issuperset(clause_atoms):
             raise ValueError(
                 "The clause must be on the same atoms as the encoded formula")
         return clause
-    
+
     @final
     def check_entail_clause(self, clause_file: str) -> bool:
         """function to check if the encoded formula entails the clause specifoied in the clause_file
@@ -109,13 +141,74 @@ class QueryInterface(ABC):
             clause_file (str): the path to the smt2 file containing the clause to check
 
         Returns:
-            bool: True if the clause is entailed bt the T-dDNNF, False otherwise
+            bool: True if the clause is entailed, False otherwise
         """
-        return self._check_entail_clause_body(self._clause_file_can_entail(clause_file))
+        clause = self._clause_file_can_entail(clause_file)
+        self.details["entailment clause"] = str(clause)
+        start_time = time.time()
+        result, load_time = self._check_entail_clause_body(clause)
+        self.details["clause entailment result"] = result
+        self.details["clause entailment time"] = time.time() - start_time - load_time
+        return result
 
     @abstractmethod
-    def _check_entail_clause_body(self, clause: FNode) -> bool:
-        """where the actual entailment checking for clauses is done"""
+    def _check_entail_clause_random_body(self, clause_items: List[Tuple[object,bool]]) -> Tuple[bool, float]:
+        """where the actual entailment checking for random clauses is done
+
+        Args:
+            clause_items (List[Tuple[object,bool]]): the items in the clause
+
+        Returns:
+            Tuple[bool,float]: the result of the entailment checking and the time taken to load the structure"""
+        raise NotImplementedError()
+
+    @final
+    def check_entail_clause_random(self, random_seed: int | None = None) -> bool:
+        """
+        function to check if the encoded formula entails a random clause
+
+        Args:
+            random_seed (int | None) [None]: the seed to use for the random clause generation. Defaults to None.
+
+        Returns:
+            bool: True if the clause is entailed, False otherwise
+        """
+        start_time = time.time()
+        if random_seed is None:
+            seed = int(time.time())
+        else:
+            seed = random_seed
+        self.details["random clause seed"] = seed
+        clause_items = select_random_items(
+            self.refinement_mapping.keys(), random_seed = seed)
+        self.details["random entailment clause"] = str(self._get_refinement_clause(
+            clause_items).serialize())
+        result, load_time = self._check_entail_clause_random_body(clause_items)
+        self.details["random clause entailment result"] = result
+        self.details["random clause entailment time"] = time.time() - start_time - load_time
+        return result
+
+    @final
+    def _get_refinement_clause(self, clause_items: List[Tuple[object,bool]]) -> FNode:
+        """
+        function to get the refinement clause from the clause items
+
+        Args:
+            clause_items (List[Tuple[object,bool]]): the items in the clause
+
+        Returns:
+            FNode: the refinement clause
+        """
+        nodes = [self.refinement_mapping[x[0]] if x[1] else Not(
+            self.refinement_mapping[x[0]]) for x in clause_items]
+        return Or(*nodes)
+
+    @abstractmethod
+    def _check_entail_clause_body(self, clause: FNode) -> Tuple[bool, float]:
+        """where the actual entailment checking for clauses is done
+
+        Returns:
+            Tuple[bool,float]: the result of the entailment checking and the time taken to load the structure"""
         raise NotImplementedError()
 
     @final
@@ -143,7 +236,7 @@ class QueryInterface(ABC):
         # check that the term is on the same atoms as phi
         phi_atoms = set()
         for value in self.abstraction_mapping.keys():
-            phi_atoms.add(get_atoms(value))
+            phi_atoms.add(get_atoms(value)[0])
         phi_atoms = frozenset(phi_atoms)
         term_atom = get_atoms(term)[0]
         if term_atom not in phi_atoms:
@@ -164,27 +257,98 @@ class QueryInterface(ABC):
         Returns:
             bool: True if the term is an implicant, False otherwise
         """
-        return self._check_implicant_body(self._term_file_can_be_implicant(term_file))
+        term = self._term_file_can_be_implicant(term_file)
+        self.details["implicant term"] = str(term)
+        start_time = time.time()
+        result, loading_time = self._check_implicant_body(term)
+        self.details["implicant result"] = result
+        self.details["implicant time"] = time.time() - start_time - loading_time
+        return result
 
     @abstractmethod
-    def _check_implicant_body(self, term: FNode) -> bool:
-        """where the actual implicant checking is done"""
+    def _check_implicant_body(self, term: FNode) -> Tuple[bool, float]:
+        """where the actual implicant checking is done
+
+        Returns:
+            Tuple[bool,float]: the result of the implicant checking and the time taken to load the structure"""
+        raise NotImplementedError()
+    
+    @abstractmethod
+    def _check_implicant_random_body(self, term_item: Tuple[object,bool]) -> Tuple[bool, float]:
+        """where the actual implicant checking for random terms is done
+
+        Args:
+            term_item (Tuple[object,bool]): the term to check
+
+        Returns:
+            Tuple[bool,float]: the result of the implicant checking and the time taken to load the structure"""
         raise NotImplementedError()
 
+    @final
+    def check_implicant_random(self, random_seed: int | None = None) -> bool:
+        """
+        function to check if a random term is an implicant for the formula
+
+        Args:
+            random_seed (int | None) [None]: the seed to use for the random term generation. Defaults to None.
+
+        Returns:
+            bool: True if the term is an implicant, False otherwise
+        """
+        start_time = time.time()
+        if random_seed is None:
+            seed = int(time.time())
+        else:
+            seed = random_seed
+        self.details["random term seed"] = seed
+        term_item = select_random_items(
+            self.refinement_mapping.keys(), random_seed = seed, amount=1)[0]
+        refined_term = self.refinement_mapping[term_item[0]] if term_item[1] else Not(self.refinement_mapping[term_item[0]])
+        self.details["random implicant term"] = str(refined_term.serialize())
+        result, load_time = self._check_implicant_random_body(term_item)
+        self.details["random implicant checking result"] = result
+        self.details["random implicant checking time"] = time.time() - start_time - load_time
+        return result
+
     @abstractmethod
+    def _count_models(self) -> Tuple[int, float]:
+        """function to count the number of models for the encoded formula
+
+        Returns:
+            int: the number of models for the encoded formula
+            float: the structure loading time
+        """
+        raise NotImplementedError()
+
+    @final
     def count_models(self) -> int:
         """function to count the number of models for the encoded formula
 
         Returns:
             int: the number of models for the encoded formula
         """
-        raise NotImplementedError()
+        start_time = time.time()
+        result, loading_time = self._count_models()
+        self.details["model count"] = result
+        self.details["model count time"] = time.time() - start_time - loading_time
+        return result
 
     @abstractmethod
+    def _enumerate_models(self) -> float:
+        """function to enumerate all models for the encoded formula
+
+        Returns:
+            float: the structure loading time
+        """
+        raise NotImplementedError()
+
+    @final
     def enumerate_models(self) -> None:
         """function to enumerate all models for the encoded formula
         """
-        raise NotImplementedError()
+        start_time = time.time()
+        load_time = self._enumerate_models()
+        self.details["model enumeration time"] = time.time() - start_time - load_time
 
     @final
     def _alpha_file_can_condition(self, alpha_file: str) -> FNode:
@@ -211,7 +375,7 @@ class QueryInterface(ABC):
         # check that alpha is on the same atoms as phi
         phi_atoms = set()
         for value in self.abstraction_mapping.keys():
-            phi_atoms.add(get_atoms(value))
+            phi_atoms.add(get_atoms(value)[0])
         phi_atoms = frozenset(phi_atoms)
         alpha_atoms = frozenset(get_atoms(alpha))
         if not phi_atoms.issuperset(alpha_atoms):
@@ -232,9 +396,116 @@ class QueryInterface(ABC):
             output_file (str | None) [None]: the path to the .smt2 file where the conditioned compiled formula will be saved. Defaults to None.
         """
         alpha = self._alpha_file_can_condition(alpha_file)
+        start_time = time.time()
+        self.details["conditioning cube"] = str(alpha)
         self._condition_body(alpha, output_file)
+        self.details["conditioning time"] = time.time() - start_time
 
     @abstractmethod
-    def _condition_body(self, alpha: FNode, output_file: str | None) -> None:
-        """where the actual conditioning is done"""
+    def _condition_body(self, alpha: FNode, output_file: str | None) -> float:
+        """where the actual conditioning is done
+
+        Returns:
+            float: the structure loading time"""
         raise NotImplementedError()
+    
+    @abstractmethod
+    def _condition_random_body(self, cube_items: List[Tuple[object,bool]]) -> float:
+        """where the actual conditioning on random items is done
+
+        Args:
+            cube_items (List[Tuple[object,bool]]): the items in the cube
+        
+        Returns:
+            float: the structure loading time"""
+        raise NotImplementedError()
+
+    @final
+    def condition_random(self, random_seed: int | None = None) -> None:
+        """
+        function to condition the formula with a random cube
+
+        Args:
+            random_seed (int | None) [None]: the seed to use for the random cube generation. Defaults to None.
+        """
+        start_time = time.time()
+        if random_seed is None:
+            seed = int(time.time())
+        else:
+            seed = random_seed
+        self.details["random cube seed"] = seed
+        clause_items = select_random_items(
+            self.refinement_mapping.keys(), random_seed = seed)
+        self.details["random conditioning cube"] = str(self._get_refinement_cube(
+            clause_items).serialize())
+        load_time = self._condition_random_body(clause_items)
+        self.details["random conditioning time"] = time.time() - start_time - load_time
+
+    @final
+    def _get_refinement_cube(self, cube_items: List[Tuple[object,bool]]) -> FNode:
+        """
+        function to get the refinement cube from the cube items
+
+        Args:
+            cube_items (List[Tuple[object,bool]]): the items in the cube
+
+        Returns:
+            FNode: the refinement cube
+        """
+        nodes = [self.refinement_mapping[x[0]] if x[1] else Not(
+            self.refinement_mapping[x[0]]) for x in cube_items]
+        return And(*nodes)
+
+
+    @abstractmethod
+    def check_entail(self, data_folder: str) -> bool:
+        """function to check entailment of the compiled formula with respect to the data in data_folder.
+        The data in data folder must be of the correct format, which is the same of for the queried structure
+
+        Args:
+            data_folder (str): the path to the folder where the data is stored
+
+        Returns:
+            bool: True if the compiled formula entails the data, False otherwise
+        """
+
+        raise NotImplementedError()
+
+    @abstractmethod
+    def conjunction(self, data_folder: str, output_path: str | None = None) -> None:
+        """function to compute the conjunction of the compiled formula the data in data_folder.
+        The data in data folder must be of the correct format, which is the same of for the queried structure
+
+        Args:
+            data_folder (str): the path to the folder where the data is stored
+            output_path (str | None) [None]: the path to the file where the conjunction will be saved
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def disjunction(self, data_folder: str, output_path: str | None = None) -> None:
+        """function to compute the disjunction of the compiled formula the data in data_folder.
+        The data in data folder must be of the correct format, which is the same of for the queried structure
+
+        Args:
+            data_folder (str): the path to the folder where the data is stored
+            output_path (str | None) [None]: the path to the file where the disjunction will be saved
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def negation(self, output_path: str | None = None) -> None:
+        """function to compute the negation of the compiled formula
+
+        Args:
+            output_path (str | None) [None]: the path to the file where the negation will be saved
+        """
+        raise NotImplementedError()
+    
+    @final
+    def get_details(self) -> Dict[str, object]:
+        """function to get the details of the last query
+
+        Returns:
+            Dict[str,object]: the details of the last query"""
+        return self.details

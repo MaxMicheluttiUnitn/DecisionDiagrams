@@ -17,6 +17,7 @@ THE PROGRAM WILL RAISE A NotImplementedError
 
 import json
 import os.path as path
+from os import remove as rmv
 from theorydd.formula import load_refinement, load_abstraction_function
 
 from src.query.commands import get_args
@@ -29,7 +30,13 @@ from src.query.tddnnf.c2d.manager import C2D_DDNNFQueryManager
 from src.query.tddnnf.d4.manager import D4_DDNNFQueryManager
 from src.query.tbdd.manager import TBDDQueryManager
 from src.query.tsdd.manager import TSDDQueryManager
+from src.query.smt_solver.manager import SMTQueryManager
+from src.query.constants import TEMPORARY_QUERY_INPUT_FILE
 
+def clean_tmp_file():
+    """remove the temporary query file"""
+    if path.exists(TEMPORARY_QUERY_INPUT_FILE):
+        rmv(TEMPORARY_QUERY_INPUT_FILE)
 
 def _get_c2d_manager(input_folder: str) -> C2D_DDNNFQueryManager:
     """initialize a C2D manager from the input folder"""
@@ -64,6 +71,8 @@ def _get_d4_manager(input_folder: str) -> D4_DDNNFQueryManager:
     # load refinement funvtion as a mapping
     refinement_mapping = load_refinement(
         path.join(input_folder, "mapping/mapping.json"))
+    
+    total_vars = len(refinement_mapping)
 
     # remove non important items from the mapping
     keys_to_remove = set()
@@ -73,7 +82,7 @@ def _get_d4_manager(input_folder: str) -> D4_DDNNFQueryManager:
     for key in keys_to_remove:
         del refinement_mapping[key]
 
-    return D4_DDNNFQueryManager(input_folder, refinement_mapping = refinement_mapping)
+    return D4_DDNNFQueryManager(input_folder, total_vars, refinement_mapping = refinement_mapping)
 
 
 def _get_tbdd_manager(input_folder: str) -> TBDDQueryManager:
@@ -137,6 +146,8 @@ def main():
         query_manager = _get_tbdd_manager(input_folder)
     elif is_tsdd_loading_folder_correct(input_folder):
         query_manager = _get_tsdd_manager(input_folder)
+    elif input_folder.endswith(".smt") or input_folder.endswith(".smt2"):
+        query_manager = SMTQueryManager(input_folder)
     else:
         raise ValueError(
             "The folder where the compiled formula files are stored was not found, or some files are missing from it.")
@@ -148,10 +159,16 @@ def main():
         query_manager.check_validity()
 
     if args.entail_clause is not None:
-        query_manager.check_entail_clause(args.entail_clause)
+        if args.random is not None:
+            query_manager.check_entail_clause_random(args.seed)
+        else:
+            query_manager.check_entail_clause(args.entail_clause)
 
     if args.implicant is not None:
-        query_manager.check_implicant(args.implicant)
+        if args.random is not None:
+            query_manager.check_implicant_random(args.seed)
+        else:
+            query_manager.check_implicant(args.implicant)
 
     if args.count:
         query_manager.count_models()
@@ -160,8 +177,26 @@ def main():
         query_manager.enumerate_models()
 
     if args.condition is not None:
-        query_manager.condition(args.condition, args.save_conditioned)
+        if args.random is not None:
+            query_manager.condition_random(args.seed)
+        else:
+            query_manager.condition(args.condition, args.save_conditioned)
 
+    if args.entail is not None:
+        query_manager.check_entail(args.entail)
+
+    if args.conjunction is not None:
+        query_manager.conjunction(args.conjunction, args.save_conjunction)
+
+    if args.disjunction is not None:
+        query_manager.disjunction(args.disjunction, args.save_disjunction)
+
+    if args.negation:
+        query_manager.negation(args.save_negation)
+
+    print(query_manager.get_details())
+
+    clean_tmp_file()
 
 if __name__ == "__main__":
     main()

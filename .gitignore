@@ -37,10 +37,6 @@ tmp*
 
 .env
 
-fix_tsetsin.py
-fix_ddnnf.py
-fix_extension.py
-
 out.txt
 tmp.txt
 tmp_data.txt
@@ -50,5 +46,7 @@ ddnnf_reasoner_commands.txt
 
 mathsat
 c2d_linux
-d4
+d4_exec
 ddnnife
+decdnnf_rs
+ddnnf_condition

@@ -1,10 +1,40 @@
 """utility functions for query_ddnnf"""
 import os
-from typing import Dict, List
+import random
+from typing import Dict, List, Tuple
 from pysmt.fnode import FNode
-from pysmt.shortcuts import Not
+from pysmt.shortcuts import Not, Or
 from theorydd.solvers.solver import SMTEnumerator
-from theorydd.formula import get_normalized, get_atoms
+from theorydd.formula import get_normalized, get_atoms, save_phi, top, bottom, big_and, without_double_neg
+
+
+class UnsupportedQueryException(Exception):
+    """Exception raised when an unsupported query is called"""
+
+    def __init__(self, message: str = "Unsupported query type"):
+        super().__init__(message)
+
+
+def check_executable(file_path: str) -> None:
+    """function to check if a binary can be called, 
+    raises exceptions if the reasoner cannot be called
+
+    Args:
+        file_path (str): the path to the reasoner
+
+    Raises:
+        ValueError: if the path to the reasoner is not provided
+        FileNotFoundError: if the path to the reasoner is invalid
+        PermissionError: if the reasoner is not executable"""
+    if file_path is None:
+        raise ValueError(
+            "Please provide the path to the decdnnf reasoner in the .env file")
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(
+            f"Invalid path to the ddnnf reasoner: {file_path}")
+    if not os.access(file_path, os.X_OK):
+        raise PermissionError(
+            f"File {file_path} is not executable")
 
 
 def is_tbdd_loading_folder_correct(folder: str) -> bool:
@@ -24,10 +54,10 @@ def is_tbdd_loading_folder_correct(folder: str) -> bool:
     # if folder.endswith("/"):
     #     folder = folder[:-1]
     # check that bdd_data.dddmp exists
-    if not os.path.exists(f"{folder}/bdd_data.dddmp"):
+    if not os.path.exists(f"{folder}/tbdd_data.dddmp"):
         return False
     # check that bdd_data.pickle exists
-    if not os.path.exists(f"{folder}/bdd_data.pickle"):
+    if not os.path.exists(f"{folder}/tbdd_data.pickle"):
         return False
     # check that abstraction.json exists
     if not os.path.exists(f"{folder}/abstraction.json"):
@@ -144,7 +174,7 @@ def is_clause(clause: FNode) -> bool:
     Returns:
         bool: True if the formula is a clause, False otherwise
     """
-    if not clause.is_literal() or not clause.is_or():
+    if not clause.is_or():
         return False
     if clause.is_or():
         for arg in clause.args():
@@ -162,7 +192,9 @@ def is_term(term: FNode) -> bool:
     Returns:
         bool: True if the formula is a term, False otherwise
     """
-    if not term.is_literal():
+    if term.is_not():
+        return is_term(term.arg(0))
+    if term.is_and() or term.is_or() or term.is_implies() or term.is_iff() or term.is_bool_constant():
         return False
     return True
 
@@ -214,10 +246,6 @@ def normalize_refinement(refinement: Dict[int | str, FNode], normalizer_solver: 
     for key, value in refinement.items():
         normalized_mapping[key] = get_normalized(
             value, normalizer_solver.get_converter())
-        # if is_negated(normalized_mapping[key]):
-        #     # I hope this never happens otherwise I may commit a crime
-        #     raise NegatedMappingKeyException()
-        # # actually it may not even be an issue
     return normalized_mapping
 
 
@@ -320,3 +348,90 @@ def _aliases_from_arg(phi: FNode, mapping: Dict[FNode, str]) -> str:
             alias = "-" + alias
     return alias
 
+
+def create_random_clause(atoms: List[FNode], filename: str, seed: int | None = None) -> None:
+    """
+    creates a random clause from the given atoms and saves it to the specified SMT2 file
+
+    Args:
+        atoms (List[FNode]): the list of atoms to create the clause from
+        filename (str): the name of the file where the clause will be saved
+        seed (int | None): the seed for the random generator, if None the seed will be random
+    """
+    if len(atoms) == 0:
+        save_phi(bottom(), filename)
+        return
+    if seed is not None:
+        random.seed(seed)
+    clause_atoms = random.sample(
+        atoms, random.randint(1, max(1, len(atoms)//2)))
+    for i, atom in enumerate(clause_atoms):
+        if random.choice([True, False]):  # 50% chance to negate the atom
+            clause_atoms[i] = without_double_neg(Not(atom))
+    save_phi(Or(*clause_atoms), filename)
+
+
+def create_random_cube(atoms: List[FNode], filename: str, seed: int | None = None) -> None:
+    """
+    creates a random cube from the given atoms and saves it to the specified SMT2 file
+
+    Args:
+        atoms (List[FNode]): the list of atoms to create the clause from
+        filename (str): the name of the file where the clause will be saved
+        seed (int | None): the seed for the random generator, if None the seed will be random
+    """
+    if len(atoms) == 0:
+        save_phi(top(), filename)
+        return
+    if seed is not None:
+        random.seed(seed)
+    clause_atoms = random.sample(
+        atoms, random.randint(1, max(1, len(atoms)//2)))
+    for i, atom in enumerate(clause_atoms):
+        if random.choice([True, False]):  # 50% chance to negate the atom
+            clause_atoms[i] = without_double_neg(Not(atom))
+    save_phi(big_and(clause_atoms), filename)
+
+
+def create_random_term(atoms: List[FNode], filename: str, seed: int | None = None) -> None:
+    """
+    creates a random term from the given atoms and saves it to the specified SMT2 file
+
+    Args:
+        atoms (List[FNode]): the list of atoms to create the clause from
+        filename (str): the name of the file where the clause will be saved
+        seed (int | None): the seed for the random generator, if None the seed will be random
+    """
+    if len(atoms) == 0:
+        save_phi(top(), filename)
+        return
+    if seed is not None:
+        random.seed(seed)
+    term_atom = random.choice(atoms)
+    if random.choice([True, False]):
+        term_atom = without_double_neg(Not(term_atom))
+    save_phi(term_atom, filename)
+
+
+def select_random_items(items: List[object], amount: int | None = None, random_seed: int | None = None) -> List[Tuple[object,bool]]:
+    """
+    selects a random subset of items from a selction of items
+
+    Args:
+        items (List[object]): the list of items to select from
+        amount (int| None): the number of items to select, None will select a random number of items
+        random_seed (int | None): the seed for the random generator, if None the seed will be random
+
+    Returns:
+        List[Tuple(object,bool)]: the list of selected items, each pèaired with a boolean indicating if the item is positive or negative
+    """
+    if random_seed is not None:
+        random.seed(random_seed)
+
+    if amount is None:
+        amount = random.randint(1, max(1, len(items)//2))
+
+    samples = random.sample(items, amount)
+
+    result = [(sample, random.choice([True, False])) for sample in samples]
+    return result
